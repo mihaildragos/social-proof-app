@@ -75,5 +75,3 @@ The project is set up as a modern SaaS application with:
 - Payment processing integration
 
 This tech stack provides a robust foundation for building a scalable, secure, and user-friendly web application with all the modern features expected in a professional SaaS product.
-
-Let me know if you'd like me to elaborate on any specific part of the tech stack or explain how certain components are integrated together!
