@@ -12,7 +12,7 @@ A modern web application starter template built with Next.js 14, featuring authe
 - **Database:** [Supabase](https://supabase.com/)
 - **Styling:** [Tailwind CSS](https://tailwindcss.com/)
 - **Payments:** [Stripe](https://stripe.com/)
-- **UI Components:** Custom components with modern design
+- **UI Components:** [shadcn/ui](https://ui.shadcn.com/)
 
 ## Prerequisites
 
