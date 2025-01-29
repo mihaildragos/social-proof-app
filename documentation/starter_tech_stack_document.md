@@ -26,6 +26,7 @@ This starter kit uses the following tech stack:
    - Complete subscription management system with pricing plans
 
 5. **UI Components and Styling:**
+   - **shadcn/ui** : Beautifully designed components made with Tailwind CSS and Radix UI 
    - **Radix UI**: Extensive use of accessible components including:
      - Dialog, Popover, Tooltip
      - Navigation menus
@@ -41,23 +42,23 @@ This starter kit uses the following tech stack:
    - **class-variance-authority**: For managing component variants
    - **clsx** and **tailwind-merge**: For conditional class name handling
 
-6. **Form Handling and Validation:**
+7. **Form Handling and Validation:**
    - **React Hook Form**: For form management
    - **Zod**: For schema validation
    - **@hookform/resolvers**: For integrating Zod with React Hook Form
 
-7. **Date Handling and Charts:**
+8. **Date Handling and Charts:**
    - **date-fns**: For date manipulation
    - **React Day Picker**: For date picking components
    - **Recharts**: For data visualization and charts
 
-8. **Development Tools:**
+9. **Development Tools:**
    - **ESLint**: For code linting
    - **Prettier**: For code formatting with Tailwind plugin
    - **TypeScript**: For static type checking
    - **PostCSS**: For CSS processing
 
-9. **UI/UX Features:**
+10. **UI/UX Features:**
    - **next-themes**: For dark/light theme switching
    - **react-resizable-panels**: For resizable layout panels
    - **vaul**: For additional UI components
