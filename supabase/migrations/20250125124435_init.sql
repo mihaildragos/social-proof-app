@@ -1,3 +1,9 @@
+-- NOTE: You can copy and paste this entire SQL file into the SQL editor in your Supabase dashboard
+-- This will set up all required database tables and functions needed for:
+-- 1. Clerk Authentication integration
+-- 2. Stripe subscription management
+-- 3. Required database policies and permissions
+
 create type "public"."pricing_plan_interval" as enum ('day', 'week', 'month', 'year');
 
 create type "public"."pricing_type" as enum ('one_time', 'recurring');
@@ -338,7 +344,7 @@ to public
 using (true);
 
 
-create policy "public read-on;y"
+create policy "public read-only"
 on "public"."products"
 as permissive
 for select
