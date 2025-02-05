@@ -50,6 +50,8 @@ This starter kit uses the following tech stack:
            queryKey: ['products'],
            queryFn: async () => {
                // Example usage with Supabase client, you can also do any async request to a server here through fetch, axios, Nextjs server actions, etc.
+               const supabase = useSupabase();
+               
                const {data, error} = await supabase.from('products').select('*');
                
                if (error) {
