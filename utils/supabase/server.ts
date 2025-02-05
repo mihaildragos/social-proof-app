@@ -1,4 +1,3 @@
-import { Database } from '@/types/database.types'
 import { auth } from '@clerk/nextjs/server'
 import { createClient } from '@supabase/supabase-js'
 
@@ -6,7 +5,7 @@ export async function createClerkSupabaseClientSsr() {
     // The `useAuth()` hook is used to access the `getToken()` method
     const { getToken } = await auth()
 
-    return createClient<Database>(
+    return createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_KEY!,
         {

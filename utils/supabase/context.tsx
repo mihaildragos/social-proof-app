@@ -1,17 +1,16 @@
 "use client"
 
-import { Database } from "@/types/database.types";
 import { useSession } from "@clerk/nextjs";
 import { SupabaseClient, createClient } from "@supabase/supabase-js";
 import { createContext, useContext, useMemo, ReactNode } from "react";
 
-const SupabaseContext = createContext<SupabaseClient<Database> | undefined>(undefined);
+const SupabaseContext = createContext<SupabaseClient | undefined>(undefined);
 
 export function SupabaseProvider({ children }: { children: ReactNode }) {
     const { session } = useSession();
 
     const supabase = useMemo(() => {
-        return createClient<Database>(
+        return createClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
             process.env.NEXT_PUBLIC_SUPABASE_KEY!,
             {
