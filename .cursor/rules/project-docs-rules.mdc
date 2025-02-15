@@ -1,0 +1,5 @@
+---
+description: Project documentation rules
+globs: 
+---
+Always refer to @project-requirement-document.md for the project requirements and @app-flow-document.md for the flow of the app. Unless the user says otherwise or has defined new requirements or additional flow.
