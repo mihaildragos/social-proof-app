@@ -295,6 +295,42 @@ describe("Webhooks API Route", () => {
     expect(responseBody).toEqual({ received: true });
   });
 
+  it("should handle unrecognized event type in switch statement", async () => {
+    // Setup
+    const eventData = {
+      type: "product.updated", // This is in relevantEvents but not handled separately in the switch
+      data: {
+        object: {
+          id: "prod_test123",
+          name: "Updated Product Name"
+        }
+      }
+    };
+    
+    const req = createWebhookRequest(
+      "POST",
+      "https://example.com/api/webhooks",
+      eventData,
+      { "stripe-signature": "valid-signature" }
+    );
+    
+    // Spy on console.log to check for unhandled event message
+    jest.spyOn(global.console, 'log').mockImplementation(() => {});
+    
+    // Execute
+    const response = await POST(req);
+    
+    // Assert
+    expect(response).toBeInstanceOf(Response);
+    expect(response.status).toBe(200);
+    
+    // In this case, it should fall through to the default case and log the unhandled event type
+    expect(console.log).toHaveBeenCalledWith(`🔔  Webhook received: ${eventData.type}`);
+    
+    const responseBody = await response.json();
+    expect(responseBody).toEqual({ received: true });
+  });
+
   it("should handle unsupported event type", async () => {
     const eventData = {
       type: "unsupported.event",

@@ -3,7 +3,7 @@ import { setMockUserId, resetMockAuth } from "./__mocks__/auth";
 import { resetMockData } from "./__mocks__/supabase";
 
 // Interface for the minimum properties needed for a Request
-interface MockRequest {
+interface MockRequest extends Request {
   method: string;
   url: string;
   headers: Headers;
@@ -13,25 +13,21 @@ interface MockRequest {
 }
 
 // Mock Next.js request
-export function createRequest(method: string, url: string, body?: any): MockRequest {
+export function createRequest(method: string, url: string, body?: any): Request {
   // Create body if provided
   const bodyStr = body ? JSON.stringify(body) : undefined;
   
-  // Create a minimally viable request object
-  const request: MockRequest = {
+  // Create a headers object
+  const headers = new Headers({
+    "Content-Type": "application/json"
+  });
+  
+  // Create a full Request object
+  return new Request(url, {
     method,
-    url,
-    headers: new Headers({
-      "Content-Type": "application/json"
-    }),
-    _bodyInit: bodyStr,
-    
-    // Mock json and text methods
-    json: jest.fn().mockResolvedValue(body || {}),
-    text: jest.fn().mockResolvedValue(bodyStr || "")
-  };
-
-  return request as any as Request;
+    headers,
+    body: bodyStr
+  });
 }
 
 // Create a Request object for testing webhooks

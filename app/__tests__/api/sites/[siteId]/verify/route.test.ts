@@ -403,5 +403,49 @@ describe("Site Verification API Routes", () => {
       expect(data.error).toHaveProperty("message", "Failed to create verification attempt");
       expect(data.error).toHaveProperty("details", "Database connection error");
     });
+    
+    it("should handle validation errors that are not ZodError", async () => {
+      // Setup
+      setAuthorized();
+      const verificationData = {
+        method: VerificationMethod.DNS_TXT,
+        verification_data: { token: "test-token" }
+      };
+      
+      // Create a request that will pass validation
+      const req = createWebhookRequest(
+        "POST", 
+        `https://example.com/api/sites/${existingSiteId}/verify`, 
+        verificationData
+      );
+      
+      const params = createParams({ siteId: existingSiteId });
+      
+      // Mock createVerificationSchema.parse to throw an error that is not ZodError
+      const createVerificationSchema = require("@/types/sites").createVerificationSchema;
+      jest.spyOn(createVerificationSchema, "parse").mockImplementationOnce(() => {
+        const error = new Error("Non-ZodError validation error");
+        // Make sure it's not a ZodError
+        error.name = "ValidationError";
+        throw error;
+      });
+      
+      // Spy on console.error
+      jest.spyOn(global.console, 'error').mockImplementation(() => {});
+      
+      // Execute
+      const response = await POST(req, params);
+      
+      // Assert
+      expect(response).toBeInstanceOf(NextResponse);
+      expect(response.status).toBe(500); // Should be 500 for non-ZodError
+      
+      const data = await parseResponse<ErrorResponse>(response);
+      expect(data.error).toHaveProperty("message", "Failed to create verification attempt");
+      expect(data.error).toHaveProperty("details", "Non-ZodError validation error");
+      
+      // Verify error was logged
+      expect(console.error).toHaveBeenCalled();
+    });
   });
 }); 
