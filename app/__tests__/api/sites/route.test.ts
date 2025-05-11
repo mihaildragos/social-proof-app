@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { GET, POST } from "@/app/api/sites/route";
-import { createRequest, parseResponse, resetAllMocks, setAuthorized, setUnauthorized } from "../../helpers";
+import { createRequest, parseResponse, resetAllMocks, setAuthorized, setUnauthorized, createWebhookRequest } from "../../helpers";
 import { mockResponseData } from "../../__mocks__/supabase";
 import { SiteStatus } from "@/types/sites";
+import { createSite, getUserSites } from "@/lib/sites";
+import { ZodError } from "zod";
 
 // Mock dependencies
 jest.mock("@clerk/nextjs/server", () => require("../../__mocks__/@clerk/nextjs/server"));
@@ -10,6 +12,34 @@ jest.mock("@/utils/supabase/server", () => ({
   createClerkSupabaseClientSsr: require("../../__mocks__/supabase").createClerkSupabaseClientSsr,
 }));
 jest.mock("@/lib/sites", () => require("../../__mocks__/sites"));
+
+// Mock ZodError and createSiteSchema
+jest.mock("@/types/sites", () => {
+  const actual = jest.requireActual("@/types/sites");
+  return {
+    ...actual,
+    createSiteSchema: {
+      parse: jest.fn().mockImplementation((data) => {
+        if (!data.name || !data.domain) {
+          const error = new Error("Validation error");
+          error.name = "ZodError";
+          // Add format method to simulate ZodError
+          (error as any).format = () => ({
+            _errors: [],
+            name: { _errors: !data.name ? ["Name is required"] : [] },
+            domain: { _errors: !data.domain ? ["Domain is required"] : [] }
+          });
+          
+          // For ZodError instance checks (instanceof)
+          Object.setPrototypeOf(error, ZodError.prototype);
+          
+          throw error;
+        }
+        return data;
+      })
+    }
+  };
+});
 
 // Define response types for type safety
 interface ErrorResponse {
@@ -68,6 +98,32 @@ describe("Sites API Routes", () => {
       expect(Array.isArray(data.sites)).toBe(true);
       expect(data.sites).toEqual(mockResponseData.sites);
     });
+    
+    it("should handle server errors when fetching sites", async () => {
+      // Setup
+      setAuthorized();
+      const req = createRequest("GET", "https://example.com/api/sites");
+      
+      // Mock getUserSites to throw an error
+      (getUserSites as jest.Mock).mockRejectedValueOnce(new Error("Database connection error"));
+      
+      // Spy on console.error
+      jest.spyOn(global.console, 'error').mockImplementation(() => {});
+      
+      // Execute
+      const response = await GET(req);
+      
+      // Assert
+      expect(response).toBeInstanceOf(NextResponse);
+      expect(response.status).toBe(500);
+      
+      const data = await parseResponse<ErrorResponse>(response);
+      expect(data.error).toHaveProperty("message", "Failed to fetch sites");
+      expect(data.error).toHaveProperty("details", "Database connection error");
+      
+      // Verify error was logged
+      expect(console.error).toHaveBeenCalled();
+    });
   });
   
   describe("POST /api/sites", () => {
@@ -98,7 +154,7 @@ describe("Sites API Routes", () => {
         name: "New Test Site",
         domain: "newtest.example.com"
       };
-      const req = createRequest("POST", "https://example.com/api/sites", siteData);
+      const req = createWebhookRequest("POST", "https://example.com/api/sites", siteData);
       
       // Get initial site count
       const initialSiteCount = mockResponseData.sites.length;
@@ -127,7 +183,7 @@ describe("Sites API Routes", () => {
       // Setup
       setAuthorized();
       // Missing required field 'domain'
-      const req = createRequest("POST", "https://example.com/api/sites", {
+      const req = createWebhookRequest("POST", "https://example.com/api/sites", {
         name: "Invalid Site"
       });
       
@@ -142,6 +198,69 @@ describe("Sites API Routes", () => {
       expect(data).toHaveProperty("error");
       expect(data.error).toHaveProperty("message", "Invalid request");
       expect(data.error).toHaveProperty("details");
+    });
+    
+    it("should handle non-ZodError validation errors", async () => {
+      // Setup
+      setAuthorized();
+      const siteData = {
+        name: "Error Test Site",
+        domain: "error.example.com"
+      };
+      const req = createWebhookRequest("POST", "https://example.com/api/sites", siteData);
+      
+      // Mock createSiteSchema.parse to throw a non-ZodError
+      const createSiteSchema = require("@/types/sites").createSiteSchema;
+      jest.spyOn(createSiteSchema, "parse").mockImplementationOnce(() => {
+        throw new Error("Non-ZodError validation error");
+      });
+      
+      // Spy on console.error
+      jest.spyOn(global.console, 'error').mockImplementation(() => {});
+      
+      // Execute
+      const response = await POST(req);
+      
+      // Assert
+      expect(response).toBeInstanceOf(NextResponse);
+      expect(response.status).toBe(500);
+      
+      const data = await parseResponse<ErrorResponse>(response);
+      expect(data.error).toHaveProperty("message", "Failed to create site");
+      expect(data.error).toHaveProperty("details", "Non-ZodError validation error");
+      
+      // Verify error was logged
+      expect(console.error).toHaveBeenCalled();
+    });
+    
+    it("should handle server errors when creating a site", async () => {
+      // Setup
+      setAuthorized();
+      const siteData = {
+        name: "New Test Site",
+        domain: "newtest.example.com"
+      };
+      const req = createWebhookRequest("POST", "https://example.com/api/sites", siteData);
+      
+      // Mock createSite to throw an error
+      (createSite as jest.Mock).mockRejectedValueOnce(new Error("Database connection error"));
+      
+      // Spy on console.error
+      jest.spyOn(global.console, 'error').mockImplementation(() => {});
+      
+      // Execute
+      const response = await POST(req);
+      
+      // Assert
+      expect(response).toBeInstanceOf(NextResponse);
+      expect(response.status).toBe(500);
+      
+      const data = await parseResponse<ErrorResponse>(response);
+      expect(data.error).toHaveProperty("message", "Failed to create site");
+      expect(data.error).toHaveProperty("details", "Database connection error");
+      
+      // Verify error was logged
+      expect(console.error).toHaveBeenCalled();
     });
   });
 }); 

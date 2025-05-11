@@ -120,5 +120,48 @@ describe("Embed Script API Route", () => {
       const script = await parseResponse<string>(response);
       expect(script).toBe("console.error('Social Proof: Server error');");
     });
+    
+    it("should handle database error when fetching site", async () => {
+      // Setup
+      const req = createRequest("GET", `https://example.com/api/embed/${verifiedSiteId}.js`);
+      const params = createParams({ siteId: verifiedSiteId });
+      
+      // Mock the supabase client to return an error
+      const mockSupabase = require("../../../__mocks__/supabase");
+      const originalFrom = mockSupabase.mockSupabaseClient.from;
+      mockSupabase.mockSupabaseClient.from = jest.fn().mockReturnValue({
+        select: jest.fn().mockReturnValue({
+          eq: jest.fn().mockReturnValue({
+            single: jest.fn().mockResolvedValue({
+              error: { message: "Database error" },
+              data: null
+            })
+          })
+        })
+      });
+      
+      // Spy on console.error
+      jest.spyOn(global.console, 'error').mockImplementation(() => {});
+      
+      // Execute
+      const response = await GET(req, params);
+      
+      // Restore original implementation
+      mockSupabase.mockSupabaseClient.from = originalFrom;
+      
+      // Assert
+      expect(response).toBeInstanceOf(NextResponse);
+      expect(response.status).toBe(404);
+      
+      // Check content type
+      expect(response.headers.get("Content-Type")).toBe("application/javascript");
+      
+      // Check content is error script
+      const script = await parseResponse<string>(response);
+      expect(script).toBe("console.error('Social Proof: Invalid site ID');");
+      
+      // Verify error was logged
+      expect(console.error).toHaveBeenCalled();
+    });
   });
 }); 
