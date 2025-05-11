@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 
 // For tests, ensure we have fallback values
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://test-supabase-url.supabase.co';
-const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_KEY || 'test-supabase-key-for-testing';
+const SUPABASE_KEY = process.env.SUPABASE_KEY || 'test-supabase-key-for-testing';
 
 export async function createClerkSupabaseClientSsr() {
     // Get the Supabase token in test mode or from Clerk in production

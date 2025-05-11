@@ -6,6 +6,8 @@ export enum SiteStatus {
   PENDING_VERIFICATION = 'pending_verification',
   VERIFIED = 'verified',
   SUSPENDED = 'suspended',
+  DELETED = 'deleted',
+  
 }
 
 // Verification method enum
