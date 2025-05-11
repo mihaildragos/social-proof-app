@@ -82,22 +82,29 @@
 
 3. Add Terraform provider block for Supabase and configure project in `/infra/terraform/main.tf` (Tech Stack: Database).
 
-4. Create `/docs/schema.sql` containing Postgres schema for core tables:
-
-   * `accounts(site_id UUID, ... )`
-   * `sites(...)`
-   * `notifications(...)`
-   * `notification_events(...)` partitioned by RANGE on `created_at` and HASH on `site_id`
-   * `ab_tests(...)`
-   * `translations(...)`
-   * `templates(...)`
-   * `users(...)`
-   * `billing_invoices(...)`\
+4. ✅ COMPLETED: Created `/schema.sql` containing comprehensive PostgreSQL schema with:
+   * `users` with PII encryption for email and full\_name
+   * `accounts` with data residency controls
+   * `sites` for tenant management
+   * `notifications` for campaign management
+   * `notification_events` partitioned by RANGE on `created_at` and HASH on `site_id`
+   * `ab_tests` and `ab_test_variants` with winner tracking
+   * `translations` for internationalization
+   * `templates` for notification styling
+   * `webhook_deliveries` for tracking outbound notifications
+   * `visitor_profiles` for aggregated behavioral data
+   * `custom_field_definitions` for merchant-defined fields
+   * `encryption_keys` for field-level PII protection
+   * `permissions` framework for fine-grained access control
+   * `webhook_templates` for integration transformations
+   * `integration_marketplace` for pre-built integrations
+   * `archival_framework` for data retention management
+   * All with proper Row Level Security and foreign key constraints
      (Tech Stack: Database)
 
 5. __Validation__: Launch Supabase MCP server via Cursor:
 
-`npx @modelcontextprotocol/server-postgres "<connection-string>" `then run `psql` or Supabase SQL editor to execute `/docs/schema.sql` and verify tables exist (Tools: Cursor).
+`npx @modelcontextprotocol/server-postgres "<connection-string>"` then run `psql` or Supabase SQL editor to execute `/schema.sql` and verify tables exist (Tools: Cursor).
 
 1. Create `/backend/notification-service/Dockerfile` using Node 20.2.1 base image and copy `src` (Microservices).
 2. Create `/backend/notification-service/src/index.ts` implementing an Express.js SSE endpoint at `GET /events` (PRD: Real-time Notifications).

@@ -1,6 +1,6 @@
 # Backend Structure Document
 
-This document outlines the backend architecture, database setup, APIs, hosting, infrastructure, security, monitoring, and maintenance for our multi-tenant social proof notification platform. It’s written in everyday language so anyone can understand how everything fits together.
+This document outlines the backend architecture, database setup, APIs, hosting, infrastructure, security, monitoring, and maintenance for our multi-tenant social proof notification platform. It's written in everyday language so anyone can understand how everything fits together.
 
 ## 1. Backend Architecture
 
@@ -13,7 +13,7 @@ Overall, we use a microservices approach with event-driven components to keep th
 
 • Event Streaming:
 
-* We use Apache Kafka (via AWS MSK) or Redis Streams to move events (like “new purchase” or “notification shown”) between services.
+* We use Apache Kafka (via AWS MSK) or Redis Streams to move events (like "new purchase" or "notification shown") between services.
 * This decouples producers (e.g., website snippets) from consumers (e.g., analytics, notifications).
 
 • API Gateway:
@@ -58,7 +58,114 @@ We use a mix of SQL, time-series, OLAP, and in-memory stores to fit each use cas
 
 Below is a simplified view of the main SQL tables. Real implementation will include indexes, constraints, and foreign keys.
 
-`-- Users CREATE TABLE users ( id UUID PRIMARY KEY, email TEXT UNIQUE NOT NULL, hashed_password TEXT, created_at TIMESTAMPTZ DEFAULT NOW(), updated_at TIMESTAMPTZ DEFAULT NOW() ); -- Sites (tenants) CREATE TABLE sites ( id UUID PRIMARY KEY, owner_id UUID REFERENCES users(id), name TEXT, domain TEXT UNIQUE NOT NULL, settings JSONB, created_at TIMESTAMPTZ DEFAULT NOW() ); -- Notifications CREATE TABLE notifications ( id UUID PRIMARY KEY, site_id UUID REFERENCES sites(id), template_id UUID REFERENCES templates(id), status TEXT, created_at TIMESTAMPTZ DEFAULT NOW(), updated_at TIMESTAMPTZ DEFAULT NOW() ); -- Templates (branding) CREATE TABLE templates ( id UUID PRIMARY KEY, site_id UUID REFERENCES sites(id), name TEXT, css_content TEXT, created_at TIMESTAMPTZ DEFAULT NOW() ); -- Billing CREATE TABLE subscriptions ( id UUID PRIMARY KEY, site_id UUID REFERENCES sites(id), tier TEXT, status TEXT, next_billing_date DATE, created_at TIMESTAMPTZ DEFAULT NOW() );`
+```sql
+-- Users with PII encryption
+CREATE TABLE users (
+  id UUID PRIMARY KEY,
+  email_encrypted BYTEA NOT NULL,
+  email_encryption_key_id UUID REFERENCES encryption_keys(id),
+  full_name_encrypted BYTEA,
+  full_name_encryption_key_id UUID REFERENCES encryption_keys(id),
+  hashed_password TEXT,
+  auth_provider TEXT,
+  auth_provider_id TEXT,
+  mfa_enabled BOOLEAN DEFAULT FALSE,
+  preferred_language TEXT DEFAULT 'en',
+  preferred_timezone TEXT DEFAULT 'UTC',
+  role TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Sites (tenants)
+CREATE TABLE sites (
+  id UUID PRIMARY KEY,
+  owner_id UUID REFERENCES users(id),
+  name TEXT,
+  domain TEXT UNIQUE NOT NULL,
+  settings JSONB,
+  data_region TEXT, -- For data residency compliance
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Notifications
+CREATE TABLE notifications (
+  id UUID PRIMARY KEY,
+  site_id UUID REFERENCES sites(id),
+  template_id UUID REFERENCES templates(id),
+  status TEXT,
+  channels TEXT[],
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Templates (branding)
+CREATE TABLE templates (
+  id UUID PRIMARY KEY,
+  site_id UUID REFERENCES sites(id),
+  name TEXT,
+  css_content TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- A/B Tests
+CREATE TABLE ab_tests (
+  id UUID PRIMARY KEY,
+  notification_id UUID REFERENCES notifications(id),
+  status TEXT,
+  winner_variant_id UUID REFERENCES ab_test_variants(id),
+  winner_selected_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Webhook Deliveries
+CREATE TABLE webhook_deliveries (
+  id UUID PRIMARY KEY,
+  integration_id UUID REFERENCES integrations(id),
+  status TEXT,
+  payload JSONB,
+  attempt_count INTEGER,
+  next_attempt_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Visitor Profiles
+CREATE TABLE visitor_profiles (
+  id UUID PRIMARY KEY,
+  site_id UUID REFERENCES sites(id),
+  visitor_id TEXT,
+  session_count INTEGER,
+  behavior_score FLOAT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Custom Fields
+CREATE TABLE custom_field_definitions (
+  id UUID PRIMARY KEY,
+  account_id UUID REFERENCES accounts(id),
+  name TEXT,
+  field_type TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW() 
+);
+```
+
+### Enhanced Security Features
+
+* **Field-level PII Encryption**: User emails and names are encrypted at rest using pgcrypto
+* **Helper Functions**: Secure `get_user_email()` and `get_user_full_name()` functions to decrypt data with proper authorization
+* **Transparent Usage Pattern**: Application code provides plaintext fields during insert/update, but only encrypted values are stored
+
+### Data Partitioning Strategy 
+
+* `notification_events` table is partitioned by:
+  * RANGE on `created_at` (monthly partitions)
+  * HASH on `site_id` (8 hash partitions)
+* Auto-partition creation via trigger
+* Optimized for time-series queries with multi-level indexing
+
+### Data Retention & Archival
+
+* Raw events retained in TimescaleDB for 90 days via archival policies
+* Automated archival to S3/Glacier with metadata tracking
+* Restoration workflow for compliance and analytics
 
 ### Time-Series Schema (TimescaleDB)
 
