@@ -1,5 +1,5 @@
 {
-  "name": "codeguide-starter-pro",
+  "name": "social-proof-app",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -75,6 +75,7 @@
     "postcss": "^8",
     "prettier": "^3.4.2",
     "prettier-plugin-tailwindcss": "^0.6.11",
+    "semver": "^7.7.1",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
   }
