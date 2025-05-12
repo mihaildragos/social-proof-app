@@ -1,159 +1,174 @@
-# Social Proof App
+# Social Proof App - Microservices
 
-A real-time social proof notification platform similar to Fomo, built with scalable microservices architecture.
-
-## Overview
-
-This application allows merchants to deliver low-latency, edge-cached real-time social proof notifications across web pop-ups, email, and push notifications. It includes integrated A/B testing, analytics, and enterprise features under a unified dashboard.
+This repository contains the microservices implementation for the Social Proof App, a Fomo-style real-time social proof notification platform.
 
 ## Architecture
 
-The system is built using a microservices architecture with the following services:
+The application is built using a microservices architecture with the following components:
 
-1. **Users Service**: Authentication, user management, organizations
-2. **Notifications Service**: Notification templates, A/B tests, targeting rules
-3. **Analytics Service**: Real-time metrics, reporting, event tracking
-4. **Integrations Service**: Third-party integrations, webhooks, API
-5. **Billing Service**: Subscription management, invoicing, usage tracking
+1. **Integrations Service**: Handles integration with third-party platforms like Shopify
+2. **Notifications Service**: Processes events and manages notification delivery
+3. **Frontend Service**: Serves the frontend and handles SSE connections
 
 ## Tech Stack
 
-- **Backend Framework**: Next.js 14 (API routes)
-- **Languages**: TypeScript
-- **Database**: PostgreSQL with Supabase, TimescaleDB, ClickHouse for analytics
-- **Caching**: Redis
-- **Messaging**: Apache Kafka / Redis Streams
-- **Authentication**: Clerk Auth
-- **UI**: Tailwind CSS, Shadcn UI
-- **Monitoring**: OpenTelemetry, Prometheus, Grafana
-- **Deployment**: Kubernetes (EKS), Terraform
-- **CI/CD**: GitHub Actions
+- Node.js & TypeScript
+- Express for API endpoints
+- Kafka for event streaming
+- Redis for pub/sub
+- PostgreSQL for persistent storage
+- Docker and Docker Compose for containerization
+
+## Prerequisites
+
+- Node.js 18+
+- Docker and Docker Compose
+- PostgreSQL 14+
+- Kafka
+- Redis
 
 ## Getting Started
-
-### Prerequisites
-
-- Docker and Docker Compose
-- Node.js 20 or later
-- PostgreSQL client (optional)
 
 ### Installation
 
 1. Clone the repository:
-   ```bash
-   git clone https://github.com/yourusername/social-proof-app.git
-   cd social-proof-app
-   ```
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
+```bash
+git clone https://github.com/your-org/social-proof-app.git
+cd social-proof-app/microservices
+```
 
-3. Start the development environment:
-   ```bash
-   docker-compose up -d
-   ```
+2. Install dependencies using the provided script:
 
-4. Initialize the database:
-   ```bash
-   npm run db:init
-   ```
+```bash
+chmod +x install-deps.sh
+./install-deps.sh
+```
 
-5. Start the development server:
-   ```bash
-   npm run dev
-   ```
+Or install dependencies manually:
 
-6. Open [http://localhost:3000](http://localhost:3000) to view the app
+```bash
+npm install
+```
 
-### Development
+3. Create environment variables:
 
-The application follows a microservices architecture, with each service having its own directory:
+```bash
+cp .env.example .env
+```
 
-- `services/users/`: User authentication, management, and organizations
-- `services/notifications/`: Notification templates, A/B tests
-- `services/analytics/`: Metrics, reporting, and event tracking
-- `services/integrations/`: Third-party integration connectors
-- `services/billing/`: Subscription and payment processing
+4. Edit the `.env` file with your configuration settings.
 
-Each service is designed to work independently, communicating through well-defined APIs.
+### Running with Docker
+
+The easiest way to run the entire application is using Docker Compose:
+
+```bash
+# Start development environment
+docker-compose up
+
+# Start production environment
+docker-compose -f docker-compose.production.yml up -d
+```
+
+### Running for Development
+
+1. Start the required infrastructure:
+
+```bash
+docker-compose up -d kafka redis postgres
+```
+
+2. Start all microservices:
+
+```bash
+npm start
+```
+
+Or start individual services:
+
+```bash
+# For Integrations Service
+npm run dev:integrations
+
+# For Notifications Service
+npm run dev:notifications
+
+# For Frontend Service
+npm run dev:frontend
+```
+
+## Testing
+
+```bash
+# Run all tests
+npm test
+
+# Run tests with coverage
+npm run test:coverage
+
+# Run tests for a specific service
+npm test -- --testPathPattern=services/integrations
+```
+
+## API Documentation
+
+### Integrations Service
+
+- `POST /webhooks/shopify/orders/create`: Endpoint for Shopify order creation webhook
+
+### Frontend Service
+
+- `GET /api/notifications/sse`: SSE endpoint for real-time notifications
+
+## Shopify Integration
+
+The Shopify integration uses webhooks to receive order data and display real-time notifications. See the [Shopify Integration Guide](./docs/shopify-integration-architecture.md) for details.
+
+## Testing with a Development Store
+
+See the [Development Store Setup Guide](./docs/shopify-development-store-setup.md) for instructions on setting up a Shopify development store for testing.
 
 ## Deployment
 
-### Local Development
+The application can be deployed to Kubernetes using the provided manifests:
 
 ```bash
-docker-compose up -d
+# Deploy to staging
+kubectl apply -f infrastructure/kubernetes/staging
+
+# Deploy to production
+kubectl apply -f infrastructure/kubernetes/production
 ```
 
-### Production Deployment
+## CI/CD Pipeline
 
-The application can be deployed to Kubernetes using the provided Helm charts:
+The repository includes GitHub Actions workflows for CI/CD:
+
+- `ci.yml`: Runs tests, builds Docker images, and deploys to staging
+
+## Troubleshooting
+
+### TypeScript Errors
+
+If you encounter TypeScript errors related to missing modules or type declarations, make sure you've installed all dependencies and try running:
 
 ```bash
-cd infrastructure/kubernetes
-helm install social-proof-app ./charts/social-proof-app
+npm install --save-dev @types/express @types/cors @types/node @types/uuid @types/pg @types/jest @types/supertest
 ```
 
-## Documentation
+### Express Application Error
 
-- [API Documentation](./documentation/api.md)
-- [Database Schema](./documentation/schema.md)
-- [Architecture Overview](./documentation/architecture.md)
+If you see an error like `This expression is not callable. Type 'typeof import("express")' has no call signatures`, it's related to TypeScript module resolution. The custom type declarations in `types/express.d.ts` should fix this.
 
-## Monitoring
+### SSE Implementation Issues
 
-The application includes comprehensive monitoring:
+The Server-Sent Events (SSE) implementation requires the following to work correctly:
 
-- Grafana: [http://localhost:3000](http://localhost:3000) (admin/admin)
-- Prometheus: [http://localhost:9090](http://localhost:9090)
-- Jaeger (Tracing): [http://localhost:16686](http://localhost:16686)
-
-## Contributing
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/amazing-feature`)
-3. Commit your Changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the Branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+1. Custom type declarations for Response.write and Response.flushHeaders
+2. Proper Redis PubSub channel naming convention 
+3. Connection cleanup on client disconnect
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Acknowledgments
-
-- Inspired by Fomo and similar social proof applications
-- Built with enterprise-grade architecture for high availability and scalability
-
-## Implementation Status
-
-### Core Infrastructure
-
-- [x] Infrastructure as Code (Terraform)
-  - [x] EKS Cluster Configuration
-  - [x] API Gateway Setup (Kong)
-  - [x] Kafka and Redis Streams
-  - [x] Supabase/PostgreSQL with Row-Level Security (RLS)
-  - [x] TimescaleDB and ClickHouse
-  - [x] Redis for Caching
-  - [x] Docker Base Images
-  - [x] Observability Stack
-
-### Shared Libraries
-
-- [x] Logging (Winston + OpenTelemetry context)
-- [x] Error Handling
-- [x] Tracing (OpenTelemetry)
-- [x] Database Models
-- [ ] Event Schemas
-- [x] Validators
-
-### Microservices
-
-- [x] Users Service (Completed)
-- [ ] Notifications Service (Planned)
-- [ ] Analytics Service (Planned)
-- [ ] Integrations Service (Planned)
-- [ ] Billing Service (Planned) 
+MIT 
