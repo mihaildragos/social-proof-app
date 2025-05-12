@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: users-service-config
+  namespace: social-proof-app
+data:
+  postgres-host: "${RDS_ENDPOINT}"
+  postgres-port: "5432"
+  postgres-db: "users"
+  cors-allowed-origins: "https://app.socialproofapp.com,https://api.socialproofapp.com"
+  log-level: "info"
+  clerk-webhook-url: "https://api.socialproofapp.com/auth/clerk-webhook"
+  token-expiry: "86400" # 24 hours in seconds
+  refresh-token-expiry: "2592000" # 30 days in seconds 
