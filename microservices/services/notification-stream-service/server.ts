@@ -1,9 +1,20 @@
-import express, { Request, Response, NextFunction } from 'express';
+import express, { Request as ExpressRequest, Response as ExpressResponse, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import { RedisSubscriber } from '../../shared/redis/subscriber';
 import { requestLogger } from '../../shared/utils/logger';
 import createHealthCheckMiddleware from '../../shared/middleware/health-check';
+import { IncomingMessage, ServerResponse } from 'http';
+
+// Extend the Express types for SSE
+interface Request extends ExpressRequest {
+  on(event: string, callback: (...args: any[]) => void): this;
+}
+
+interface Response extends ExpressResponse {
+  flushHeaders(): void;
+  write(chunk: string | Buffer): boolean;
+}
 
 export function createServer() {
   const app = express();
@@ -25,7 +36,7 @@ export function createServer() {
   app.use(requestLogger);
   
   // Health check endpoints
-  app.use(createHealthCheckMiddleware('frontend-service', {
+  app.use(createHealthCheckMiddleware('notification-stream-service', {
     redis: {
       url: process.env.REDIS_URL || 'redis://localhost:6379'
     }
@@ -74,7 +85,7 @@ export function createServer() {
   });
   
   // Error handling middleware
-  app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  app.use((err: Error, req: ExpressRequest, res: ExpressResponse, next: NextFunction) => {
     console.error(err.stack);
     res.status(500).json({ error: 'Internal Server Error' });
   });

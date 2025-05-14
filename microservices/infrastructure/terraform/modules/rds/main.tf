@@ -52,7 +52,7 @@ resource "aws_db_subnet_group" "postgres" {
 
 # Parameter group for PostgreSQL with TimescaleDB and Supabase/RLS settings
 resource "aws_db_parameter_group" "postgres" {
-  name   = "${var.db_name}-params"
+  name   = "${replace(lower(var.db_name), "_", "-")}-params"
   family = "postgres14"
 
   # TimescaleDB extension parameters
@@ -102,7 +102,7 @@ resource "aws_kms_key" "postgres" {
 
 # Create the PostgreSQL instance
 resource "aws_db_instance" "postgres" {
-  identifier             = var.db_name
+  identifier             = lower(replace(var.db_name, "_", "-"))
   engine                 = "postgres"
   engine_version         = "14.9" # Version compatible with Supabase
   instance_class         = var.instance_class
