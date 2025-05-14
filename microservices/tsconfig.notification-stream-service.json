@@ -1,8 +1,8 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "outDir": "dist/frontend"
+    "outDir": "dist/notification-stream-service"
   },
-  "include": ["services/frontend/**/*", "shared/**/*"],
+  "include": ["services/notification-stream-service/**/*", "shared/**/*"],
   "exclude": ["node_modules", "dist", "**/*.test.ts", "**/__tests__/**/*"]
 } 

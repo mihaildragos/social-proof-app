@@ -144,7 +144,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: ./microservices
-          file: ./microservices/services/frontend/Dockerfile
+          file: ./microservices/services/notification-stream-service/Dockerfile
           push: true
           tags: |
             ghcr.io/${{ github.repository }}/frontend:${{ steps.version.outputs.TAG }}

@@ -42,5 +42,24 @@ services:
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
       KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
 
+  notification-stream-service:
+    build:
+      context: ./microservices
+      dockerfile: services/notification-stream-service/Dockerfile
+    container_name: social-proof-notification-stream
+    depends_on:
+      - redis
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=development
+      - PORT=3002
+      - REDIS_URL=redis://redis:6379
+      - LOG_LEVEL=debug
+    volumes:
+      - ./microservices/services/notification-stream-service:/app/services/notification-stream-service
+      - ./microservices/shared:/app/shared
+      - /app/node_modules
+
 volumes:
   redis-data: 

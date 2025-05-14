@@ -12,7 +12,7 @@ terraform {
   backend "s3" {
     bucket = "social-proof-app-terraform-state"
     key    = "infrastructure/terraform.tfstate"
-    region = "us-west-2"
+    region = "eu-west-2"
   }
 }
 

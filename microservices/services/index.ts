@@ -7,7 +7,7 @@ const logger = getContextLogger({ service: 'services-main' });
 const services = [
   { name: 'integrations', path: './services/integrations/index.ts' },
   { name: 'notifications', path: './services/notifications/index.ts' },
-  { name: 'frontend', path: './services/frontend/index.ts' }
+  { name: 'frontend', path: './services/notification-stream-service/index.ts' }
 ];
 
 // Track service processes

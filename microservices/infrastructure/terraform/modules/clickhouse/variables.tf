@@ -50,5 +50,5 @@ variable "key_name" {
 variable "aws_region" {
   description = "AWS region for S3 endpoint"
   type        = string
-  default     = "us-west-2"
+  default     = "eu-west-2"
 } 

@@ -126,7 +126,7 @@ resource "random_id" "this" {
 
 # EBS volume for ClickHouse data
 resource "aws_ebs_volume" "clickhouse_data" {
-  availability_zone = var.subnet_ids[0] != null ? data.aws_subnet.selected[0].availability_zone : "us-west-2a"
+  availability_zone = var.subnet_ids[0] != null ? data.aws_subnet.selected[0].availability_zone : "eu-west-2a"
   size              = var.volume_size
   type              = "gp3"
   iops              = 3000

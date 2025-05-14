@@ -94,7 +94,7 @@ services:
   frontend:
     build:
       context: .
-      dockerfile: ./services/frontend/Dockerfile
+      dockerfile: ./services/notification-stream-service/Dockerfile
     image: social-proof/frontend:${TAG:-latest}
     ports:
       - "${FRONTEND_PORT:-3000}:3000"

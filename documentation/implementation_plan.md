@@ -40,7 +40,7 @@
 
 `module.exports = { content: ["./app/**/*.{js,ts,jsx,tsx}", "./components/**/*.{js,ts,jsx,tsx}"], theme: { extend: {} }, plugins: [] } `(Tech Stack: Frontend)
 
-1. Create `/frontend/app/globals.css` and add:
+1. Create `/notification-stream-service/app/globals.css` and add:
 
 `@tailwind base; @tailwind components; @tailwind utilities; `(Tech Stack: Frontend)
 
@@ -60,15 +60,15 @@
 
 `npm install @tanstack/router `(App Flow: Routing)
 
-1. Create `/frontend/app/layout.tsx` importing Tailwind CSS, wrapping children with React Query and Zustand providers (Tech Stack: Frontend).
+1. Create `/notification-stream-service/app/layout.tsx` importing Tailwind CSS, wrapping children with React Query and Zustand providers (Tech Stack: Frontend).
 
 2. Create placeholder pages:
 
-   * `/frontend/app/page.tsx` for Dashboard
-   * `/frontend/app/sites/page.tsx` for Site Management\
+   * `/notification-stream-service/app/page.tsx` for Dashboard
+   * `/notification-stream-service/app/sites/page.tsx` for Site Management\
      (App Flow: Page Structure)
 
-3. __Validation__: Add a simple Jest + React Testing Library test in `/frontend/tests/layout.test.tsx` to verify `layout.tsx` renders children, then run `npm test` and ensure tests pass (QA: Unit Tests).
+3. __Validation__: Add a simple Jest + React Testing Library test in `/notification-stream-service/tests/layout.test.tsx` to verify `layout.tsx` renders children, then run `npm test` and ensure tests pass (QA: Unit Tests).
 
 ## Phase 3: Backend Development
 
@@ -118,8 +118,8 @@
 
 ## Phase 4: Integration
 
-1. In `/frontend/src/services/api.ts`, configure Axios base URL to the Kong API Gateway at `https://api.fomo.com/v1` (Tech Stack: API Gateway).
-2. Implement `/frontend/src/hooks/useNotifications.ts` using React Query to connect to the SSE stream at `/events` (App Flow: SSE).
+1. In `/notification-stream-service/src/services/api.ts`, configure Axios base URL to the Kong API Gateway at `https://api.fomo.com/v1` (Tech Stack: API Gateway).
+2. Implement `/notification-stream-service/src/hooks/useNotifications.ts` using React Query to connect to the SSE stream at `/events` (App Flow: SSE).
 3. Configure Kong CORS plugin to allow `http://localhost:3000` and require mTLS for service-to-service calls (Tech Stack: Security).
 4. __Validation__: Trigger a notification via `curl -X POST https://api.fomo.com/v1/notifications` and verify the SSE event arrives in the frontend within 100ms (Performance Test).
 

@@ -82,7 +82,6 @@ resource "aws_elasticache_replication_group" "redis" {
   snapshot_retention_limit      = 7
   final_snapshot_identifier     = "${var.cluster_name}-redis-final-snapshot"
   apply_immediately             = true
-  auto_failover                 = var.num_cache_nodes > 1 ? true : false
   engine_version                = var.redis_version
   
   tags = {
