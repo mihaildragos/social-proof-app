@@ -15,8 +15,8 @@ const geistMono = localFont({
 })
 
 export const metadata: Metadata = {
-  title: 'CodeGuide Starter Pro',
-  description: 'Starter kit from codeguide.dev',
+  title: 'Pulse Social Proof',
+  description: 'Pulse Social Proof - Social Proof for more sales',
 }
 
 export default function RootLayout({

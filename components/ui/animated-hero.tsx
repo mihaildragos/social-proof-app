@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
-import { MoveRight, PhoneCall } from 'lucide-react'
+import { MoveRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Image from 'next/image'
 
@@ -25,13 +25,13 @@ function Hero() {
         <div className="flex flex-col items-center justify-center gap-8 py-20 lg:py-40">
           <div>
             <a
-              href="https://codeguide.dev"
+              href="#"
               target="_blank"
               rel="noopener noreferrer"
               className="flex flex-row items-center gap-2"
             >
-              <Image src="/codeguide-logo.png" alt="CodeGuide" width={42} height={42} />
-              <span className="logo-text text-3xl font-bold">CodeGuide</span>
+              <Image src="/psp-logo.svg" alt="Pulse Social Proof" width={42} height={42} />
+              <span className="logo-text text-3xl font-bold">Pulse Social Proof</span>
             </a>
           </div>
           <div className="flex flex-col gap-4">
@@ -60,11 +60,11 @@ function Hero() {
                   </motion.span>
                 ))}
               </span>
-              <span className="text-spektr-cyan-50">Starter Kit</span>
+              <span className="text-spektr-cyan-50">Pulse Social Proof</span>
             </h1>
 
             <p className="max-w-2xl text-center text-lg leading-relaxed tracking-tight text-muted-foreground md:mt-8 md:text-xl">
-              Start building with a modern web application template featuring authentication,
+              A modern web application template featuring authentication,
               database integration, and payment processing. Built with Next.js 14, Clerk, Supabase,
               and Stripe to accelerate your development process.
             </p>

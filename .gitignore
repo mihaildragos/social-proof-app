@@ -2,9 +2,14 @@
 
 # dependencies
 /node_modules
+**/node_modules/**
 /.pnp
 .pnp.js
 .yarn/install-state.gz
+
+# terraform
+microservices/infrastructure/terraform/terraform.tfvars
+microservices/infrastructure/terraform/.terraform/
 
 # testing
 /coverage
@@ -39,3 +44,7 @@ next-env.d.ts
 
 # cursor
 .cursor/mcp.json
+
+
+
+documentation/old_shopify_app/*
