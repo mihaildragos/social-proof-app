@@ -17,6 +17,7 @@ variable "enable_lifecycle" {
 # Create main artifacts bucket
 resource "aws_s3_bucket" "artifacts" {
   bucket = "${var.project_name}-${var.environment}-artifacts"
+  force_destroy = true
 
   tags = {
     Name        = "${var.project_name}-${var.environment}-artifacts"
@@ -27,6 +28,7 @@ resource "aws_s3_bucket" "artifacts" {
 # Create logs bucket
 resource "aws_s3_bucket" "logs" {
   bucket = "${var.project_name}-${var.environment}-logs"
+  force_destroy = true
 
   tags = {
     Name        = "${var.project_name}-${var.environment}-logs"

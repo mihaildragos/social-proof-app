@@ -80,7 +80,7 @@ resource "aws_elasticache_replication_group" "redis" {
   maintenance_window            = "sun:03:00-sun:04:00"
   snapshot_window               = "00:00-01:00"
   snapshot_retention_limit      = 7
-  final_snapshot_identifier     = "${var.cluster_name}-redis-final-snapshot"
+  final_snapshot_identifier     = null  # Disable final snapshot to avoid conflicts
   apply_immediately             = true
   engine_version                = var.redis_version
   

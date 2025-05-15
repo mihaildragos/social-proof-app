@@ -168,6 +168,7 @@ resource "aws_cloudwatch_log_group" "msk" {
 # S3 bucket for MSK logs
 resource "aws_s3_bucket" "msk_logs" {
   bucket = "${lower(var.cluster_name)}-logs-${random_id.this.hex}"
+  force_destroy = true
 
   tags = {
     Name        = "${var.cluster_name}-logs"
