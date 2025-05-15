@@ -104,7 +104,7 @@ resource "aws_kms_key" "postgres" {
 resource "aws_db_instance" "postgres" {
   identifier             = lower(replace(var.db_name, "_", "-"))
   engine                 = "postgres"
-  engine_version         = "14.9" # Version compatible with Supabase
+  engine_version         = "14.8" # Version compatible with AWS
   instance_class         = var.instance_class
   allocated_storage      = var.allocated_storage
   max_allocated_storage  = var.allocated_storage * 2
@@ -146,7 +146,7 @@ resource "random_password" "postgres_password" {
 
 # Store the database credentials in AWS Secrets Manager
 resource "aws_secretsmanager_secret" "postgres_credentials" {
-  name        = "${var.db_name}-credentials"
+  name        = "${replace(lower(var.db_name), "_", "-")}-db-credentials-${random_id.this.hex}"
   description = "Database credentials for ${var.db_name}"
   kms_key_id  = aws_kms_key.postgres.arn
   
@@ -170,7 +170,8 @@ resource "aws_secretsmanager_secret_version" "postgres_credentials" {
 
 # Create an S3 bucket for database backups and extensions
 resource "aws_s3_bucket" "postgres_backups" {
-  bucket = "${var.db_name}-backups-${random_id.this.hex}"
+  bucket = "${replace(lower(var.db_name), "_", "-")}-backups-${random_id.this.hex}"
+  force_destroy = true
 
   tags = {
     Name        = "${var.db_name}-backups"

@@ -39,6 +39,15 @@ module "vpc" {
   database_subnets    = var.database_subnets
 }
 
+module "s3" {
+  source = "./modules/s3"
+
+  environment         = var.environment
+  project_name        = var.project_name
+  enable_lifecycle    = true
+}
+
+/* Temporarily commenting out to simplify initial deployment
 module "eks" {
   source = "./modules/eks"
 
@@ -102,15 +111,9 @@ module "clickhouse" {
   client_security_group_id = module.eks.node_security_group_id
   aws_region          = var.aws_region
 }
+*/
 
-module "s3" {
-  source = "./modules/s3"
-
-  environment         = var.environment
-  project_name        = var.project_name
-  enable_lifecycle    = true
-}
-
+/* Temporarily disabled due to Helm chart issues
 module "api_gateway" {
   source = "./modules/api_gateway"
 
@@ -122,4 +125,5 @@ module "api_gateway" {
   cluster_name        = module.eks.cluster_name
   enable_mtls         = var.enable_api_gateway_mtls
   enable_rate_limiting = var.enable_api_gateway_rate_limiting
-} 
+}
+*/

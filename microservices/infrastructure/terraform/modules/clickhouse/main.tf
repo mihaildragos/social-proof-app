@@ -101,6 +101,7 @@ resource "aws_iam_role_policy_attachment" "clickhouse_s3" {
 # S3 bucket for ClickHouse data
 resource "aws_s3_bucket" "clickhouse_data" {
   bucket = "${lower(var.cluster_name)}-clickhouse-data-${random_id.this.hex}"
+  force_destroy = true
 
   tags = {
     Name        = "${var.cluster_name}-clickhouse-data"

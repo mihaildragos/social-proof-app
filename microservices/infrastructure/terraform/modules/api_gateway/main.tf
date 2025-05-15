@@ -48,6 +48,7 @@ resource "kubernetes_namespace" "kong" {
 }
 
 # Install Kong API Gateway using Helm
+/*
 resource "helm_release" "kong" {
   name       = "kong"
   repository = "https://charts.konghq.com"
@@ -124,4 +125,5 @@ resource "kubernetes_manifest" "kong_rate_limiting_plugin" {
   depends_on = [
     helm_release.kong
   ]
-} 
+}
+*/
