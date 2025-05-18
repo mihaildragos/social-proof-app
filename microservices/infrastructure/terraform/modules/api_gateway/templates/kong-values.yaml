@@ -8,17 +8,17 @@ image:
   pullPolicy: IfNotPresent
 
 env:
-  database: ${enable_database ? "postgres" : "off"}
+  database: "${database_type}"
   log_level: info
   proxy_access_log: /dev/stdout
   admin_access_log: /dev/stdout
   proxy_error_log: /dev/stderr
   admin_error_log: /dev/stderr
-  
+
 ingressController:
   enabled: true
-  ingressClass: ${ingress_class_name}
-  installCRDs: true
+  ingressClass: "${ingress_class_name}"
+  installCRDs: false
 
 proxy:
   enabled: ${enable_proxy_service}
@@ -77,9 +77,9 @@ postgresql:
     password: kong
     database: kong
   persistence:
-    size: ${pvc_storage_size}
-    storageClass: ${pvc_storage_class_name}
-    
+    size: "${pvc_storage_size}"
+    storageClass: "${pvc_storage_class_name}"
+
 autoscaling:
   enabled: true
   minReplicas: 2
@@ -160,12 +160,12 @@ livenessProbe:
 affinity:
   podAntiAffinity:
     preferredDuringSchedulingIgnoredDuringExecution:
-    - weight: 100
-      podAffinityTerm:
-        labelSelector:
-          matchExpressions:
-          - key: app.kubernetes.io/name
-            operator: In
-            values:
-            - kong
-        topologyKey: kubernetes.io/hostname 
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                  - kong
+          topologyKey: kubernetes.io/hostname

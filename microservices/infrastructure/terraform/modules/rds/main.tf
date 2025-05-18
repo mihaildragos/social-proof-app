@@ -53,33 +53,39 @@ resource "aws_db_subnet_group" "postgres" {
 # Parameter group for PostgreSQL with TimescaleDB and Supabase/RLS settings
 resource "aws_db_parameter_group" "postgres" {
   name   = "${replace(lower(var.db_name), "_", "-")}-params"
-  family = "postgres14"
+  family = "postgres17"
 
-  # TimescaleDB extension parameters
+  # TimescaleDB extension parameters (static parameters)
   parameter {
-    name  = "shared_preload_libraries"
-    value = "pg_stat_statements,pgcrypto,pg_cron,pg_net,pgsodium,pg_graphql,pg_stat_monitor,pg_jsonschema,pg_partman,timescaledb"
+    name         = "shared_preload_libraries"
+    value        = "pg_stat_statements,pg_cron,pg_prewarm"
+    apply_method = "pending-reboot"
   }
 
   parameter {
-    name  = "max_connections"
-    value = "200"
+    name         = "max_connections"
+    value        = "200"
+    apply_method = "pending-reboot"
+  }
+
+  # Dynamic parameters that can be modified immediately
+  parameter {
+    name         = "log_statement"
+    value        = "all"
+    apply_method = "immediate"
   }
 
   parameter {
-    name  = "log_statement"
-    value = "all"
-  }
-
-  parameter {
-    name  = "log_min_duration_statement"
-    value = "2000" # log statements running longer than 2 seconds
+    name         = "log_min_duration_statement"
+    value        = "2000" # log statements running longer than 2 seconds
+    apply_method = "immediate"
   }
 
   # Security settings
   parameter {
-    name  = "row_security"
-    value = "on" # Enable Row-Level Security
+    name         = "row_security"
+    value        = "on" # Enable Row-Level Security
+    apply_method = "immediate" 
   }
 
   tags = {
@@ -104,7 +110,7 @@ resource "aws_kms_key" "postgres" {
 resource "aws_db_instance" "postgres" {
   identifier             = lower(replace(var.db_name, "_", "-"))
   engine                 = "postgres"
-  engine_version         = "14.8" # Version compatible with AWS
+  engine_version         = "17.5" # Latest version available on AWS RDS
   instance_class         = var.instance_class
   allocated_storage      = var.allocated_storage
   max_allocated_storage  = var.allocated_storage * 2

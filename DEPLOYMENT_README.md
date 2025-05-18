@@ -198,14 +198,23 @@ terraform apply tfplan
 ```
 
 This will take 20-30 minutes to complete as it creates:
+
+- S3 buckets
 - VPC with subnets
 - EKS cluster
 - RDS PostgreSQL instance
 - ElastiCache Redis cluster
 - MSK Kafka cluster
 - ClickHouse instances
-- S3 buckets
 - API Gateway
+
+After the VPC and S3 buckets are successfully deployed, the other resources need to be created one by one in this order:
+EKS
+RDS
+ElastiCache
+MSK
+ClickHouse
+API Gateway (this should be last as it depends on EKS)
 
 ## Step 7: Configure kubectl to Connect to EKS
 
@@ -226,19 +235,19 @@ kubectl get nodes
 Create namespace for your application:
 
 ```bash
-kubectl create namespace social-proof
+kubectl create namespace social-proof-app
 ```
 
 Deploy your microservices:
 
 ```bash
 # Apply Kubernetes manifests
-kubectl apply -f microservices/infrastructure/kubernetes/users/configmap.yaml -n social-proof
-kubectl apply -f microservices/infrastructure/kubernetes/users/secrets.yaml -n social-proof
-kubectl apply -f microservices/infrastructure/kubernetes/users/serviceaccount.yaml -n social-proof
-kubectl apply -f microservices/infrastructure/kubernetes/users/deployment.yaml -n social-proof
-kubectl apply -f microservices/infrastructure/kubernetes/users/service.yaml -n social-proof
-kubectl apply -f microservices/infrastructure/kubernetes/users/hpa.yaml -n social-proof
+kubectl apply -f microservices/infrastructure/kubernetes/users/configmap.yaml -n social-proof-app
+kubectl apply -f microservices/infrastructure/kubernetes/users/secrets.yaml -n social-proof-app
+kubectl apply -f microservices/infrastructure/kubernetes/users/serviceaccount.yaml -n social-proof-app
+kubectl apply -f microservices/infrastructure/kubernetes/users/deployment.yaml -n social-proof-app
+kubectl apply -f microservices/infrastructure/kubernetes/users/service.yaml -n social-proof-app
+kubectl apply -f microservices/infrastructure/kubernetes/users/hpa.yaml -n social-proof-app
 ```
 
 You'll need to create Kubernetes manifests for your other services (api-gateway, integrations, notifications, frontend) or adapt the CI/CD pipeline to deploy them.
@@ -291,15 +300,15 @@ deploy-staging:
 Check that your services are running:
 
 ```bash
-kubectl get pods -n social-proof
-kubectl get services -n social-proof
+kubectl get pods -n social-proof-app
+kubectl get services -n social-proof-app
 ```
 
 Access your application:
 
 ```bash
 # Get the LoadBalancer endpoint
-kubectl get svc api-gateway -n social-proof
+kubectl get svc api-gateway -n social-proof-app
 ```
 
 ## Cost Optimization Tips

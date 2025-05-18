@@ -47,14 +47,41 @@ resource "kubernetes_namespace" "kong" {
   }
 }
 
+# Clean up existing Kong CRDs before installation to avoid conflicts
+resource "null_resource" "cleanup_kong_crds" {
+  provisioner "local-exec" {
+    command = <<-EOT
+      kubectl delete crd --ignore-not-found=true ingressclassparameterses.configuration.konghq.com
+      kubectl delete crd --ignore-not-found=true tcpingresses.configuration.konghq.com
+      kubectl delete crd --ignore-not-found=true udpingresses.configuration.konghq.com
+      kubectl delete crd --ignore-not-found=true kongclusterplugins.configuration.konghq.com
+      kubectl delete crd --ignore-not-found=true kongconsumers.configuration.konghq.com
+      kubectl delete crd --ignore-not-found=true kongingresses.configuration.konghq.com
+      kubectl delete crd --ignore-not-found=true kongplugins.configuration.konghq.com
+      kubectl delete crd --ignore-not-found=true kongroutes.configuration.konghq.com
+      kubectl delete crd --ignore-not-found=true kongservices.configuration.konghq.com
+      kubectl delete crd --ignore-not-found=true kongupstreampolicies.configuration.konghq.com
+    EOT
+  }
+
+  depends_on = [
+    kubernetes_namespace.kong
+  ]
+}
+
 # Install Kong API Gateway using Helm
-/*
 resource "helm_release" "kong" {
   name       = "kong"
   repository = "https://charts.konghq.com"
   chart      = "kong"
   namespace  = kubernetes_namespace.kong.metadata[0].name
   version    = var.kong_chart_version
+
+  # Skip CRDs to avoid the ownership metadata issue
+  set {
+    name  = "ingressController.installCRDs"
+    value = "false"
+  }
 
   values = [
     templatefile("${path.module}/templates/kong-values.yaml", {
@@ -67,13 +94,29 @@ resource "helm_release" "kong" {
       enable_manager_service  = true
       enable_portal_service   = true
       enable_database         = var.kong_database_enabled
+      database_type           = var.kong_database_enabled ? "postgres" : "off"
       pvc_storage_class_name  = var.pvc_storage_class_name
       pvc_storage_size        = var.pvc_storage_size
     })
   ]
 
   depends_on = [
-    kubernetes_namespace.kong
+    kubernetes_namespace.kong,
+    null_resource.cleanup_kong_crds
+  ]
+}
+
+# Also create separate kubectl apply for the CRDs
+resource "null_resource" "apply_kong_crds" {
+  provisioner "local-exec" {
+    command = <<-EOT
+      kubectl apply -f https://raw.githubusercontent.com/Kong/kubernetes-ingress-controller/v${var.kong_chart_version}/deploy/single/all-in-one-dbless.yaml --selector=app=ingress-kong,k8s-app=kong-ingress-controller,component=custom-resource-definitions
+    EOT
+  }
+
+  depends_on = [
+    null_resource.cleanup_kong_crds,
+    helm_release.kong
   ]
 }
 
@@ -96,7 +139,8 @@ resource "kubernetes_manifest" "kong_mtls_plugin" {
   }
 
   depends_on = [
-    helm_release.kong
+    helm_release.kong,
+    null_resource.apply_kong_crds
   ]
 }
 
@@ -123,7 +167,7 @@ resource "kubernetes_manifest" "kong_rate_limiting_plugin" {
   }
 
   depends_on = [
-    helm_release.kong
+    helm_release.kong,
+    null_resource.apply_kong_crds
   ]
 }
-*/

@@ -142,4 +142,49 @@ variable "enable_api_gateway_rate_limiting" {
   description = "Enable rate limiting for API Gateway"
   type        = bool
   default     = true
+}
+
+# Kubernetes configuration variables
+variable "clerk_api_key" {
+  description = "The API key for Clerk authentication"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "jwt_secret" {
+  description = "The secret for JWT signing"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "cors_allowed_origins" {
+  description = "Comma-separated list of allowed origins for CORS"
+  type        = string
+  default     = "https://app.socialproofapp.com,https://api.socialproofapp.com"
+}
+
+variable "log_level" {
+  description = "The log level for the service"
+  type        = string
+  default     = "info"
+}
+
+variable "clerk_webhook_url" {
+  description = "The webhook URL for Clerk authentication"
+  type        = string
+  default     = "https://api.socialproofapp.com/auth/clerk-webhook"
+}
+
+variable "token_expiry" {
+  description = "The token expiry time in seconds"
+  type        = string
+  default     = "86400" # 24 hours
+}
+
+variable "refresh_token_expiry" {
+  description = "The refresh token expiry time in seconds"
+  type        = string
+  default     = "2592000" # 30 days
 } 

@@ -47,7 +47,6 @@ module "s3" {
   enable_lifecycle    = true
 }
 
-/* Temporarily commenting out to simplify initial deployment
 module "eks" {
   source = "./modules/eks"
 
@@ -58,19 +57,6 @@ module "eks" {
   nodes_instance_type = var.eks_nodes_instance_type
   node_group_min_size = var.eks_node_group_min_size
   node_group_max_size = var.eks_node_group_max_size
-}
-
-module "msk" {
-  source = "./modules/msk"
-
-  environment        = var.environment
-  cluster_name       = "${var.project_name}-${var.environment}-msk"
-  vpc_id             = module.vpc.vpc_id
-  subnet_ids         = module.vpc.private_subnet_ids
-  kafka_version      = var.kafka_version
-  broker_instance_type = var.kafka_broker_instance_type
-  broker_count       = var.kafka_broker_count
-  client_subnets     = module.vpc.private_subnet_cidr_blocks
 }
 
 module "rds" {
@@ -87,6 +73,7 @@ module "rds" {
   client_security_group_id = module.eks.node_security_group_id
 }
 
+
 module "elasticache" {
   source = "./modules/elasticache"
 
@@ -98,6 +85,21 @@ module "elasticache" {
   num_cache_nodes     = var.redis_num_cache_nodes
   client_security_group_id = module.eks.node_security_group_id
 }
+
+module "msk" {
+  source = "./modules/msk"
+
+  environment        = var.environment
+  cluster_name       = "${var.project_name}-${var.environment}-msk"
+  vpc_id             = module.vpc.vpc_id
+  subnet_ids         = module.vpc.private_subnet_ids
+  kafka_version      = var.kafka_version
+  broker_instance_type = var.kafka_broker_instance_type
+  broker_count       = var.kafka_broker_count
+  client_subnets     = module.vpc.private_subnet_cidr_blocks
+}
+
+
 
 module "clickhouse" {
   source = "./modules/clickhouse"
@@ -111,9 +113,8 @@ module "clickhouse" {
   client_security_group_id = module.eks.node_security_group_id
   aws_region          = var.aws_region
 }
-*/
 
-/* Temporarily disabled due to Helm chart issues
+
 module "api_gateway" {
   source = "./modules/api_gateway"
 
@@ -126,4 +127,3 @@ module "api_gateway" {
   enable_mtls         = var.enable_api_gateway_mtls
   enable_rate_limiting = var.enable_api_gateway_rate_limiting
 }
-*/
