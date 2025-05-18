@@ -2,22 +2,22 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
 
 jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
-    
+
     services:
       # Start Redis service container
       redis:
         image: redis:alpine
         ports:
           - 6379:6379
-          
+
       # Start PostgreSQL service container
       postgres:
         image: postgres:14-alpine
@@ -32,30 +32,30 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-        
+
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
-          cache: 'npm'
-          
+          node-version: "18"
+          cache: "npm"
+
       - name: Install dependencies
         run: npm ci
         working-directory: ./microservices
-        
+
       - name: Create schema
         run: |
           PGPASSWORD=postgres psql -h localhost -U postgres -d social_proof_test -f schema.sql
         working-directory: ./microservices
-        
+
       - name: Lint code
         run: npm run lint
         working-directory: ./microservices
-        
+
       - name: Run tests
         run: npm test
         working-directory: ./microservices
@@ -63,39 +63,39 @@ jobs:
           NODE_ENV: test
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/social_proof_test
           REDIS_URL: redis://localhost:6379/1
-          
+
       - name: Upload test coverage
         uses: actions/upload-artifact@v3
         with:
           name: coverage
           path: ./microservices/coverage
-          
+
   build:
     name: Build Docker Images
     needs: test
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-        
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
-        
+
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
-          
+
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v4
         with:
           images: ghcr.io/${{ github.repository }}
-          
+
       - name: Generate version tag
         id: version
         run: |
@@ -106,7 +106,7 @@ jobs:
           else
             echo "TAG=${BRANCH_NAME}-${TIMESTAMP}" >> $GITHUB_OUTPUT
           fi
-          
+
       - name: Build and push API Gateway
         uses: docker/build-push-action@v4
         with:
@@ -117,7 +117,7 @@ jobs:
             ghcr.io/${{ github.repository }}/api-gateway:${{ steps.version.outputs.TAG }}
           cache-from: type=registry,ref=ghcr.io/${{ github.repository }}/api-gateway:buildcache
           cache-to: type=registry,ref=ghcr.io/${{ github.repository }}/api-gateway:buildcache,mode=max
-            
+
       - name: Build and push Integrations Service
         uses: docker/build-push-action@v4
         with:
@@ -128,7 +128,7 @@ jobs:
             ghcr.io/${{ github.repository }}/integrations:${{ steps.version.outputs.TAG }}
           cache-from: type=registry,ref=ghcr.io/${{ github.repository }}/integrations:buildcache
           cache-to: type=registry,ref=ghcr.io/${{ github.repository }}/integrations:buildcache,mode=max
-            
+
       - name: Build and push Notifications Service
         uses: docker/build-push-action@v4
         with:
@@ -139,7 +139,7 @@ jobs:
             ghcr.io/${{ github.repository }}/notifications:${{ steps.version.outputs.TAG }}
           cache-from: type=registry,ref=ghcr.io/${{ github.repository }}/notifications:buildcache
           cache-to: type=registry,ref=ghcr.io/${{ github.repository }}/notifications:buildcache,mode=max
-            
+
       - name: Build and push Frontend Service
         uses: docker/build-push-action@v4
         with:
@@ -150,26 +150,26 @@ jobs:
             ghcr.io/${{ github.repository }}/frontend:${{ steps.version.outputs.TAG }}
           cache-from: type=registry,ref=ghcr.io/${{ github.repository }}/frontend:buildcache
           cache-to: type=registry,ref=ghcr.io/${{ github.repository }}/frontend:buildcache,mode=max
-          
+
   deploy-staging:
     name: Deploy to Staging
     needs: build
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/develop'
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-        
+
       - name: Set up Kubectl
         uses: azure/setup-kubectl@v3
-        
+
       - name: Set up Kubeconfig
         run: |
           mkdir -p $HOME/.kube
           echo "${{ secrets.KUBE_CONFIG_STAGING }}" > $HOME/.kube/config
           chmod 600 $HOME/.kube/config
-          
+
       - name: Deploy to Kubernetes
         run: |
           cd ./microservices/infrastructure/kubernetes/staging
@@ -179,7 +179,7 @@ jobs:
           sed -i "s|image: ghcr.io/.*/integrations:.*|image: ghcr.io/${{ github.repository }}/integrations:develop-$VERSION|g" deployment-integrations.yaml
           sed -i "s|image: ghcr.io/.*/notifications:.*|image: ghcr.io/${{ github.repository }}/notifications:develop-$VERSION|g" deployment-notifications.yaml
           sed -i "s|image: ghcr.io/.*/frontend:.*|image: ghcr.io/${{ github.repository }}/frontend:develop-$VERSION|g" deployment-frontend.yaml
-          
+
           # Apply Kubernetes manifests
           kubectl apply -f namespace.yaml
           kubectl apply -f configmap.yaml
@@ -192,4 +192,4 @@ jobs:
           kubectl apply -f service-integrations.yaml
           kubectl apply -f service-notifications.yaml
           kubectl apply -f service-frontend.yaml
-          kubectl apply -f ingress.yaml 
+          kubectl apply -f ingress.yaml

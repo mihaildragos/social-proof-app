@@ -133,22 +133,26 @@ npm start
 ## Security Features
 
 1. **Authentication**
+
    - JWT-based token authentication
    - Secure token storage with HttpOnly cookies
    - Token rotation and refresh mechanisms
    - Session management with expiration and revocation
 
 2. **Authorization**
+
    - Role-based access control
    - Fine-grained permission system
    - Organization-based data isolation
 
 3. **Data Protection**
+
    - Field-level encryption for PII
    - PostgreSQL Row Level Security
    - Input validation and sanitization
 
 4. **Network Security**
+
    - Secure HTTP headers with Helmet
    - CSRF protection
    - Rate limiting
@@ -184,4 +188,4 @@ The service follows a layered architecture:
 
 ## License
 
-Proprietary - All rights reserved 
+Proprietary - All rights reserved

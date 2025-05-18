@@ -1,5 +1,5 @@
-import { Kafka, Producer, ProducerRecord } from 'kafkajs';
-import { KAFKA_CONFIG } from '../../kafka.config';
+import { Kafka, Producer, ProducerRecord } from "kafkajs";
+import { KAFKA_CONFIG } from "../../kafka.config";
 
 // Create Kafka client instance
 const kafka = new Kafka({
@@ -7,7 +7,7 @@ const kafka = new Kafka({
   brokers: KAFKA_CONFIG.BROKERS,
   retry: {
     initialRetryTime: 100,
-    retries: 5
+    retries: 5,
   },
 });
 
@@ -19,8 +19,8 @@ let producer: Producer | null = null;
  */
 export const initializeKafkaProducer = async () => {
   // Skip initialization in development unless explicitly enabled
-  if (process.env.NODE_ENV !== 'production' && !KAFKA_CONFIG.ENABLE_IN_DEVELOPMENT) {
-    console.log('Kafka producer initialization skipped in development mode');
+  if (process.env.NODE_ENV !== "production" && !KAFKA_CONFIG.ENABLE_IN_DEVELOPMENT) {
+    console.log("Kafka producer initialization skipped in development mode");
     return null;
   }
 
@@ -28,9 +28,9 @@ export const initializeKafkaProducer = async () => {
     try {
       producer = kafka.producer(KAFKA_CONFIG.PRODUCER_CONFIG);
       await producer.connect();
-      console.log('Kafka producer connected successfully');
+      console.log("Kafka producer connected successfully");
     } catch (error) {
-      console.error('Failed to connect Kafka producer:', error);
+      console.error("Failed to connect Kafka producer:", error);
       producer = null;
     }
   }
@@ -44,9 +44,9 @@ export const disconnectKafkaProducer = async () => {
   if (producer) {
     try {
       await producer.disconnect();
-      console.log('Kafka producer disconnected');
+      console.log("Kafka producer disconnected");
     } catch (error) {
-      console.error('Error disconnecting Kafka producer:', error);
+      console.error("Error disconnecting Kafka producer:", error);
     } finally {
       producer = null;
     }
@@ -58,17 +58,17 @@ export const disconnectKafkaProducer = async () => {
  */
 export const sendOrderEvent = async (shop: string, orderId: string, orderData: any) => {
   // In development mode without Kafka enabled, just log the event
-  if (process.env.NODE_ENV !== 'production' && !KAFKA_CONFIG.ENABLE_IN_DEVELOPMENT) {
-    console.log('DEVELOPMENT MODE: Would send to Kafka:', {
+  if (process.env.NODE_ENV !== "production" && !KAFKA_CONFIG.ENABLE_IN_DEVELOPMENT) {
+    console.log("DEVELOPMENT MODE: Would send to Kafka:", {
       topic: KAFKA_CONFIG.ORDER_EVENTS_TOPIC,
       key: `${shop}-${orderId}`,
       value: {
-        source: 'shopify',
-        event_type: 'order.created',
+        source: "shopify",
+        event_type: "order.created",
         shop,
         timestamp: new Date().toISOString(),
-        data: orderData
-      }
+        data: orderData,
+      },
     });
     return true;
   }
@@ -80,7 +80,7 @@ export const sendOrderEvent = async (shop: string, orderId: string, orderData: a
 
     // If producer still null after initialization, something failed
     if (!producer) {
-      throw new Error('Kafka producer not available');
+      throw new Error("Kafka producer not available");
     }
 
     const message: ProducerRecord = {
@@ -89,11 +89,11 @@ export const sendOrderEvent = async (shop: string, orderId: string, orderData: a
         {
           key: `${shop}-${orderId}`,
           value: JSON.stringify({
-            source: 'shopify',
-            event_type: 'order.created',
+            source: "shopify",
+            event_type: "order.created",
             shop,
             timestamp: new Date().toISOString(),
-            data: orderData
+            data: orderData,
           }),
         },
       ],
@@ -103,7 +103,7 @@ export const sendOrderEvent = async (shop: string, orderId: string, orderData: a
     console.log(`Order event for ${orderId} from ${shop} sent to Kafka`);
     return true;
   } catch (error) {
-    console.error('Error sending order event to Kafka:', error);
+    console.error("Error sending order event to Kafka:", error);
     throw error;
   }
-}; 
+};

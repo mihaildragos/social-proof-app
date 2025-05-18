@@ -19,9 +19,15 @@ export default function App() {
   const { apiKey } = useLoaderData<typeof loader>();
 
   return (
-    <AppProvider isEmbeddedApp apiKey={apiKey}>
+    <AppProvider
+      isEmbeddedApp
+      apiKey={apiKey}
+    >
       <NavMenu>
-        <Link to="/app" rel="home">
+        <Link
+          to="/app"
+          rel="home"
+        >
           Home
         </Link>
         <Link to="/app/additional">Additional page</Link>

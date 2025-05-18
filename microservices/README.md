@@ -166,9 +166,9 @@ If you see an error like `This expression is not callable. Type 'typeof import("
 The Server-Sent Events (SSE) implementation requires the following to work correctly:
 
 1. Custom type declarations for Response.write and Response.flushHeaders
-2. Proper Redis PubSub channel naming convention 
+2. Proper Redis PubSub channel naming convention
 3. Connection cleanup on client disconnect
 
 ## License
 
-MIT 
+MIT

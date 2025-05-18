@@ -1,6 +1,6 @@
-import { getContextLogger } from '../../../shared/utils/logger';
+import { getContextLogger } from "../../../shared/utils/logger";
 
-const logger = getContextLogger({ service: 'notification-service' });
+const logger = getContextLogger({ service: "notification-service" });
 
 /**
  * Notification data structure
@@ -40,21 +40,21 @@ export class NotificationService {
     try {
       // Generate unique ID
       const id = this.generateId();
-      
+
       // Create notification object
       const notification: Notification = {
         id,
         ...data,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
       };
-      
+
       // Store notification (in a real implementation, this would be a DB write)
       this.notifications.set(id, notification);
-      
+
       logger.info(`Created notification: ${id} for shop: ${data.shopDomain}`);
       return notification;
     } catch (error: any) {
-      logger.error('Error creating notification:', error);
+      logger.error("Error creating notification:", error);
       throw error;
     }
   }
@@ -77,10 +77,10 @@ export class NotificationService {
   async getNotificationsForShop(shopDomain: string, limit: number = 10): Promise<Notification[]> {
     // Filter notifications by shop domain and sort by creation date (descending)
     const shopNotifications = Array.from(this.notifications.values())
-      .filter(notification => notification.shopDomain === shopDomain)
+      .filter((notification) => notification.shopDomain === shopDomain)
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       .slice(0, limit);
-    
+
     return shopNotifications;
   }
 
@@ -134,4 +134,4 @@ export class NotificationService {
   }
 }
 
-export default NotificationService; 
+export default NotificationService;

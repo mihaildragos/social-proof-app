@@ -1,7 +1,7 @@
-import { Kafka, Consumer, KafkaMessage, EachMessagePayload } from 'kafkajs';
-import { getContextLogger } from '../utils/logger';
+import { Kafka, Consumer, KafkaMessage, EachMessagePayload } from "kafkajs";
+import { getContextLogger } from "../utils/logger";
 
-const logger = getContextLogger({ service: 'kafka-consumer' });
+const logger = getContextLogger({ service: "kafka-consumer" });
 
 /**
  * Configuration options for Kafka consumer
@@ -31,14 +31,14 @@ export class KafkaConsumer {
       brokers: this.config.brokers,
       retry: {
         initialRetryTime: 100,
-        retries: 8
-      }
+        retries: 8,
+      },
     });
 
     this.consumer = kafka.consumer({
       groupId: this.config.groupId,
       sessionTimeout: 30000,
-      heartbeatInterval: 3000
+      heartbeatInterval: 3000,
     });
   }
 
@@ -59,13 +59,13 @@ export class KafkaConsumer {
         await this.consumer.connect();
         await this.consumer.subscribe({
           topic: this.config.topic,
-          fromBeginning: false
+          fromBeginning: false,
         });
-        
+
         this.isConnected = true;
         logger.info(`Connected to Kafka and subscribed to topic ${this.config.topic}`);
       } catch (error: any) {
-        logger.error('Failed to connect to Kafka:', error);
+        logger.error("Failed to connect to Kafka:", error);
         throw error;
       }
     }
@@ -79,9 +79,9 @@ export class KafkaConsumer {
       try {
         await this.consumer.disconnect();
         this.isConnected = false;
-        logger.info('Disconnected from Kafka');
+        logger.info("Disconnected from Kafka");
       } catch (error: any) {
-        logger.error('Failed to disconnect from Kafka:', error);
+        logger.error("Failed to disconnect from Kafka:", error);
         throw error;
       }
     }
@@ -92,7 +92,9 @@ export class KafkaConsumer {
    */
   async start(): Promise<void> {
     if (!this.messageHandler) {
-      throw new Error('No message handler set. Call setMessageHandler() before starting consumption');
+      throw new Error(
+        "No message handler set. Call setMessageHandler() before starting consumption"
+      );
     }
 
     try {
@@ -103,14 +105,14 @@ export class KafkaConsumer {
           try {
             await this.processMessage(payload.message);
           } catch (error: any) {
-            logger.error('Error processing message:', error);
+            logger.error("Error processing message:", error);
           }
-        }
+        },
       });
 
       logger.info(`Started consuming from topic ${this.config.topic}`);
     } catch (error: any) {
-      logger.error('Failed to start Kafka consumer:', error);
+      logger.error("Failed to start Kafka consumer:", error);
       throw error;
     }
   }
@@ -121,18 +123,18 @@ export class KafkaConsumer {
    */
   async processMessage(message: KafkaMessage): Promise<void> {
     if (!this.messageHandler) {
-      logger.warn('Received message but no handler is set');
+      logger.warn("Received message but no handler is set");
       return;
     }
 
     try {
       if (!message.value) {
-        logger.warn('Received message with empty value');
+        logger.warn("Received message with empty value");
         return;
       }
 
       const messageContent = JSON.parse(message.value.toString());
-      
+
       // Extract key if present
       let key: string | undefined;
       if (message.key) {
@@ -145,16 +147,16 @@ export class KafkaConsumer {
         _metadata: {
           topic: this.config.topic,
           partition: 0, // In a real implementation, this would come from the message
-          offset: 0,    // In a real implementation, this would come from the message
+          offset: 0, // In a real implementation, this would come from the message
           timestamp: new Date().toISOString(),
-          key
-        }
+          key,
+        },
       };
 
       // Process the message
       await this.messageHandler(enrichedMessage);
     } catch (error: any) {
-      logger.error('Error parsing or processing message:', error);
+      logger.error("Error parsing or processing message:", error);
       throw error;
     }
   }
@@ -167,4 +169,4 @@ export class KafkaConsumer {
   }
 }
 
-export default KafkaConsumer; 
+export default KafkaConsumer;

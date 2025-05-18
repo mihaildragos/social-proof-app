@@ -1,7 +1,7 @@
 // This is a minimal declaration file for express to make TypeScript happy
 // The actual definitions would come from @types/express, which we would install
 
-declare module 'express' {
+declare module "express" {
   export interface Request {
     ip?: string;
     method: string;
@@ -46,5 +46,7 @@ declare module 'express' {
 
   export function Router(): Router;
   export function json(options?: any): (req: Request, res: Response, next: NextFunction) => void;
-  export function urlencoded(options?: any): (req: Request, res: Response, next: NextFunction) => void;
-} 
+  export function urlencoded(
+    options?: any
+  ): (req: Request, res: Response, next: NextFunction) => void;
+}

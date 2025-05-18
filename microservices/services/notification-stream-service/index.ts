@@ -1,7 +1,7 @@
-import { createServer } from './server';
-import { getContextLogger } from '../../shared/utils/logger';
+import { createServer } from "./server";
+import { getContextLogger } from "../../shared/utils/logger";
 
-const logger = getContextLogger({ service: 'notification-stream-service' });
+const logger = getContextLogger({ service: "notification-stream-service" });
 
 // Get port from environment variable or use default
 const PORT = process.env.PORT || 3002;
@@ -15,24 +15,24 @@ app.listen(PORT, () => {
 });
 
 // Handle uncaught exceptions
-process.on('uncaughtException', (error) => {
-  logger.error('Uncaught exception:', error);
+process.on("uncaughtException", (error) => {
+  logger.error("Uncaught exception:", error);
   process.exit(1);
 });
 
 // Handle unhandled promise rejections
-process.on('unhandledRejection', (reason) => {
-  logger.error('Unhandled promise rejection:', reason);
+process.on("unhandledRejection", (reason) => {
+  logger.error("Unhandled promise rejection:", reason);
   process.exit(1);
 });
 
 // Handle termination signals
-process.on('SIGTERM', () => {
-  logger.info('SIGTERM received. Shutting down gracefully');
+process.on("SIGTERM", () => {
+  logger.info("SIGTERM received. Shutting down gracefully");
   process.exit(0);
 });
 
-process.on('SIGINT', () => {
-  logger.info('SIGINT received. Shutting down gracefully');
+process.on("SIGINT", () => {
+  logger.info("SIGINT received. Shutting down gracefully");
   process.exit(0);
-}); 
+});

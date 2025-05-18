@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   # API Gateway
@@ -28,7 +28,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.5'
+          cpus: "0.5"
           memory: 512M
 
   # Integrations Service
@@ -58,7 +58,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.5'
+          cpus: "0.5"
           memory: 512M
 
   # Notifications Service
@@ -87,7 +87,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.5'
+          cpus: "0.5"
           memory: 512M
 
   # Frontend Service
@@ -116,9 +116,9 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.5'
+          cpus: "0.5"
           memory: 512M
 
 networks:
   social-proof-network:
-    driver: bridge 
+    driver: bridge

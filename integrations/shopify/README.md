@@ -47,6 +47,7 @@ npm run dev
 ```
 
 When you run `npm run dev`, Shopify CLI will:
+
 1. Create a tunnel to your local development server
 2. Update your app's configuration in the Shopify Partners dashboard
 3. Provide you with a URL to install your app on a development store
@@ -62,6 +63,7 @@ The app implements Shopify's OAuth flow, which consists of:
 5. **Session Creation**: The app stores the access token in the database for future requests
 
 The OAuth configuration is managed through:
+
 - `shopify.app.toml`: Contains redirect URLs and scopes
 - `app/shopify.server.ts`: Handles the authentication logic
 - Environment variables: Store API keys and secrets
@@ -100,4 +102,4 @@ If you encounter issues with the OAuth flow:
 2. Ensure the redirect URLs in `shopify.app.toml` match those registered in the Shopify Partners dashboard
 3. Check that the requested scopes match what your app needs
 4. For local development, ensure the Shopify CLI has created a tunnel correctly
-5. Look for authentication errors in the server logs 
+5. Look for authentication errors in the server logs

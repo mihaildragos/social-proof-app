@@ -1,7 +1,7 @@
-import { Request, Response, NextFunction } from 'express';
-import { ForbiddenError } from './errorHandler';
-import { logger } from '../utils/logger';
-import { db } from '../utils/db';
+import { Request, Response, NextFunction } from "express";
+import { ForbiddenError } from "./errorHandler";
+import { logger } from "../utils/logger";
+import { db } from "../utils/db";
 
 /**
  * Middleware factory that checks if a user has the required permissions
@@ -12,16 +12,17 @@ export const requirePermission = (requiredResource: string, requiredAction: stri
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       if (!req.user) {
-        throw ForbiddenError('Authentication required');
+        throw ForbiddenError("Authentication required");
       }
-      
+
       // Get organization context (typically from route params or query)
-      const organizationId = req.params.organizationId || req.query.organizationId || req.body.organizationId;
-      
+      const organizationId =
+        req.params.organizationId || req.query.organizationId || req.body.organizationId;
+
       if (!organizationId) {
-        throw ForbiddenError('Organization context required');
+        throw ForbiddenError("Organization context required");
       }
-      
+
       // Check if user has permission
       const hasPermission = await checkUserPermission(
         req.user.id,
@@ -29,18 +30,18 @@ export const requirePermission = (requiredResource: string, requiredAction: stri
         requiredResource,
         requiredAction
       );
-      
+
       if (!hasPermission) {
-        logger.warn('Permission denied', {
+        logger.warn("Permission denied", {
           userId: req.user.id,
           organizationId,
           resource: requiredResource,
           action: requiredAction,
         });
-        
+
         throw ForbiddenError(`You don't have permission to ${requiredAction} ${requiredResource}`);
       }
-      
+
       next();
     } catch (error) {
       next(error);
@@ -55,29 +56,30 @@ export const requireOrganizationMember = () => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       if (!req.user) {
-        throw ForbiddenError('Authentication required');
+        throw ForbiddenError("Authentication required");
       }
-      
-      const organizationId = req.params.organizationId || req.query.organizationId || req.body.organizationId;
-      
+
+      const organizationId =
+        req.params.organizationId || req.query.organizationId || req.body.organizationId;
+
       if (!organizationId) {
-        throw ForbiddenError('Organization context required');
+        throw ForbiddenError("Organization context required");
       }
-      
+
       // Check if user is a member of the organization
       const result = await db.query(
         `SELECT role FROM organization_members 
          WHERE user_id = $1 AND organization_id = $2`,
         [req.user.id, organizationId]
       );
-      
+
       if (result.rows.length === 0) {
-        throw ForbiddenError('You are not a member of this organization');
+        throw ForbiddenError("You are not a member of this organization");
       }
-      
+
       // Add user role to request for later use
       req.userRole = result.rows[0].role;
-      
+
       next();
     } catch (error) {
       next(error);
@@ -93,42 +95,45 @@ export const requireRole = (requiredRoles: string[]) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       if (!req.user) {
-        throw ForbiddenError('Authentication required');
+        throw ForbiddenError("Authentication required");
       }
-      
-      const organizationId = req.params.organizationId || req.query.organizationId || req.body.organizationId;
-      
+
+      const organizationId =
+        req.params.organizationId || req.query.organizationId || req.body.organizationId;
+
       if (!organizationId) {
-        throw ForbiddenError('Organization context required');
+        throw ForbiddenError("Organization context required");
       }
-      
+
       // Check if user has the required role
       const result = await db.query(
         `SELECT role FROM organization_members 
          WHERE user_id = $1 AND organization_id = $2`,
         [req.user.id, organizationId]
       );
-      
+
       if (result.rows.length === 0) {
-        throw ForbiddenError('You are not a member of this organization');
+        throw ForbiddenError("You are not a member of this organization");
       }
-      
+
       const userRole = result.rows[0].role;
-      
+
       // Add user role to request for later use
       req.userRole = userRole;
-      
+
       if (!requiredRoles.includes(userRole)) {
-        logger.warn('Role permission denied', {
+        logger.warn("Role permission denied", {
           userId: req.user.id,
           organizationId,
           userRole,
           requiredRoles,
         });
-        
-        throw ForbiddenError(`This action requires one of these roles: ${requiredRoles.join(', ')}`);
+
+        throw ForbiddenError(
+          `This action requires one of these roles: ${requiredRoles.join(", ")}`
+        );
       }
-      
+
       next();
     } catch (error) {
       next(error);
@@ -151,18 +156,18 @@ async function checkUserPermission(
      WHERE user_id = $1 AND organization_id = $2`,
     [userId, organizationId]
   );
-  
+
   if (memberResult.rows.length === 0) {
     return false;
   }
-  
+
   const userRole = memberResult.rows[0].role;
-  
+
   // Owners and admins have all permissions
-  if (['owner', 'admin'].includes(userRole)) {
+  if (["owner", "admin"].includes(userRole)) {
     return true;
   }
-  
+
   // Check if the role has the specific permission
   const permissionResult = await db.query(
     `SELECT 1 FROM role_permissions rp
@@ -171,11 +176,11 @@ async function checkUserPermission(
      WHERE r.name = $1 AND p.resource = $2 AND p.action = $3`,
     [userRole, resource, action]
   );
-  
+
   if (permissionResult.rows.length > 0) {
     return true;
   }
-  
+
   // Check for explicit user permission grants
   const userPermissionResult = await db.query(
     `SELECT 1 FROM user_permissions up
@@ -184,7 +189,7 @@ async function checkUserPermission(
      AND p.resource = $3 AND p.action = $4`,
     [userId, organizationId, resource, action]
   );
-  
+
   return userPermissionResult.rows.length > 0;
 }
 
@@ -195,4 +200,4 @@ declare global {
       userRole?: string;
     }
   }
-} 
+}

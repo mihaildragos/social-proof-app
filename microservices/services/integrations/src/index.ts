@@ -1,8 +1,8 @@
-import express, { Request, Response, NextFunction } from 'express';
-import cors from 'cors';
-import webhookRoutes from './routes/webhookRoutes';
-import { kafkaProducer } from './utils/kafka';
-import { logger } from '../../../shared/src/utils/logger';
+import express, { Request, Response, NextFunction } from "express";
+import cors from "cors";
+import webhookRoutes from "./routes/webhookRoutes.js";
+import { kafkaProducer } from "./utils/kafka.js";
+import { logger } from "../../../shared/src/utils/logger.js";
 
 // Create express application
 const app = express();
@@ -13,17 +13,17 @@ app.use(cors());
 app.use(express.json());
 
 // Health check endpoint
-app.get('/health', (req: Request, res: Response) => {
-  res.status(200).json({ status: 'ok' });
+app.get("/health", (req: Request, res: Response) => {
+  res.status(200).json({ status: "ok" });
 });
 
 // Register routes
-app.use('/api/webhooks', webhookRoutes);
+app.use("/api/webhooks", webhookRoutes);
 
 // Global error handler
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  logger.error('Unhandled error', { error: err.message, stack: err.stack });
-  res.status(500).json({ error: 'Internal server error' });
+  logger.error("Unhandled error", { error: err.message, stack: err.stack });
+  res.status(500).json({ error: "Internal server error" });
 });
 
 // Start server
@@ -33,34 +33,34 @@ const server = app.listen(PORT, async () => {
     await kafkaProducer.connect();
     logger.info(`Integrations service listening on port ${PORT}`);
   } catch (error) {
-    logger.error('Failed to start integrations service', { error });
+    logger.error("Failed to start integrations service", { error });
     process.exit(1);
   }
 });
 
 // Handle graceful shutdown
-process.on('SIGTERM', async () => {
+process.on("SIGTERM", async () => {
   try {
-    logger.info('SIGTERM received, shutting down gracefully');
-    
+    logger.info("SIGTERM received, shutting down gracefully");
+
     // Disconnect from Kafka
     await kafkaProducer.disconnect();
-    
+
     // Close server
     server.close(() => {
-      logger.info('Server closed');
+      logger.info("Server closed");
       process.exit(0);
     });
-    
+
     // Force close after 10s
     setTimeout(() => {
-      logger.error('Forced shutdown after timeout');
+      logger.error("Forced shutdown after timeout");
       process.exit(1);
     }, 10000);
   } catch (error) {
-    logger.error('Error during shutdown', { error });
+    logger.error("Error during shutdown", { error });
     process.exit(1);
   }
 });
 
-export default app; 
+export default app;

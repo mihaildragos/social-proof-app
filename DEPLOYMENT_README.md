@@ -14,42 +14,51 @@
 Let me walk you through each step:
 
 1. **Create an AWS account**
+
    - Go to aws.amazon.com and sign up for an AWS account
    - Set up MFA (Multi-Factor Authentication) for security
    - Create an IAM user with Administrator access for terraform operations
 
 2. **Set up AWS CLI and required tools locally**
+
    - Install AWS CLI (Command Line Interface)
    - Install Terraform (version 1.0+)
    - Install kubectl (Kubernetes command-line tool)
 
 3. **Configure AWS credentials**
+
    - Create access keys for your IAM user
    - Configure AWS CLI with your credentials
 
 4. **Initialize the S3 backend for Terraform state**
+
    - Create an S3 bucket for storing Terraform state
    - Update the backend configuration in main.tf
 
 5. **Configure Terraform variables**
+
    - Create a terraform.tfvars file with your desired configuration
    - Adjust instance types, sizes, and other parameters if needed
 
 6. **Apply Terraform to create core infrastructure**
+
    - Initialize Terraform
    - Create an execution plan
    - Apply the plan to create resources on AWS
 
 7. **Configure Kubernetes tools**
+
    - Configure kubectl to work with your EKS cluster
    - Install Kubernetes Dashboard (optional)
 
 8. **Deploy microservices to Kubernetes cluster**
+
    - Deploy Kubernetes manifests for each microservice
    - Configure secrets and environment variables
    - Verify services are running correctly
 
 9. **Set up CI/CD pipeline**
+
    - Update GitHub Actions workflow to deploy to your AWS environment
    - Configure required secrets in GitHub
 
@@ -112,6 +121,7 @@ brew install kubectl
 1. Sign in to the AWS Management Console
 2. Navigate to IAM (Identity and Access Management)
 3. Create a new user:
+
    - Go to Users > Add user
    - Name: terraform-deployer
    - Access type: Programmatic access
@@ -257,6 +267,7 @@ You'll need to create Kubernetes manifests for your other services (api-gateway,
 Update your `.github/workflows/ci.yml` file to deploy to your AWS EKS cluster:
 
 1. Add AWS credentials as GitHub secrets:
+
    - AWS_ACCESS_KEY_ID
    - AWS_SECRET_ACCESS_KEY
 
@@ -268,24 +279,24 @@ deploy-staging:
   needs: build
   runs-on: ubuntu-latest
   if: github.ref == 'refs/heads/develop'
-  
+
   steps:
     - name: Checkout code
       uses: actions/checkout@v3
-      
+
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: eu-west-2
-      
+
     - name: Set up Kubectl
       uses: azure/setup-kubectl@v3
-      
+
     - name: Update Kubeconfig
       run: aws eks update-kubeconfig --name social-proof-app-dev --region eu-west-2
-      
+
     - name: Deploy to Kubernetes
       run: |
         cd ./microservices/infrastructure/kubernetes
@@ -319,8 +330,8 @@ The infrastructure defined in your Terraform files is enterprise-grade and could
    - Use `t3.small` for EKS nodes
    - Use `db.t3.small` for RDS
    - Use `cache.t3.small` for Redis
-   
 2. Reduce the number of nodes:
+
    - Set `eks_node_group_min_size = 1`
    - Set `redis_num_cache_nodes = 1`
    - Set `kafka_broker_count = 1` (for dev only)

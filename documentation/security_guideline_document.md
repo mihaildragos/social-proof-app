@@ -31,13 +31,14 @@ This document defines the security principles, controls, and best practices to b
 • Enforce TLS 1.3 for all in-transit traffic (clients ↔ CDN/Edge ↔ API Gateway ↔ Microservices).
 • Use mTLS between services (API Gateway ↔ EKS pods/Lambdas) to prevent unauthorized access.
 • Encrypt sensitive PII fields at rest using field-level encryption:
-  * User emails are stored as encrypted BYTEA with `email_encrypted` and `email_encryption_key_id` fields
-  * Full names are stored as encrypted BYTEA with `full_name_encrypted` and `full_name_encryption_key_id` fields
-  * Encryption uses pgcrypto with secure key management
-  * Access is controlled via security-definer functions (`get_user_email()`, `get_user_full_name()`)
-  * Application provides plaintext during insert/update via triggers that encrypt and discard plaintext
-• Store encryption keys in a dedicated `encryption_keys` table with rotation support
-• Store secrets (DB credentials, JWT keys, SendGrid API key, Firebase credentials) in a secrets manager (AWS Secrets Manager or HashiCorp Vault), not in code or env files.
+
+- User emails are stored as encrypted BYTEA with `email_encrypted` and `email_encryption_key_id` fields
+- Full names are stored as encrypted BYTEA with `full_name_encrypted` and `full_name_encryption_key_id` fields
+- Encryption uses pgcrypto with secure key management
+- Access is controlled via security-definer functions (`get_user_email()`, `get_user_full_name()`)
+- Application provides plaintext during insert/update via triggers that encrypt and discard plaintext
+  • Store encryption keys in a dedicated `encryption_keys` table with rotation support
+  • Store secrets (DB credentials, JWT keys, SendGrid API key, Firebase credentials) in a secrets manager (AWS Secrets Manager or HashiCorp Vault), not in code or env files.
 
 ### 4.2 Data Residency & Sovereignty
 
@@ -70,9 +71,9 @@ This document defines the security principles, controls, and best practices to b
 
 • **Lockfiles**: Commit `package-lock.json`, `yarn.lock`, `Pipfile.lock` for deterministic builds. • **Vulnerability Scanning**: Integrate SCA tools (Dependabot, Snyk) in CI to detect CVEs in dependencies. • **Minimal Dependencies**: Only include libraries that are actively maintained; remove unused packages. • **CI/CD Guardrails**:
 
-*   Require code reviews and security approvals for pull requests.
-*   Run automated tests: unit, integration, and security (SAST/DAST) in GitHub Actions before merge.
-*   Use Argo Rollouts for safe canary/blue-green deployments; rollback on errors/thresholds.
+- Require code reviews and security approvals for pull requests.
+- Run automated tests: unit, integration, and security (SAST/DAST) in GitHub Actions before merge.
+- Use Argo Rollouts for safe canary/blue-green deployments; rollback on errors/thresholds.
 
 ## 9. Logging, Monitoring & Incident Response
 

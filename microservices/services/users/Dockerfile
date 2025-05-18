@@ -43,7 +43,8 @@ COPY --from=deps --chown=node:node /app/node_modules ./node_modules
 COPY --from=builder --chown=node:node /app/dist ./dist
 # Copy necessary files
 COPY --chown=node:node package.json ./
-COPY --chown=node:node .env.example ./
+# Remove .env.example copy as it may not exist
+COPY --chown=node:node /.env.example ./
 
 # Expose port
 EXPOSE $PORT

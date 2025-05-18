@@ -16,4 +16,4 @@ export const mockAuth = {
 // Reset mockUserId to default value
 export const resetMockAuth = () => {
   mockUserId = "test-user-id";
-}; 
+};

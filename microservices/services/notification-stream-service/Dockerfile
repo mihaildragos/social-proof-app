@@ -13,8 +13,8 @@ COPY tsconfig.json ./
 RUN npm ci
 
 # Copy source code
-COPY ./services/notification-stream-service ./services/notification-stream-service
-COPY ./shared ./shared
+COPY . .
+COPY ../shared ./shared
 
 # Build TypeScript
 RUN npm run build:notification-stream-service

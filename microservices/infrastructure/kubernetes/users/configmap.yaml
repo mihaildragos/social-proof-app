@@ -1,7 +1,7 @@
 # THIS FILE IS NOW MANAGED BY TERRAFORM
 # Please use the Terraform configuration in:
 # - microservices/infrastructure/terraform/modules/k8s_resources/main.tf
-# 
+#
 # To customize values, create a .env file based on the env.example template.
 # Sensitive information should be stored in the .env file, not in this YAML file.
 
@@ -33,4 +33,4 @@ data:
   log-level: "info"
   clerk-webhook-url: "https://api.socialproofapp.com/auth/clerk-webhook"
   token-expiry: "86400" # 24 hours in seconds
-  refresh-token-expiry: "2592000" # 30 days in seconds 
+  refresh-token-expiry: "2592000" # 30 days in seconds

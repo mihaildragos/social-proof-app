@@ -33,11 +33,13 @@ infrastructure/
 ### Core Infrastructure
 
 1. **VPC and Networking**
+
    - Private, public, and database subnets across multiple availability zones
    - NAT Gateways for private subnet access
    - Security Groups for service isolation
 
 2. **Kubernetes (EKS)**
+
    - Managed Kubernetes cluster
    - Node groups with auto-scaling
    - OIDC provider for service account IAM roles
@@ -51,6 +53,7 @@ infrastructure/
 ### Databases and Storage
 
 4. **PostgreSQL (RDS) with Supabase and Row-Level Security**
+
    - PostgreSQL 14 with TimescaleDB extension
    - Row-Level Security (RLS) enabled for multi-tenant isolation
    - Supabase-compatible configuration
@@ -59,16 +62,19 @@ infrastructure/
    - Automated backups and point-in-time recovery
 
 5. **Redis (ElastiCache)**
+
    - Caching and rate limiting
    - Redis Streams for event processing
    - Cluster mode for scalability
 
 6. **ClickHouse**
+
    - Analytics database for time-series data
    - High-performance OLAP queries
    - S3 integration for cold storage
 
 7. **Kafka (MSK)**
+
    - Event streaming platform
    - Multi-broker deployment
    - SASL/SCRAM authentication
@@ -137,4 +143,4 @@ The infrastructure includes a comprehensive monitoring stack:
 - Grafana for dashboards and visualization
 - Loki for log aggregation and querying
 - Jaeger for distributed tracing
-- OpenTelemetry Collector for data collection and processing 
+- OpenTelemetry Collector for data collection and processing

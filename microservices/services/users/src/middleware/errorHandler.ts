@@ -1,5 +1,5 @@
-import { Request, Response, NextFunction } from 'express';
-import { logger } from '../utils/logger';
+import { Request, Response, NextFunction } from "express";
+import { logger } from "../utils/logger";
 
 // Custom error types
 export class AppError extends Error {
@@ -47,7 +47,7 @@ export const ServerError = (message: string, details?: any) => {
 // SCIM-specific error response formatter
 const formatScimError = (err: AppError) => {
   return {
-    schemas: ['urn:ietf:params:scim:api:messages:2.0:Error'],
+    schemas: ["urn:ietf:params:scim:api:messages:2.0:Error"],
     status: err.statusCode.toString(),
     scimType: getSCIMErrorType(err.statusCode),
     detail: err.message,
@@ -58,68 +58,63 @@ const formatScimError = (err: AppError) => {
 const getSCIMErrorType = (statusCode: number): string => {
   switch (statusCode) {
     case 400:
-      return 'invalidValue';
+      return "invalidValue";
     case 401:
-      return 'unauthorized';
+      return "unauthorized";
     case 403:
-      return 'forbidden';
+      return "forbidden";
     case 404:
-      return 'resourceNotFound';
+      return "resourceNotFound";
     case 409:
-      return 'uniqueness';
+      return "uniqueness";
     case 429:
-      return 'tooMany';
+      return "tooMany";
     case 500:
     default:
-      return 'serverError';
+      return "serverError";
   }
 };
 
 // Central error handling middleware
-export const errorHandler = (
-  err: Error,
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const errorHandler = (err: Error, req: Request, res: Response, next: NextFunction) => {
   let error = err;
-  
+
   // If it's not our AppError, convert it
   if (!(error instanceof AppError)) {
     // Log original error
-    logger.error('Unhandled error', {
+    logger.error("Unhandled error", {
       error: error.message,
       stack: error.stack,
       path: req.path,
     });
-    
+
     // Convert to ServerError
-    error = ServerError('An unexpected error occurred');
+    error = ServerError("An unexpected error occurred");
   } else {
     // Log AppError with appropriate level
-    const logMethod = error.statusCode >= 500 ? 'error' : 'warn';
-    logger[logMethod]('Application error', {
+    const logMethod = error.statusCode >= 500 ? "error" : "warn";
+    logger[logMethod]("Application error", {
       statusCode: (error as AppError).statusCode,
       message: error.message,
       path: req.path,
       details: (error as AppError).details,
     });
   }
-  
+
   const appError = error as AppError;
-  
+
   // Check if it's a SCIM request
-  const isScimRequest = req.path.startsWith('/scim/');
-  
+  const isScimRequest = req.path.startsWith("/scim/");
+
   if (isScimRequest) {
     // Format as SCIM error response
     return res.status(appError.statusCode).json(formatScimError(appError));
   }
-  
+
   // Regular API error response
   res.status(appError.statusCode).json({
-    status: 'error',
+    status: "error",
     message: appError.message,
-    ...(process.env.NODE_ENV !== 'production' && { details: appError.details }),
+    ...(process.env.NODE_ENV !== "production" && { details: appError.details }),
   });
-}; 
+};

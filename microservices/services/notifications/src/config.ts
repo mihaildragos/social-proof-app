@@ -3,7 +3,7 @@
  * Uses environment variables with sensible defaults for local development.
  */
 
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 
 // Load environment variables from .env file
 dotenv.config();
@@ -13,7 +13,7 @@ interface KafkaConfig {
   groupId: string;
   topics: string[];
   sasl?: {
-    mechanism: 'plain' | 'scram-sha-256' | 'scram-sha-512';
+    mechanism: "plain" | "scram-sha-256" | "scram-sha-512";
     username: string;
     password: string;
   };
@@ -58,7 +58,7 @@ function getBoolEnv(key: string, defaultValue: boolean): boolean {
   if (val === undefined) {
     return defaultValue;
   }
-  return val.toLowerCase() === 'true';
+  return val.toLowerCase() === "true";
 }
 
 // Helper to get an integer environment variable
@@ -77,41 +77,44 @@ function getArrayEnv(key: string, defaultValue: string[]): string[] {
   if (val === undefined) {
     return defaultValue;
   }
-  return val.split(',').map(v => v.trim());
+  return val.split(",").map((v) => v.trim());
 }
 
 export const config: Config = {
-  port: getIntEnv('PORT', 3000),
-  environment: getEnv('NODE_ENV', 'development'),
-  logLevel: getEnv('LOG_LEVEL', 'info'),
-  
+  port: getIntEnv("PORT", 3000),
+  environment: getEnv("NODE_ENV", "development"),
+  logLevel: getEnv("LOG_LEVEL", "info"),
+
   kafka: {
-    brokers: getArrayEnv('KAFKA_BROKERS', ['localhost:9092']),
-    groupId: getEnv('KAFKA_GROUP_ID', 'notifications-service'),
-    topics: getArrayEnv('KAFKA_TOPICS', ['events.orders', 'events.customers']),
-    sasl: process.env.KAFKA_SASL_USERNAME ? {
-      mechanism: 'plain',
-      username: getEnv('KAFKA_SASL_USERNAME', ''),
-      password: getEnv('KAFKA_SASL_PASSWORD', '')
-    } : undefined,
-    ssl: getBoolEnv('KAFKA_SSL', false)
+    brokers: getArrayEnv("KAFKA_BROKERS", ["localhost:9092"]),
+    groupId: getEnv("KAFKA_GROUP_ID", "notifications-service"),
+    topics: getArrayEnv("KAFKA_TOPICS", ["events.orders", "events.customers"]),
+    sasl:
+      process.env.KAFKA_SASL_USERNAME ?
+        {
+          mechanism: "plain",
+          username: getEnv("KAFKA_SASL_USERNAME", ""),
+          password: getEnv("KAFKA_SASL_PASSWORD", ""),
+        }
+      : undefined,
+    ssl: getBoolEnv("KAFKA_SSL", false),
   },
-  
+
   redis: {
-    host: getEnv('REDIS_HOST', 'localhost'),
-    port: getIntEnv('REDIS_PORT', 6379),
+    host: getEnv("REDIS_HOST", "localhost"),
+    port: getIntEnv("REDIS_PORT", 6379),
     password: process.env.REDIS_PASSWORD || undefined,
-    tls: getBoolEnv('REDIS_TLS', false)
+    tls: getBoolEnv("REDIS_TLS", false),
   },
-  
+
   database: {
-    host: getEnv('DB_HOST', 'localhost'),
-    port: getIntEnv('DB_PORT', 5432),
-    database: getEnv('DB_NAME', 'notifications'),
-    user: getEnv('DB_USER', 'postgres'),
-    password: getEnv('DB_PASSWORD', 'postgres'),
-    ssl: getBoolEnv('DB_SSL', false),
-    max: getIntEnv('DB_MAX_CONNECTIONS', 20),
-    idleTimeoutMillis: getIntEnv('DB_IDLE_TIMEOUT', 30000)
-  }
-}; 
+    host: getEnv("DB_HOST", "localhost"),
+    port: getIntEnv("DB_PORT", 5432),
+    database: getEnv("DB_NAME", "notifications"),
+    user: getEnv("DB_USER", "postgres"),
+    password: getEnv("DB_PASSWORD", "postgres"),
+    ssl: getBoolEnv("DB_SSL", false),
+    max: getIntEnv("DB_MAX_CONNECTIONS", 20),
+    idleTimeoutMillis: getIntEnv("DB_IDLE_TIMEOUT", 30000),
+  },
+};

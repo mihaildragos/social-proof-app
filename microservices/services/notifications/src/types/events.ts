@@ -7,7 +7,7 @@ export interface BaseEvent {
 }
 
 export interface OrderEvent extends BaseEvent {
-  type: 'order.created' | 'order.paid' | 'order.fulfilled';
+  type: "order.created" | "order.paid" | "order.fulfilled";
   data: {
     id: string;
     order_number: string;
@@ -36,7 +36,7 @@ export interface OrderEvent extends BaseEvent {
 }
 
 export interface NotificationEvent extends BaseEvent {
-  type: 'notification_created' | 'notification_delivered' | 'notification_clicked';
+  type: "notification_created" | "notification_delivered" | "notification_clicked";
   data: {
     notification_id: string;
     template_id: string;
@@ -94,4 +94,4 @@ export interface PublishableNotification {
   content: Record<string, any>;
   channels: string[];
   createdAt: string;
-} 
+}

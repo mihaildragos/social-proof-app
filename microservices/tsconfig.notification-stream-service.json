@@ -5,4 +5,4 @@
   },
   "include": ["services/notification-stream-service/**/*", "shared/**/*"],
   "exclude": ["node_modules", "dist", "**/*.test.ts", "**/__tests__/**/*"]
-} 
+}

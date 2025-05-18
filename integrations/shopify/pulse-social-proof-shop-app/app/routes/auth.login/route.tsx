@@ -45,7 +45,10 @@ export default function Auth() {
         <Card>
           <Form method="post">
             <FormLayout>
-              <Text variant="headingMd" as="h2">
+              <Text
+                variant="headingMd"
+                as="h2"
+              >
                 Log in
               </Text>
               <TextField

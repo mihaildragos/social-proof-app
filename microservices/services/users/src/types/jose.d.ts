@@ -1,4 +1,4 @@
-declare module 'jose' {
+declare module "jose" {
   export interface JWTPayload {
     [propName: string]: any;
     iss?: string;
@@ -36,4 +36,4 @@ declare module 'jose' {
       typ?: string;
     }
   ): Promise<{ payload: JWTPayload; protectedHeader: { alg: string; [key: string]: any } }>;
-} 
+}

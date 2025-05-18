@@ -72,4 +72,4 @@ datasources:
       secure: false
       port: 8123
     version: 1
-    editable: true 
+    editable: true

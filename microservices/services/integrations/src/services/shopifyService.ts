@@ -1,25 +1,25 @@
-import crypto from 'crypto';
-import { ShopifyIntegration, ShopifyStore, ShopifyWebhook } from '../models/shopify';
-import { kafkaProducer } from '../utils/kafka';
-import { logger } from '../../../../shared/src/utils/logger';
+import crypto from "crypto";
+import { ShopifyIntegration, ShopifyStore, ShopifyWebhook } from "../models/shopify.js";
+import { kafkaProducer } from "../utils/kafka.js";
+import { logger } from "../../../../shared/src/utils/logger.js";
 
 /**
  * Shopify API endpoints
  */
-const SHOPIFY_API_VERSION = '2023-10';
-const SHOPIFY_ADMIN_API_URL = (shopDomain: string) => 
+const SHOPIFY_API_VERSION = "2023-10";
+const SHOPIFY_ADMIN_API_URL = (shopDomain: string) =>
   `https://${shopDomain}/admin/api/${SHOPIFY_API_VERSION}`;
 
 /**
  * Topics available for webhook subscription
  */
 export const SHOPIFY_WEBHOOK_TOPICS = {
-  ORDERS_CREATE: 'orders/create',
-  ORDERS_UPDATED: 'orders/updated',
-  ORDERS_PAID: 'orders/paid',
-  PRODUCTS_CREATE: 'products/create',
-  PRODUCTS_UPDATE: 'products/update',
-  APP_UNINSTALLED: 'app/uninstalled'
+  ORDERS_CREATE: "orders/create",
+  ORDERS_UPDATED: "orders/updated",
+  ORDERS_PAID: "orders/paid",
+  PRODUCTS_CREATE: "products/create",
+  PRODUCTS_UPDATE: "products/update",
+  APP_UNINSTALLED: "app/uninstalled",
 };
 
 /**
@@ -33,12 +33,12 @@ export class ShopifyService {
    * @param topics List of topics to subscribe to
    */
   static async registerWebhooks(
-    shopifyStore: ShopifyStore, 
+    shopifyStore: ShopifyStore,
     webhookUrl: string,
     topics: string[] = [SHOPIFY_WEBHOOK_TOPICS.ORDERS_CREATE]
   ): Promise<ShopifyWebhook[]> {
     if (!shopifyStore.access_token) {
-      throw new Error('Shopify access token not available');
+      throw new Error("Shopify access token not available");
     }
 
     const registeredWebhooks: ShopifyWebhook[] = [];
@@ -46,24 +46,24 @@ export class ShopifyService {
     try {
       for (const topic of topics) {
         // Create a unique endpoint for each topic
-        const topicEndpoint = `${webhookUrl}/${topic.replace('/', '-')}`;
+        const topicEndpoint = `${webhookUrl}/${topic.replace("/", "-")}`;
 
         // Register webhook with Shopify API
         const response = await fetch(
           `${SHOPIFY_ADMIN_API_URL(shopifyStore.shop_domain)}/webhooks.json`,
           {
-            method: 'POST',
+            method: "POST",
             headers: {
-              'Content-Type': 'application/json',
-              'X-Shopify-Access-Token': shopifyStore.access_token
+              "Content-Type": "application/json",
+              "X-Shopify-Access-Token": shopifyStore.access_token,
             },
             body: JSON.stringify({
               webhook: {
                 topic,
                 address: topicEndpoint,
-                format: 'json'
-              }
-            })
+                format: "json",
+              },
+            }),
           }
         );
 
@@ -83,20 +83,20 @@ export class ShopifyService {
 
         if (savedWebhook) {
           registeredWebhooks.push(savedWebhook);
-          logger.info(`Registered webhook for ${topic}`, { 
-            storeId: shopifyStore.id, 
+          logger.info(`Registered webhook for ${topic}`, {
+            storeId: shopifyStore.id,
             shopDomain: shopifyStore.shop_domain,
-            topic
+            topic,
           });
         }
       }
 
       return registeredWebhooks;
     } catch (error) {
-      logger.error('Error registering Shopify webhooks', { 
-        error, 
-        storeId: shopifyStore.id, 
-        shopDomain: shopifyStore.shop_domain
+      logger.error("Error registering Shopify webhooks", {
+        error,
+        storeId: shopifyStore.id,
+        shopDomain: shopifyStore.shop_domain,
       });
       throw error;
     }
@@ -111,14 +111,11 @@ export class ShopifyService {
    */
   static verifyWebhookSignature(hmac: string, body: string, shopifySecret: string): boolean {
     const generatedHash = crypto
-      .createHmac('sha256', shopifySecret)
-      .update(body, 'utf8')
-      .digest('base64');
-    
-    return crypto.timingSafeEqual(
-      Buffer.from(generatedHash),
-      Buffer.from(hmac)
-    );
+      .createHmac("sha256", shopifySecret)
+      .update(body, "utf8")
+      .digest("base64");
+
+    return crypto.timingSafeEqual(Buffer.from(generatedHash), Buffer.from(hmac));
   }
 
   /**
@@ -130,28 +127,28 @@ export class ShopifyService {
     try {
       // Find the Shopify store
       const shopifyStore = await ShopifyIntegration.findByDomain(shopDomain);
-      
+
       if (!shopifyStore) {
         throw new Error(`Shopify store not found: ${shopDomain}`);
       }
-      
+
       // Transform order data to standardized format
       const transformedOrder = this.transformOrderData(orderData, shopifyStore);
-      
+
       // Send to Kafka
       await kafkaProducer.sendMessage(
-        'order-events',
+        "order-events",
         transformedOrder,
         `${shopifyStore.site_id}-${orderData.id}`
       );
-      
-      logger.info('Processed Shopify order event', { 
-        shopDomain, 
-        orderId: orderData.id, 
-        kafkaTopic: 'order-events'
+
+      logger.info("Processed Shopify order event", {
+        shopDomain,
+        orderId: orderData.id,
+        kafkaTopic: "order-events",
       });
     } catch (error) {
-      logger.error('Error processing Shopify order webhook', { error, shopDomain });
+      logger.error("Error processing Shopify order webhook", { error, shopDomain });
       throw error;
     }
   }
@@ -167,21 +164,21 @@ export class ShopifyService {
     const customer = orderData.customer || {};
     const shippingAddress = orderData.shipping_address || {};
     const billingAddress = orderData.billing_address || {};
-    
+
     // Extract first line item for notification
-    const firstItem = orderData.line_items && orderData.line_items.length > 0 
-      ? orderData.line_items[0] 
-      : null;
-    
+    const firstItem =
+      orderData.line_items && orderData.line_items.length > 0 ? orderData.line_items[0] : null;
+
     // Calculate total items
-    const totalItems = orderData.line_items 
-      ? orderData.line_items.reduce((sum: number, item: any) => sum + (item.quantity || 0), 0)
+    const totalItems =
+      orderData.line_items ?
+        orderData.line_items.reduce((sum: number, item: any) => sum + (item.quantity || 0), 0)
       : 0;
-    
+
     // Construct standardized order event
     return {
-      event_type: 'order_created',
-      platform: 'shopify',
+      event_type: "order_created",
+      platform: "shopify",
       site_id: shopifyStore.site_id,
       integration_id: shopifyStore.id,
       timestamp: new Date().toISOString(),
@@ -193,7 +190,7 @@ export class ShopifyService {
         currency: orderData.currency,
         financial_status: orderData.financial_status,
         fulfillment_status: orderData.fulfillment_status,
-        total_items: totalItems
+        total_items: totalItems,
       },
       customer: {
         id: customer.id,
@@ -203,27 +200,33 @@ export class ShopifyService {
         orders_count: customer.orders_count,
         city: shippingAddress.city || billingAddress.city,
         province: shippingAddress.province || billingAddress.province,
-        country: shippingAddress.country || billingAddress.country
+        country: shippingAddress.country || billingAddress.country,
       },
-      item: firstItem ? {
-        id: firstItem.product_id,
-        title: firstItem.title,
-        variant_title: firstItem.variant_title,
-        quantity: firstItem.quantity,
-        price: firstItem.price,
-        image_url: firstItem.image_url || null,
-        product_url: `https://${shopifyStore.shop_domain}/products/${firstItem.handle || firstItem.product_id}`
-      } : null,
+      item:
+        firstItem ?
+          {
+            id: firstItem.product_id,
+            title: firstItem.title,
+            variant_title: firstItem.variant_title,
+            quantity: firstItem.quantity,
+            price: firstItem.price,
+            image_url: firstItem.image_url || null,
+            product_url: `https://${shopifyStore.shop_domain}/products/${firstItem.handle || firstItem.product_id}`,
+          }
+        : null,
       // Include a list of all items
-      items: orderData.line_items ? orderData.line_items.map((item: any) => ({
-        id: item.product_id,
-        title: item.title,
-        variant_title: item.variant_title,
-        quantity: item.quantity,
-        price: item.price
-      })) : [],
+      items:
+        orderData.line_items ?
+          orderData.line_items.map((item: any) => ({
+            id: item.product_id,
+            title: item.title,
+            variant_title: item.variant_title,
+            quantity: item.quantity,
+            price: item.price,
+          }))
+        : [],
       // Include original data for reference
-      raw_data: orderData
+      raw_data: orderData,
     };
   }
 
@@ -235,21 +238,21 @@ export class ShopifyService {
     try {
       // Find the Shopify store
       const shopifyStore = await ShopifyIntegration.findByDomain(shopDomain);
-      
+
       if (!shopifyStore) {
         logger.warn(`Shopify store not found for uninstall: ${shopDomain}`);
         return;
       }
-      
+
       // Update the store status
       await ShopifyIntegration.update(shopifyStore.id, {
-        status: 'inactive',
-        uninstalled_at: new Date()
+        status: "inactive",
+        uninstalled_at: new Date(),
       });
-      
-      logger.info('Processed Shopify app uninstalled webhook', { shopDomain });
+
+      logger.info("Processed Shopify app uninstalled webhook", { shopDomain });
     } catch (error) {
-      logger.error('Error processing Shopify app uninstalled webhook', { error, shopDomain });
+      logger.error("Error processing Shopify app uninstalled webhook", { error, shopDomain });
       throw error;
     }
   }
@@ -261,24 +264,24 @@ export class ShopifyService {
    */
   static async createScriptTag(shopifyStore: ShopifyStore, scriptUrl: string): Promise<any> {
     if (!shopifyStore.access_token) {
-      throw new Error('Shopify access token not available');
+      throw new Error("Shopify access token not available");
     }
 
     try {
       const response = await fetch(
         `${SHOPIFY_ADMIN_API_URL(shopifyStore.shop_domain)}/script_tags.json`,
         {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
-            'X-Shopify-Access-Token': shopifyStore.access_token
+            "Content-Type": "application/json",
+            "X-Shopify-Access-Token": shopifyStore.access_token,
           },
           body: JSON.stringify({
             script_tag: {
-              event: 'onload',
-              src: scriptUrl
-            }
-          })
+              event: "onload",
+              src: scriptUrl,
+            },
+          }),
         }
       );
 
@@ -288,18 +291,18 @@ export class ShopifyService {
       }
 
       const scriptTagData = await response.json();
-      logger.info('Created Shopify script tag', { 
-        shopDomain: shopifyStore.shop_domain, 
-        scriptTagId: scriptTagData.script_tag.id
+      logger.info("Created Shopify script tag", {
+        shopDomain: shopifyStore.shop_domain,
+        scriptTagId: scriptTagData.script_tag.id,
       });
 
       return scriptTagData.script_tag;
     } catch (error) {
-      logger.error('Error creating Shopify script tag', { 
-        error, 
-        shopDomain: shopifyStore.shop_domain
+      logger.error("Error creating Shopify script tag", {
+        error,
+        shopDomain: shopifyStore.shop_domain,
       });
       throw error;
     }
   }
-} 
+}

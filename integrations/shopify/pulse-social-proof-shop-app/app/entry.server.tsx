@@ -2,10 +2,7 @@ import { PassThrough } from "stream";
 import { renderToPipeableStream } from "react-dom/server";
 import { RemixServer } from "@remix-run/react";
 import * as isbot from "isbot";
-import {
-  createReadableStreamFromReadable,
-  type EntryContext,
-} from "@remix-run/node";
+import { createReadableStreamFromReadable, type EntryContext } from "@remix-run/node";
 import { addDocumentResponseHeaders } from "./shopify.server";
 import { initializeKafkaProducer, disconnectKafkaProducer } from "./services/kafka.server";
 import { KAFKA_CONFIG } from "../kafka.config";
@@ -13,26 +10,26 @@ import { KAFKA_CONFIG } from "../kafka.config";
 // Initialize Kafka when the app starts
 try {
   // Only initialize in production or if explicitly enabled in development
-  if (process.env.NODE_ENV === 'production' || KAFKA_CONFIG.ENABLE_IN_DEVELOPMENT) {
-    console.log('Initializing Kafka producer...');
-    initializeKafkaProducer().catch(error => {
-      console.error('Failed to initialize Kafka producer:', error);
+  if (process.env.NODE_ENV === "production" || KAFKA_CONFIG.ENABLE_IN_DEVELOPMENT) {
+    console.log("Initializing Kafka producer...");
+    initializeKafkaProducer().catch((error) => {
+      console.error("Failed to initialize Kafka producer:", error);
     });
-    
+
     // Set up graceful shutdown
     const shutdownGracefully = async () => {
-      console.log('Shutting down Kafka producer...');
+      console.log("Shutting down Kafka producer...");
       await disconnectKafkaProducer();
       process.exit(0);
     };
-    
-    process.on('SIGTERM', shutdownGracefully);
-    process.on('SIGINT', shutdownGracefully);
+
+    process.on("SIGTERM", shutdownGracefully);
+    process.on("SIGINT", shutdownGracefully);
   } else {
-    console.log('Skipping Kafka initialization in development mode');
+    console.log("Skipping Kafka initialization in development mode");
   }
 } catch (error) {
-  console.error('Error during Kafka setup:', error);
+  console.error("Error during Kafka setup:", error);
 }
 
 export const streamTimeout = 5000;
@@ -45,9 +42,7 @@ export default function handleRequest(
 ) {
   addDocumentResponseHeaders(request, responseHeaders);
   const userAgent = request.headers.get("user-agent");
-  const callbackName = isbot.isbot(userAgent ?? '')
-    ? "onAllReady"
-    : "onShellReady";
+  const callbackName = isbot.isbot(userAgent ?? "") ? "onAllReady" : "onShellReady";
 
   return new Promise((resolve, reject) => {
     const { pipe, abort } = renderToPipeableStream(
@@ -95,7 +90,10 @@ function handleBotRequest(
     let didError = false;
 
     const { pipe } = renderToPipeableStream(
-      <RemixServer context={remixContext} url={request.url} />,
+      <RemixServer
+        context={remixContext}
+        url={request.url}
+      />,
       {
         onAllReady() {
           const body = new PassThrough();
@@ -134,7 +132,10 @@ function handleBrowserRequest(
     let didError = false;
 
     const { pipe } = renderToPipeableStream(
-      <RemixServer context={remixContext} url={request.url} />,
+      <RemixServer
+        context={remixContext}
+        url={request.url}
+      />,
       {
         onShellReady() {
           const body = new PassThrough();

@@ -1,9 +1,9 @@
-import winston from 'winston';
+import winston from "winston";
 
 interface LoggerOptions {
   serviceName?: string;
   level?: string;
-  format?: 'json' | 'simple' | 'pretty';
+  format?: "json" | "simple" | "pretty";
 }
 
 export class Logger {
@@ -11,17 +11,17 @@ export class Logger {
 
   constructor(options: LoggerOptions = {}) {
     const {
-      serviceName = 'notification-service',
-      level = process.env.LOG_LEVEL || 'info',
-      format = 'json'
+      serviceName = "notification-service",
+      level = process.env.LOG_LEVEL || "info",
+      format = "json",
     } = options;
 
     // Create formatter based on specified format
     let formatter: winston.Logform.Format;
-    
-    if (format === 'simple') {
+
+    if (format === "simple") {
       formatter = winston.format.simple();
-    } else if (format === 'pretty') {
+    } else if (format === "pretty") {
       formatter = winston.format.combine(
         winston.format.colorize(),
         winston.format.timestamp(),
@@ -30,21 +30,18 @@ export class Logger {
           const timestamp = info.timestamp as string;
           const level = info.level as string;
           const message = info.message as string;
-          
+
           // Filter out known properties for metadata
           const meta: Record<string, any> = { ...info };
           delete meta.timestamp;
           delete meta.level;
           delete meta.message;
-          
-          return `${timestamp} ${level}: ${message} ${Object.keys(meta).length ? JSON.stringify(meta, null, 2) : ''}`;
+
+          return `${timestamp} ${level}: ${message} ${Object.keys(meta).length ? JSON.stringify(meta, null, 2) : ""}`;
         })
       );
     } else {
-      formatter = winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.json()
-      );
+      formatter = winston.format.combine(winston.format.timestamp(), winston.format.json());
     }
 
     // Create the logger instance
@@ -54,27 +51,27 @@ export class Logger {
       format: formatter,
       transports: [
         new winston.transports.Console({
-          stderrLevels: ['error']
-        })
-      ]
+          stderrLevels: ["error"],
+        }),
+      ],
     });
 
     // Add file transports if running in production
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       this.logger.add(
-        new winston.transports.File({ 
-          filename: 'logs/error.log', 
-          level: 'error',
+        new winston.transports.File({
+          filename: "logs/error.log",
+          level: "error",
           maxsize: 10485760, // 10MB
-          maxFiles: 10
+          maxFiles: 10,
         })
       );
-      
+
       this.logger.add(
-        new winston.transports.File({ 
-          filename: 'logs/combined.log',
+        new winston.transports.File({
+          filename: "logs/combined.log",
           maxsize: 10485760, // 10MB
-          maxFiles: 10
+          maxFiles: 10,
         })
       );
     }
@@ -92,17 +89,17 @@ export class Logger {
    */
   public error(message: string, error?: Error | unknown, meta: Record<string, any> = {}): void {
     let errorDetails: Record<string, any> = {};
-    
+
     if (error instanceof Error) {
       errorDetails = {
         name: error.name,
         message: error.message,
-        stack: error.stack
+        stack: error.stack,
       };
     } else if (error !== undefined) {
       errorDetails = { error };
     }
-    
+
     this.logger.error(message, { ...meta, ...errorDetails });
   }
 
@@ -133,4 +130,4 @@ export class Logger {
   public getLoggerInstance(): winston.Logger {
     return this.logger;
   }
-} 
+}
