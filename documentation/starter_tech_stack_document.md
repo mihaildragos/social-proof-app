@@ -100,6 +100,7 @@ This starter kit uses the following tech stack:
        ```
 
      - Usage in components:
+
        ```typescript
        // Example component using the hooks
        function ProductsList() {

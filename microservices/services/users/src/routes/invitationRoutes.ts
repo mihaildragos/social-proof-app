@@ -13,11 +13,9 @@ const createInvitationSchema = z.object({
   body: z.object({
     email: z.string().email("Invalid email address"),
     organizationId: z.string().uuid("Invalid organization ID"),
-    role: z
-      .string()
-      .refine((val) => ["admin", "member", "analyst", "designer"].includes(val), {
-        message: "Invalid role",
-      }),
+    role: z.string().refine((val) => ["admin", "member", "analyst", "designer"].includes(val), {
+      message: "Invalid role",
+    }),
   }),
 });
 
