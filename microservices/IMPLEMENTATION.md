@@ -11,7 +11,7 @@ social-proof-app/
 ├── services/
 │   ├── users/           # User management microservice
 │   ├── notifications/   # Notification handling microservice
-│   ├── analytics/       # Analytics and reporting microservice  
+│   ├── analytics/       # Analytics and reporting microservice
 │   ├── integrations/    # Third-party integrations microservice
 │   ├── billing/         # Subscription and payment microservice
 ├── infrastructure/      # Infrastructure as code (Terraform, K8s)
@@ -24,7 +24,8 @@ social-proof-app/
 
 ### Database Schemas
 
-1. **Users Service**: 
+1. **Users Service**:
+
    - User management with PII encryption
    - Organizations and multi-tenancy
    - Team member management with RBAC
@@ -33,6 +34,7 @@ social-proof-app/
    - Row-Level Security (RLS) policies
 
 2. **Notifications Service**:
+
    - Sites and tenant management
    - Notification templates
    - A/B testing capabilities
@@ -41,6 +43,7 @@ social-proof-app/
    - Event tracking
 
 3. **Analytics Service**:
+
    - TimescaleDB for time-series data
    - Continuous aggregates for performance
    - Funnel and cohort definitions
@@ -49,6 +52,7 @@ social-proof-app/
    - Retention policies
 
 4. **Integrations Service**:
+
    - Integration types and configuration
    - OAuth and API key management
    - Webhook handling (inbound and outbound)
@@ -75,6 +79,7 @@ social-proof-app/
 ### Infrastructure
 
 1. **Docker Compose**:
+
    - Local development environment with:
      - PostgreSQL with TimescaleDB
      - Redis for caching
@@ -98,16 +103,19 @@ social-proof-app/
 ## Next Steps
 
 1. **Complete Implementation**:
+
    - Finish implementing all service APIs
    - Implement event sourcing with Kafka
    - Add real-time notification delivery
 
 2. **Frontend Implementation**:
+
    - Develop admin dashboard with Next.js 14
    - Create notification builder UI
    - Implement real-time analytics visualization
 
 3. **Testing**:
+
    - Add unit and integration tests
    - Set up end-to-end testing
 
@@ -127,6 +135,6 @@ social-proof-app/
 
 ## Current Status
 
-This implementation focuses on establishing the core architecture and database schemas for the microservices. The basic API routes, service layers, and infrastructure components have been set up to demonstrate the overall design and approach. 
+This implementation focuses on establishing the core architecture and database schemas for the microservices. The basic API routes, service layers, and infrastructure components have been set up to demonstrate the overall design and approach.
 
-The project is ready for further development to complete all services and add the frontend implementation for a complete social proof notification platform. 
+The project is ready for further development to complete all services and add the frontend implementation for a complete social proof notification platform.

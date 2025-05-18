@@ -51,27 +51,40 @@ export const resetMockData = () => {
 };
 
 // Helper to find a site by ID
-const findSiteById = (id: string) => mockResponseData.sites.find(site => site.id === id);
+const findSiteById = (id: string) => mockResponseData.sites.find((site) => site.id === id);
 
 // Mock function types for Supabase
 type MockFn = jest.Mock<any, any>;
 
 // Define the Supabase methods
-const selectMethod = (): MockFn => jest.fn().mockImplementation(() => ({
-  eq: jest.fn().mockImplementation((field: string, value: string) => ({
-    single: jest.fn().mockImplementation(() => {
-      if (field === "id") {
-        const site = findSiteById(value);
-        if (!site) {
-          return { data: null, error: { code: "PGRST116", message: "Site not found" } };
+const selectMethod = (): MockFn =>
+  jest.fn().mockImplementation(() => ({
+    eq: jest.fn().mockImplementation((field: string, value: string) => ({
+      single: jest.fn().mockImplementation(() => {
+        if (field === "id") {
+          const site = findSiteById(value);
+          if (!site) {
+            return { data: null, error: { code: "PGRST116", message: "Site not found" } };
+          }
+          return { data: site, error: null };
         }
-        return { data: site, error: null };
-      }
-      return { data: null, error: { message: "Not found" } };
-    }),
+        return { data: null, error: { message: "Not found" } };
+      }),
+      match: jest.fn().mockImplementation((filters: Record<string, any>) => {
+        // Filter sites by given criteria
+        const filteredSites = mockResponseData.sites.filter((site) => {
+          for (const [key, val] of Object.entries(filters)) {
+            if (site[key as keyof typeof site] !== val) return false;
+          }
+          return true;
+        });
+        return { data: filteredSites, error: null };
+      }),
+    })),
+    order: jest.fn().mockReturnThis(),
     match: jest.fn().mockImplementation((filters: Record<string, any>) => {
       // Filter sites by given criteria
-      const filteredSites = mockResponseData.sites.filter(site => {
+      const filteredSites = mockResponseData.sites.filter((site) => {
         for (const [key, val] of Object.entries(filters)) {
           if (site[key as keyof typeof site] !== val) return false;
         }
@@ -79,90 +92,83 @@ const selectMethod = (): MockFn => jest.fn().mockImplementation(() => ({
       });
       return { data: filteredSites, error: null };
     }),
-  })),
-  order: jest.fn().mockReturnThis(),
-  match: jest.fn().mockImplementation((filters: Record<string, any>) => {
-    // Filter sites by given criteria
-    const filteredSites = mockResponseData.sites.filter(site => {
-      for (const [key, val] of Object.entries(filters)) {
-        if (site[key as keyof typeof site] !== val) return false;
-      }
-      return true;
-    });
-    return { data: filteredSites, error: null };
-  }),
-}));
+  }));
 
-const insertMethod = (): MockFn => jest.fn().mockImplementation((data: any) => {
-  const newSite = Array.isArray(data) ? data[0] : data;
-  const site = {
-    ...newSite,
-    id: newSite.id || `site-${Date.now()}`,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  };
-  mockResponseData.sites.push(site);
-  return { data: site, error: null };
-});
+const insertMethod = (): MockFn =>
+  jest.fn().mockImplementation((data: any) => {
+    const newSite = Array.isArray(data) ? data[0] : data;
+    const site = {
+      ...newSite,
+      id: newSite.id || `site-${Date.now()}`,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    mockResponseData.sites.push(site);
+    return { data: site, error: null };
+  });
 
-const updateMethod = (): MockFn => jest.fn().mockImplementation((data: any) => ({
-  eq: jest.fn().mockImplementation((field: string, value: string) => {
-    if (field === "id") {
-      const siteIndex = mockResponseData.sites.findIndex(s => s.id === value);
-      if (siteIndex === -1) {
-        return { data: null, error: { code: "PGRST116", message: "Site not found" } };
-      }
-      mockResponseData.sites[siteIndex] = {
-        ...mockResponseData.sites[siteIndex],
-        ...data,
-        updated_at: new Date().toISOString(),
-      };
-      return { data: mockResponseData.sites[siteIndex], error: null };
-    }
-    return { data: null, error: { message: "Not found" } };
-  }),
-}));
-
-const deleteMethod = (): MockFn => jest.fn().mockImplementation(() => ({
-  eq: jest.fn().mockImplementation((field: string, value: string) => {
-    if (field === "id") {
-      const siteIndex = mockResponseData.sites.findIndex(s => s.id === value);
-      if (siteIndex === -1) {
-        return { data: null, error: { code: "PGRST116", message: "Site not found" } };
-      }
-      const deletedSite = mockResponseData.sites[siteIndex];
-      mockResponseData.sites.splice(siteIndex, 1);
-      return { data: deletedSite, error: null };
-    }
-    return { data: null, error: { message: "Not found" } };
-  }),
-}));
-
-const selectVerificationsMethod = (): MockFn => jest.fn().mockImplementation(() => ({
-  eq: jest.fn().mockImplementation((field: string, value: string) => ({
-    order: jest.fn().mockReturnThis(),
-    match: jest.fn().mockImplementation((filters: Record<string, any>) => {
-      const filteredVerifications = mockResponseData.verifications.filter(v => {
-        for (const [key, val] of Object.entries(filters)) {
-          if (v[key as keyof typeof v] !== val) return false;
+const updateMethod = (): MockFn =>
+  jest.fn().mockImplementation((data: any) => ({
+    eq: jest.fn().mockImplementation((field: string, value: string) => {
+      if (field === "id") {
+        const siteIndex = mockResponseData.sites.findIndex((s) => s.id === value);
+        if (siteIndex === -1) {
+          return { data: null, error: { code: "PGRST116", message: "Site not found" } };
         }
-        return v[field as keyof typeof v] === value;
-      });
-      return { data: filteredVerifications, error: null };
+        mockResponseData.sites[siteIndex] = {
+          ...mockResponseData.sites[siteIndex],
+          ...data,
+          updated_at: new Date().toISOString(),
+        };
+        return { data: mockResponseData.sites[siteIndex], error: null };
+      }
+      return { data: null, error: { message: "Not found" } };
     }),
-  })),
-}));
+  }));
 
-const insertVerificationMethod = (): MockFn => jest.fn().mockImplementation((data: any) => {
-  const newVerification = Array.isArray(data) ? data[0] : data;
-  const verification = {
-    ...newVerification,
-    id: newVerification.id || `verification-${Date.now()}`,
-    created_at: new Date().toISOString(),
-  };
-  mockResponseData.verifications.push(verification);
-  return { data: verification, error: null };
-});
+const deleteMethod = (): MockFn =>
+  jest.fn().mockImplementation(() => ({
+    eq: jest.fn().mockImplementation((field: string, value: string) => {
+      if (field === "id") {
+        const siteIndex = mockResponseData.sites.findIndex((s) => s.id === value);
+        if (siteIndex === -1) {
+          return { data: null, error: { code: "PGRST116", message: "Site not found" } };
+        }
+        const deletedSite = mockResponseData.sites[siteIndex];
+        mockResponseData.sites.splice(siteIndex, 1);
+        return { data: deletedSite, error: null };
+      }
+      return { data: null, error: { message: "Not found" } };
+    }),
+  }));
+
+const selectVerificationsMethod = (): MockFn =>
+  jest.fn().mockImplementation(() => ({
+    eq: jest.fn().mockImplementation((field: string, value: string) => ({
+      order: jest.fn().mockReturnThis(),
+      match: jest.fn().mockImplementation((filters: Record<string, any>) => {
+        const filteredVerifications = mockResponseData.verifications.filter((v) => {
+          for (const [key, val] of Object.entries(filters)) {
+            if (v[key as keyof typeof v] !== val) return false;
+          }
+          return v[field as keyof typeof v] === value;
+        });
+        return { data: filteredVerifications, error: null };
+      }),
+    })),
+  }));
+
+const insertVerificationMethod = (): MockFn =>
+  jest.fn().mockImplementation((data: any) => {
+    const newVerification = Array.isArray(data) ? data[0] : data;
+    const verification = {
+      ...newVerification,
+      id: newVerification.id || `verification-${Date.now()}`,
+      created_at: new Date().toISOString(),
+    };
+    mockResponseData.verifications.push(verification);
+    return { data: verification, error: null };
+  });
 
 // Create mock Supabase client with proper method structure
 export const mockSupabaseClient = {
@@ -174,14 +180,12 @@ export const mockSupabaseClient = {
         update: updateMethod(),
         delete: deleteMethod(),
       };
-    } 
-    else if (table === "site_verifications") {
+    } else if (table === "site_verifications") {
       return {
         select: selectVerificationsMethod(),
         insert: insertVerificationMethod(),
       };
-    }
-    else {
+    } else {
       return {
         select: jest.fn().mockReturnThis(),
         insert: jest.fn().mockReturnThis(),
@@ -198,4 +202,4 @@ export const mockSupabaseClient = {
 
 export const createClerkSupabaseClientSsr = jest.fn().mockImplementation(() => {
   return Promise.resolve(mockSupabaseClient);
-}); 
+});

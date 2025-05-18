@@ -1,0 +1,145 @@
+version: "3.8"
+
+services:
+  # Nginx reverse proxy with SSL
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/ssl:/etc/nginx/ssl
+      - ./nginx/www:/var/www/html
+    depends_on:
+      - notification-stream
+    restart: always
+
+  # PostgreSQL database
+  postgres:
+    image: timescale/timescaledb:latest-pg15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: securepassword
+      POSTGRES_DB: social_proof
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 512M
+    networks:
+      - app-network
+
+  # Redis for caching and streams
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+    networks:
+      - app-network
+
+  # Notification-stream service (notification-stream-service)
+  notification-stream:
+    build:
+      context: ./microservices
+      dockerfile: services/notification-stream-service/Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - redis
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+    networks:
+      - app-network
+
+  # Users microservice
+  users-service:
+    build:
+      context: ./microservices
+      dockerfile: services/users/Dockerfile
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DATABASE_URL=postgres://postgres:securepassword@postgres:5432/social_proof
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - postgres
+      - redis
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: "0.3"
+          memory: 200M
+    networks:
+      - app-network
+
+  # Notifications microservice
+  notifications:
+    build:
+      context: ./microservices
+      dockerfile: services/notifications/Dockerfile
+    environment:
+      - NODE_ENV=production
+      - PORT=3002
+      - DATABASE_URL=postgres://postgres:securepassword@postgres:5432/social_proof
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - postgres
+      - redis
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: "0.3"
+          memory: 200M
+    networks:
+      - app-network
+
+  # Integrations microservice
+  integrations:
+    build:
+      context: ./microservices
+      dockerfile: services/integrations/Dockerfile
+    environment:
+      - NODE_ENV=production
+      - PORT=3004
+      - DATABASE_URL=postgres://postgres:securepassword@postgres:5432/social_proof
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - postgres
+      - redis
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: "0.3"
+          memory: 200M
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:

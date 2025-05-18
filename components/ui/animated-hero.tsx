@@ -1,23 +1,23 @@
-import { useEffect, useMemo, useState } from 'react'
-import { motion } from 'framer-motion'
-import { MoveRight } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import Image from 'next/image'
+import { useEffect, useMemo, useState } from "react";
+import { motion } from "framer-motion";
+import { MoveRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 function Hero() {
-  const [titleNumber, setTitleNumber] = useState(0)
-  const titles = useMemo(() => ['Modern', 'Full-stack', 'Secure', 'Scalable', 'Powerful'], [])
+  const [titleNumber, setTitleNumber] = useState(0);
+  const titles = useMemo(() => ["Modern", "Full-stack", "Secure", "Scalable", "Powerful"], []);
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (titleNumber === titles.length - 1) {
-        setTitleNumber(0)
+        setTitleNumber(0);
       } else {
-        setTitleNumber(titleNumber + 1)
+        setTitleNumber(titleNumber + 1);
       }
-    }, 2000)
-    return () => clearTimeout(timeoutId)
-  }, [titleNumber, titles])
+    }, 2000);
+    return () => clearTimeout(timeoutId);
+  }, [titleNumber, titles]);
 
   return (
     <div className="w-full">
@@ -30,7 +30,12 @@ function Hero() {
               rel="noopener noreferrer"
               className="flex flex-row items-center gap-2"
             >
-              <Image src="/psp-logo.svg" alt="Pulse Social Proof" width={42} height={42} />
+              <Image
+                src="/psp-logo.svg"
+                alt="Pulse Social Proof"
+                width={42}
+                height={42}
+              />
               <span className="logo-text text-3xl font-bold">Pulse Social Proof</span>
             </a>
           </div>
@@ -42,18 +47,18 @@ function Hero() {
                   <motion.span
                     key={index}
                     className="absolute font-semibold"
-                    initial={{ opacity: 0, y: '-100' }}
-                    transition={{ type: 'spring', stiffness: 50 }}
+                    initial={{ opacity: 0, y: "-100" }}
+                    transition={{ type: "spring", stiffness: 50 }}
                     animate={
-                      titleNumber === index
-                        ? {
-                            y: 0,
-                            opacity: 1,
-                          }
-                        : {
-                            y: titleNumber > index ? -150 : 150,
-                            opacity: 0,
-                          }
+                      titleNumber === index ?
+                        {
+                          y: 0,
+                          opacity: 1,
+                        }
+                      : {
+                          y: titleNumber > index ? -150 : 150,
+                          opacity: 0,
+                        }
                     }
                   >
                     {title}
@@ -64,20 +69,23 @@ function Hero() {
             </h1>
 
             <p className="max-w-2xl text-center text-lg leading-relaxed tracking-tight text-muted-foreground md:mt-8 md:text-xl">
-              A modern web application template featuring authentication,
-              database integration, and payment processing. Built with Next.js 14, Clerk, Supabase,
-              and Stripe to accelerate your development process.
+              A modern web application template featuring authentication, database integration, and
+              payment processing. Built with Next.js 14, Clerk, Supabase, and Stripe to accelerate
+              your development process.
             </p>
           </div>
           <div className="flex flex-row gap-3">
-            <Button size="lg" className="gap-4">
+            <Button
+              size="lg"
+              className="gap-4"
+            >
               Get Started <MoveRight className="h-4 w-4" />
             </Button>
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-export { Hero }
+export { Hero };

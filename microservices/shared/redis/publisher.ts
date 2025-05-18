@@ -1,7 +1,7 @@
-import Redis from 'ioredis';
-import { getContextLogger } from '../utils/logger';
+import Redis from "ioredis";
+import { getContextLogger } from "../utils/logger";
 
-const logger = getContextLogger({ service: 'redis-publisher' });
+const logger = getContextLogger({ service: "redis-publisher" });
 
 /**
  * Redis publisher for sending messages to Redis channels
@@ -15,20 +15,20 @@ export class RedisPublisher {
    */
   constructor(redisUrl?: string) {
     // Use provided URL or default
-    const url = redisUrl || process.env.REDIS_URL || 'redis://localhost:6379';
-    
+    const url = redisUrl || process.env.REDIS_URL || "redis://localhost:6379";
+
     // Create Redis client
     this.client = new Redis(url, {
       maxRetriesPerRequest: 3,
       retryStrategy: (times) => {
         const delay = Math.min(times * 50, 2000);
         return delay;
-      }
+      },
     });
 
     // Set up error handler
-    this.client.on('error', (err) => {
-      logger.error('Redis publisher error:', err);
+    this.client.on("error", (err) => {
+      logger.error("Redis publisher error:", err);
     });
   }
 
@@ -55,12 +55,12 @@ export class RedisPublisher {
   async disconnect(): Promise<void> {
     try {
       await this.client.quit();
-      logger.info('Redis publisher disconnected');
+      logger.info("Redis publisher disconnected");
     } catch (error: any) {
-      logger.error('Error disconnecting Redis publisher:', error);
+      logger.error("Error disconnecting Redis publisher:", error);
       throw error;
     }
   }
 }
 
-export default RedisPublisher; 
+export default RedisPublisher;

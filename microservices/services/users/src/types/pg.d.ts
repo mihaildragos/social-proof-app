@@ -1,4 +1,4 @@
-declare module 'pg' {
+declare module "pg" {
   export interface PoolConfig {
     user?: string;
     password?: string;
@@ -40,4 +40,4 @@ declare module 'pg' {
     end(): Promise<void>;
     on(event: string, listener: (...args: any[]) => void): this;
   }
-} 
+}

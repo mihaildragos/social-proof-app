@@ -48,6 +48,7 @@ The Shopify integration enables merchants to display real-time social proof noti
 The Shopify app provides the interface for merchants to install and configure the social proof service in their stores.
 
 **Key Functions:**
+
 - OAuth authentication and session management
 - App installation/uninstallation flow
 - Webhook registration and processing
@@ -59,6 +60,7 @@ The Shopify app provides the interface for merchants to install and configure th
 Responsible for connecting with Shopify's API and processing incoming webhooks from Shopify stores.
 
 **Key Functions:**
+
 - Webhook validation (HMAC verification)
 - Processing various Shopify events (orders, customers, products)
 - Converting Shopify data into standardized event format
@@ -70,6 +72,7 @@ Responsible for connecting with Shopify's API and processing incoming webhooks f
 Processes events from Kafka and determines what notifications to display based on merchant configuration.
 
 **Key Functions:**
+
 - Consuming events from Kafka
 - Applying notification rules and filters
 - Generating notification content
@@ -81,6 +84,7 @@ Processes events from Kafka and determines what notifications to display based o
 Serves the SSE (Server-Sent Events) endpoint that the storefront widget connects to for real-time updates.
 
 **Key Functions:**
+
 - SSE connection management
 - Redis subscription for notification events
 - Client connection tracking
@@ -91,6 +95,7 @@ Serves the SSE (Server-Sent Events) endpoint that the storefront widget connects
 The client-side JavaScript widget that displays notifications on merchant storefronts.
 
 **Key Functions:**
+
 - Establishing SSE connection
 - Rendering notification templates
 - Animation and display logic
@@ -99,11 +104,13 @@ The client-side JavaScript widget that displays notifications on merchant storef
 ## Data Flow
 
 1. **Webhook Reception**
+
    - Shopify sends webhooks to the Integrations Service
    - Webhooks are verified using HMAC signature
    - Events are standardized and enriched
 
 2. **Event Processing**
+
    - Events are published to Kafka topics:
      - `order-events`: For order-related events
      - `customer-events`: For customer-related events
@@ -111,12 +118,14 @@ The client-side JavaScript widget that displays notifications on merchant storef
    - Events include shop domain, event type, and relevant data
 
 3. **Notification Generation**
+
    - Notifications Service consumes events from Kafka
    - Applies merchant configuration rules
    - Generates notification content
    - Publishes to Redis channels named `notifications:{shop_domain}`
 
 4. **Notification Delivery**
+
    - Frontend Service maintains SSE connections with storefront widgets
    - Subscribes to the appropriate Redis channels based on shop domain
    - Forwards notifications to connected clients in real-time
@@ -129,30 +138,33 @@ The client-side JavaScript widget that displays notifications on merchant storef
 
 ## Kafka Topics
 
-| Topic Name | Key | Value Schema | Description |
-|------------|-----|--------------|-------------|
-| `order-events` | Shop Domain | JSON (order event) | Order creation, fulfillment, cancellation events |
-| `customer-events` | Shop Domain | JSON (customer event) | Customer creation, update events |
-| `product-events` | Shop Domain | JSON (product event) | Product creation, update, deletion events |
+| Topic Name        | Key         | Value Schema          | Description                                      |
+| ----------------- | ----------- | --------------------- | ------------------------------------------------ |
+| `order-events`    | Shop Domain | JSON (order event)    | Order creation, fulfillment, cancellation events |
+| `customer-events` | Shop Domain | JSON (customer event) | Customer creation, update events                 |
+| `product-events`  | Shop Domain | JSON (product event)  | Product creation, update, deletion events        |
 
 ## Redis Channels
 
-| Channel Pattern | Purpose |
-|-----------------|---------|
-| `notifications:{shop_domain}` | Real-time notifications for a specific shop |
-| `metrics:{shop_domain}` | Metrics and analytics events for a specific shop |
+| Channel Pattern               | Purpose                                          |
+| ----------------------------- | ------------------------------------------------ |
+| `notifications:{shop_domain}` | Real-time notifications for a specific shop      |
+| `metrics:{shop_domain}`       | Metrics and analytics events for a specific shop |
 
 ## Security Considerations
 
 1. **Webhook Verification**
+
    - All webhooks are verified using HMAC signatures
    - Unverified webhooks are rejected
 
 2. **API Authentication**
+
    - OAuth tokens are encrypted at rest
    - Token refresh is handled automatically
 
 3. **Multi-tenant Isolation**
+
    - Shop data is isolated using shop domain as partition key
    - Notification channels are shop-specific
 
@@ -182,4 +194,4 @@ The client-side JavaScript widget that displays notifications on merchant storef
 2. Offline mode support with service worker
 3. A/B testing for notification templates
 4. Enhanced analytics dashboard
-5. Multi-region deployment for global stores 
+5. Multi-region deployment for global stores

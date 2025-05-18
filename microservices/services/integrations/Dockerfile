@@ -13,8 +13,7 @@ COPY tsconfig.json ./
 RUN npm ci
 
 # Copy source code
-COPY ./services/integrations ./services/integrations
-COPY ./shared ./shared
+COPY . .
 
 # Build TypeScript
 RUN npm run build:integrations

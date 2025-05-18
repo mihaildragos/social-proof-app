@@ -38,10 +38,12 @@ This guide will walk you through the process of setting up a Shopify development
 #### For Local Development
 
 1. Make sure your development environment is running on HTTPS (required by Shopify)
+
    - Use a service like ngrok to expose your local server: `ngrok http 3000`
    - Update your app's URL in the Shopify Partners dashboard with the ngrok URL
 
 2. Install the app on your development store:
+
    - Go to your Shopify Partners dashboard
    - Navigate to "Apps" > your app > "Test on development store"
    - Select your development store and install the app
@@ -56,6 +58,7 @@ This guide will walk you through the process of setting up a Shopify development
 ### 4. Test Webhook Flows
 
 1. Create test orders in your development store:
+
    - Go to "Orders" > "Create order"
    - Add products to the order
    - Set the customer to your test customer
@@ -77,11 +80,13 @@ This guide will walk you through the process of setting up a Shopify development
 ### Common Issues
 
 1. **Webhook not being received**
+
    - Ensure your app URL is correctly set in the app settings
    - Check that the webhook subscription is active
    - Verify the HMAC validation is working correctly
 
 2. **Script not loading**
+
    - Check the script tag installation in the Shopify admin
    - Inspect browser network tab for script loading errors
    - Verify CSP settings in your store if applicable
@@ -96,4 +101,4 @@ This guide will walk you through the process of setting up a Shopify development
 - [Shopify Partners Documentation](https://shopify.dev/partners)
 - [Shopify App Development Guide](https://shopify.dev/apps)
 - [Webhooks API Documentation](https://shopify.dev/api/admin-rest/current/resources/webhook)
-- [ScriptTag API Documentation](https://shopify.dev/api/admin-rest/current/resources/scripttag) 
+- [ScriptTag API Documentation](https://shopify.dev/api/admin-rest/current/resources/scripttag)

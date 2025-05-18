@@ -1,7 +1,7 @@
-import Redis from 'ioredis';
-import { getContextLogger } from '../utils/logger';
+import Redis from "ioredis";
+import { getContextLogger } from "../utils/logger";
 
-const logger = getContextLogger({ service: 'redis-subscriber' });
+const logger = getContextLogger({ service: "redis-subscriber" });
 
 /**
  * Redis subscriber class for handling pub/sub operations
@@ -16,24 +16,24 @@ export class RedisSubscriber {
    */
   constructor(redisUrl?: string) {
     // Use provided URL or default
-    const url = redisUrl || process.env.REDIS_URL || 'redis://localhost:6379';
-    
+    const url = redisUrl || process.env.REDIS_URL || "redis://localhost:6379";
+
     // Create Redis client
     this.client = new Redis(url, {
       maxRetriesPerRequest: 3,
       retryStrategy: (times) => {
         const delay = Math.min(times * 50, 2000);
         return delay;
-      }
+      },
     });
 
     // Set up error handler
-    this.client.on('error', (err) => {
-      logger.error('Redis subscriber error:', err);
+    this.client.on("error", (err) => {
+      logger.error("Redis subscriber error:", err);
     });
 
     // Set up message handler
-    this.client.on('message', (channel, message) => {
+    this.client.on("message", (channel, message) => {
       this.handleMessage(channel, message);
     });
   }
@@ -47,13 +47,13 @@ export class RedisSubscriber {
     try {
       // Get existing subscribers for this channel or create new array
       const callbacks = this.subscribers.get(channel) || [];
-      
+
       // Add the new callback
       callbacks.push(callback);
-      
+
       // Store updated callbacks
       this.subscribers.set(channel, callbacks);
-      
+
       // If this is the first subscriber for this channel, subscribe at Redis level
       if (callbacks.length === 1) {
         await this.client.subscribe(channel);
@@ -73,25 +73,25 @@ export class RedisSubscriber {
   async unsubscribe(channel: string, callback?: Function): Promise<void> {
     try {
       const callbacks = this.subscribers.get(channel);
-      
+
       if (!callbacks || callbacks.length === 0) {
         return;
       }
-      
+
       if (callback) {
         // Remove specific callback
         const index = callbacks.indexOf(callback);
         if (index !== -1) {
           callbacks.splice(index, 1);
         }
-        
+
         // Update subscribers map
         this.subscribers.set(channel, callbacks);
       } else {
         // Remove all callbacks
         this.subscribers.delete(channel);
       }
-      
+
       // If no more callbacks for this channel, unsubscribe at Redis level
       if (!this.subscribers.has(channel) || this.subscribers.get(channel)!.length === 0) {
         await this.client.unsubscribe(channel);
@@ -110,10 +110,10 @@ export class RedisSubscriber {
    */
   private handleMessage(channel: string, message: string): void {
     const callbacks = this.subscribers.get(channel);
-    
+
     if (callbacks && callbacks.length > 0) {
       // Call all subscribers for this channel
-      callbacks.forEach(callback => {
+      callbacks.forEach((callback) => {
         try {
           callback(message);
         } catch (error: any) {
@@ -129,12 +129,12 @@ export class RedisSubscriber {
   async disconnect(): Promise<void> {
     try {
       await this.client.quit();
-      logger.info('Redis subscriber disconnected');
+      logger.info("Redis subscriber disconnected");
     } catch (error: any) {
-      logger.error('Error disconnecting Redis subscriber:', error);
+      logger.error("Error disconnecting Redis subscriber:", error);
       throw error;
     }
   }
 }
 
-export default RedisSubscriber; 
+export default RedisSubscriber;

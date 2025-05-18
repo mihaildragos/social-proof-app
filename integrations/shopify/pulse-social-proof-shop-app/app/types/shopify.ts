@@ -153,8 +153,8 @@ export interface Address {
 }
 
 export interface ShopifyOrderEvent {
-  source: 'shopify';
-  event_type: 'order.created';
+  source: "shopify";
+  event_type: "order.created";
   shop: string;
   timestamp: string;
   data: {
@@ -185,4 +185,4 @@ export interface ShopifyOrderEvent {
       price: string;
     }>;
   };
-} 
+}

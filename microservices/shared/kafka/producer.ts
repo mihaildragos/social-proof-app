@@ -1,7 +1,7 @@
-import { Kafka, Producer, ProducerRecord } from 'kafkajs';
-import { getContextLogger } from '../utils/logger';
+import { Kafka, Producer, ProducerRecord } from "kafkajs";
+import { getContextLogger } from "../utils/logger";
 
-const logger = getContextLogger({ service: 'kafka-producer' });
+const logger = getContextLogger({ service: "kafka-producer" });
 
 /**
  * Kafka producer for sending messages to Kafka topics
@@ -16,21 +16,21 @@ export class KafkaProducer {
    * @param brokers - List of Kafka brokers
    */
   constructor(
-    private clientId: string = 'social-proof-producer',
-    private brokers: string[] = (process.env.KAFKA_BROKERS || 'localhost:9092').split(',')
+    private clientId: string = "social-proof-producer",
+    private brokers: string[] = (process.env.KAFKA_BROKERS || "localhost:9092").split(",")
   ) {
     const kafka = new Kafka({
       clientId: this.clientId,
       brokers: this.brokers,
       retry: {
         initialRetryTime: 100,
-        retries: 8
-      }
+        retries: 8,
+      },
     });
 
     this.producer = kafka.producer({
       allowAutoTopicCreation: true,
-      transactionTimeout: 30000
+      transactionTimeout: 30000,
     });
   }
 
@@ -42,9 +42,9 @@ export class KafkaProducer {
       try {
         await this.producer.connect();
         this.isConnected = true;
-        logger.info('Connected to Kafka');
+        logger.info("Connected to Kafka");
       } catch (error: any) {
-        logger.error('Failed to connect to Kafka:', error);
+        logger.error("Failed to connect to Kafka:", error);
         throw error;
       }
     }
@@ -58,9 +58,9 @@ export class KafkaProducer {
       try {
         await this.producer.disconnect();
         this.isConnected = false;
-        logger.info('Disconnected from Kafka');
+        logger.info("Disconnected from Kafka");
       } catch (error: any) {
-        logger.error('Failed to disconnect from Kafka:', error);
+        logger.error("Failed to disconnect from Kafka:", error);
         throw error;
       }
     }
@@ -84,9 +84,9 @@ export class KafkaProducer {
         messages: [
           {
             key: key ? Buffer.from(key) : null,
-            value: Buffer.from(JSON.stringify(message))
-          }
-        ]
+            value: Buffer.from(JSON.stringify(message)),
+          },
+        ],
       };
 
       const result = await this.producer.send(record);
@@ -106,4 +106,4 @@ export class KafkaProducer {
   }
 }
 
-export default KafkaProducer; 
+export default KafkaProducer;

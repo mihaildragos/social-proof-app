@@ -79,29 +79,29 @@ If `create_init_lambda` is set to `true`, the module will create a Lambda functi
 
 ## Inputs
 
-| Name | Description | Type | Default | Required |
-|------|-------------|------|---------|----------|
-| db_name | Name of the database | `string` | - | yes |
-| environment | Environment name (e.g., dev, staging, prod) | `string` | - | yes |
-| vpc_id | ID of the VPC where RDS will be created | `string` | - | yes |
-| subnet_ids | List of subnet IDs for the RDS database | `list(string)` | - | yes |
-| client_security_group_id | Security group ID for clients connecting to RDS | `string` | - | yes |
-| instance_class | RDS instance class | `string` | `"db.t3.medium"` | no |
-| allocated_storage | The allocated storage in GB | `number` | `20` | no |
-| db_username | Username for the database | `string` | `"postgres"` | no |
-| db_password | Password for the database (if empty, a random password will be generated) | `string` | `""` | no |
-| multi_az | Whether to enable Multi-AZ deployment | `bool` | `false` | no |
-| create_init_lambda | Whether to create a Lambda function to initialize the database with RLS policies | `bool` | `false` | no |
+| Name                     | Description                                                                      | Type           | Default          | Required |
+| ------------------------ | -------------------------------------------------------------------------------- | -------------- | ---------------- | -------- |
+| db_name                  | Name of the database                                                             | `string`       | -                | yes      |
+| environment              | Environment name (e.g., dev, staging, prod)                                      | `string`       | -                | yes      |
+| vpc_id                   | ID of the VPC where RDS will be created                                          | `string`       | -                | yes      |
+| subnet_ids               | List of subnet IDs for the RDS database                                          | `list(string)` | -                | yes      |
+| client_security_group_id | Security group ID for clients connecting to RDS                                  | `string`       | -                | yes      |
+| instance_class           | RDS instance class                                                               | `string`       | `"db.t3.medium"` | no       |
+| allocated_storage        | The allocated storage in GB                                                      | `number`       | `20`             | no       |
+| db_username              | Username for the database                                                        | `string`       | `"postgres"`     | no       |
+| db_password              | Password for the database (if empty, a random password will be generated)        | `string`       | `""`             | no       |
+| multi_az                 | Whether to enable Multi-AZ deployment                                            | `bool`         | `false`          | no       |
+| create_init_lambda       | Whether to create a Lambda function to initialize the database with RLS policies | `bool`         | `false`          | no       |
 
 ## Outputs
 
-| Name | Description |
-|------|-------------|
-| db_instance_id | The RDS instance ID |
-| db_instance_address | The address of the RDS instance |
-| db_instance_endpoint | The connection endpoint for the RDS instance |
-| db_instance_name | The database name |
-| db_instance_port | The database port |
-| db_instance_username | The master username for the database |
-| db_security_group_id | The security group ID |
-| secrets_manager_secret_arn | The ARN of the Secrets Manager secret | 
+| Name                       | Description                                  |
+| -------------------------- | -------------------------------------------- |
+| db_instance_id             | The RDS instance ID                          |
+| db_instance_address        | The address of the RDS instance              |
+| db_instance_endpoint       | The connection endpoint for the RDS instance |
+| db_instance_name           | The database name                            |
+| db_instance_port           | The database port                            |
+| db_instance_username       | The master username for the database         |
+| db_security_group_id       | The security group ID                        |
+| secrets_manager_secret_arn | The ARN of the Secrets Manager secret        |

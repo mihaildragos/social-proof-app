@@ -24,9 +24,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const { admin } = await authenticate.admin(request);
-  const color = ["Red", "Orange", "Yellow", "Green"][
-    Math.floor(Math.random() * 4)
-  ];
+  const color = ["Red", "Orange", "Yellow", "Green"][Math.floor(Math.random() * 4)];
   const response = await admin.graphql(
     `#graphql
       mutation populateProduct($product: ProductCreateInput!) {
@@ -55,7 +53,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           title: `${color} Snowboard`,
         },
       },
-    },
+    }
   );
   const responseJson = await response.json();
 
@@ -79,15 +77,14 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         productId: product.id,
         variants: [{ id: variantId, price: "100.00" }],
       },
-    },
+    }
   );
 
   const variantResponseJson = await variantResponse.json();
 
   return {
     product: responseJson!.data!.productCreate!.product,
-    variant:
-      variantResponseJson!.data!.productVariantsBulkUpdate!.productVariants,
+    variant: variantResponseJson!.data!.productVariantsBulkUpdate!.productVariants,
   };
 };
 
@@ -96,12 +93,8 @@ export default function Index() {
 
   const shopify = useAppBridge();
   const isLoading =
-    ["loading", "submitting"].includes(fetcher.state) &&
-    fetcher.formMethod === "POST";
-  const productId = fetcher.data?.product?.id.replace(
-    "gid://shopify/Product/",
-    "",
-  );
+    ["loading", "submitting"].includes(fetcher.state) && fetcher.formMethod === "POST";
+  const productId = fetcher.data?.product?.id.replace("gid://shopify/Product/", "");
 
   useEffect(() => {
     if (productId) {
@@ -113,7 +106,10 @@ export default function Index() {
   return (
     <Page>
       <TitleBar title="Remix app template">
-        <button variant="primary" onClick={generateProduct}>
+        <button
+          variant="primary"
+          onClick={generateProduct}
+        >
           Generate a product
         </button>
       </TitleBar>
@@ -123,10 +119,16 @@ export default function Index() {
             <Card>
               <BlockStack gap="500">
                 <BlockStack gap="200">
-                  <Text as="h2" variant="headingMd">
+                  <Text
+                    as="h2"
+                    variant="headingMd"
+                  >
                     Congrats on creating a new Shopify app 🎉
                   </Text>
-                  <Text variant="bodyMd" as="p">
+                  <Text
+                    variant="bodyMd"
+                    as="p"
+                  >
                     This embedded app template uses{" "}
                     <Link
                       url="https://shopify.dev/docs/apps/tools/app-bridge"
@@ -136,7 +138,10 @@ export default function Index() {
                       App Bridge
                     </Link>{" "}
                     interface examples like an{" "}
-                    <Link url="/app/additional" removeUnderline>
+                    <Link
+                      url="/app/additional"
+                      removeUnderline
+                    >
                       additional page in the app nav
                     </Link>
                     , as well as an{" "}
@@ -147,17 +152,22 @@ export default function Index() {
                     >
                       Admin GraphQL
                     </Link>{" "}
-                    mutation demo, to provide a starting point for app
-                    development.
+                    mutation demo, to provide a starting point for app development.
                   </Text>
                 </BlockStack>
                 <BlockStack gap="200">
-                  <Text as="h3" variant="headingMd">
+                  <Text
+                    as="h3"
+                    variant="headingMd"
+                  >
                     Get started with products
                   </Text>
-                  <Text as="p" variant="bodyMd">
-                    Generate a product with GraphQL and get the JSON output for
-                    that product. Learn more about the{" "}
+                  <Text
+                    as="p"
+                    variant="bodyMd"
+                  >
+                    Generate a product with GraphQL and get the JSON output for that product. Learn
+                    more about the{" "}
                     <Link
                       url="https://shopify.dev/docs/api/admin-graphql/latest/mutations/productCreate"
                       target="_blank"
@@ -169,7 +179,10 @@ export default function Index() {
                   </Text>
                 </BlockStack>
                 <InlineStack gap="300">
-                  <Button loading={isLoading} onClick={generateProduct}>
+                  <Button
+                    loading={isLoading}
+                    onClick={generateProduct}
+                  >
                     Generate a product
                   </Button>
                   {fetcher.data?.product && (
@@ -184,7 +197,10 @@ export default function Index() {
                 </InlineStack>
                 {fetcher.data?.product && (
                   <>
-                    <Text as="h3" variant="headingMd">
+                    <Text
+                      as="h3"
+                      variant="headingMd"
+                    >
                       {" "}
                       productCreate mutation
                     </Text>
@@ -197,12 +213,13 @@ export default function Index() {
                       overflowX="scroll"
                     >
                       <pre style={{ margin: 0 }}>
-                        <code>
-                          {JSON.stringify(fetcher.data.product, null, 2)}
-                        </code>
+                        <code>{JSON.stringify(fetcher.data.product, null, 2)}</code>
                       </pre>
                     </Box>
-                    <Text as="h3" variant="headingMd">
+                    <Text
+                      as="h3"
+                      variant="headingMd"
+                    >
                       {" "}
                       productVariantsBulkUpdate mutation
                     </Text>
@@ -215,9 +232,7 @@ export default function Index() {
                       overflowX="scroll"
                     >
                       <pre style={{ margin: 0 }}>
-                        <code>
-                          {JSON.stringify(fetcher.data.variant, null, 2)}
-                        </code>
+                        <code>{JSON.stringify(fetcher.data.variant, null, 2)}</code>
                       </pre>
                     </Box>
                   </>
@@ -229,12 +244,18 @@ export default function Index() {
             <BlockStack gap="500">
               <Card>
                 <BlockStack gap="200">
-                  <Text as="h2" variant="headingMd">
+                  <Text
+                    as="h2"
+                    variant="headingMd"
+                  >
                     App template specs
                   </Text>
                   <BlockStack gap="200">
                     <InlineStack align="space-between">
-                      <Text as="span" variant="bodyMd">
+                      <Text
+                        as="span"
+                        variant="bodyMd"
+                      >
                         Framework
                       </Text>
                       <Link
@@ -246,7 +267,10 @@ export default function Index() {
                       </Link>
                     </InlineStack>
                     <InlineStack align="space-between">
-                      <Text as="span" variant="bodyMd">
+                      <Text
+                        as="span"
+                        variant="bodyMd"
+                      >
                         Database
                       </Text>
                       <Link
@@ -258,7 +282,10 @@ export default function Index() {
                       </Link>
                     </InlineStack>
                     <InlineStack align="space-between">
-                      <Text as="span" variant="bodyMd">
+                      <Text
+                        as="span"
+                        variant="bodyMd"
+                      >
                         Interface
                       </Text>
                       <span>
@@ -280,7 +307,10 @@ export default function Index() {
                       </span>
                     </InlineStack>
                     <InlineStack align="space-between">
-                      <Text as="span" variant="bodyMd">
+                      <Text
+                        as="span"
+                        variant="bodyMd"
+                      >
                         API
                       </Text>
                       <Link
@@ -296,7 +326,10 @@ export default function Index() {
               </Card>
               <Card>
                 <BlockStack gap="200">
-                  <Text as="h2" variant="headingMd">
+                  <Text
+                    as="h2"
+                    variant="headingMd"
+                  >
                     Next steps
                   </Text>
                   <List>

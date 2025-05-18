@@ -1,5 +1,5 @@
-import { Kafka, Producer, ProducerRecord, CompressionTypes } from 'kafkajs';
-import { logger } from '../../../shared/src/utils/logger';
+import { Kafka, Producer, ProducerRecord, CompressionTypes } from "kafkajs";
+import { logger } from "../../../../shared/src/utils/logger.js";
 
 /**
  * KafkaProducer class for handling Kafka integration
@@ -11,20 +11,20 @@ export class KafkaProducer {
   private static instance: KafkaProducer;
 
   private constructor() {
-    const brokers = process.env.KAFKA_BROKERS?.split(',') || ['kafka:9092'];
-    
+    const brokers = process.env.KAFKA_BROKERS?.split(",") || ["kafka:9092"];
+
     const kafka = new Kafka({
-      clientId: 'integrations-service',
+      clientId: "integrations-service",
       brokers,
       retry: {
         initialRetryTime: 100,
-        retries: 8
-      }
+        retries: 8,
+      },
     });
 
     this.producer = kafka.producer({
       allowAutoTopicCreation: true,
-      transactionTimeout: 30000
+      transactionTimeout: 30000,
     });
   }
 
@@ -46,9 +46,9 @@ export class KafkaProducer {
       try {
         await this.producer.connect();
         this.isConnected = true;
-        logger.info('Connected to Kafka broker');
+        logger.info("Connected to Kafka broker");
       } catch (error) {
-        logger.error('Failed to connect to Kafka broker', { error });
+        logger.error("Failed to connect to Kafka broker", { error });
         throw error;
       }
     }
@@ -62,9 +62,9 @@ export class KafkaProducer {
       try {
         await this.producer.disconnect();
         this.isConnected = false;
-        logger.info('Disconnected from Kafka broker');
+        logger.info("Disconnected from Kafka broker");
       } catch (error) {
-        logger.error('Failed to disconnect from Kafka broker', { error });
+        logger.error("Failed to disconnect from Kafka broker", { error });
         throw error;
       }
     }
@@ -88,20 +88,20 @@ export class KafkaProducer {
           key: key ? key : undefined,
           value: JSON.stringify(message),
           headers: {
-            'content-type': 'application/json',
-            'source': 'integrations-service',
-            'timestamp': Date.now().toString()
-          }
-        }
+            "content-type": "application/json",
+            source: "integrations-service",
+            timestamp: Date.now().toString(),
+          },
+        },
       ],
-      compression: CompressionTypes.GZIP
+      compression: CompressionTypes.GZIP,
     };
 
     try {
       await this.producer.send(record);
-      logger.info(`Message sent to topic ${topic}`, { 
-        topic, 
-        key: key || 'undefined'
+      logger.info(`Message sent to topic ${topic}`, {
+        topic,
+        key: key || "undefined",
       });
     } catch (error) {
       logger.error(`Failed to send message to topic ${topic}`, { error, topic });
@@ -120,20 +120,20 @@ export class KafkaProducer {
       await this.connect();
     }
 
-    const kafkaMessages = messages.map(message => ({
+    const kafkaMessages = messages.map((message) => ({
       key: keyField && message[keyField] ? message[keyField].toString() : undefined,
       value: JSON.stringify(message),
       headers: {
-        'content-type': 'application/json',
-        'source': 'integrations-service',
-        'timestamp': Date.now().toString()
-      }
+        "content-type": "application/json",
+        source: "integrations-service",
+        timestamp: Date.now().toString(),
+      },
     }));
 
     const record: ProducerRecord = {
       topic,
       messages: kafkaMessages,
-      compression: CompressionTypes.GZIP
+      compression: CompressionTypes.GZIP,
     };
 
     try {
@@ -147,4 +147,4 @@ export class KafkaProducer {
 }
 
 // Export a singleton instance
-export const kafkaProducer = KafkaProducer.getInstance(); 
+export const kafkaProducer = KafkaProducer.getInstance();

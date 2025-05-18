@@ -1,4 +1,4 @@
-import express from 'express';
+import express from "express";
 
 declare global {
   namespace Express {
@@ -9,16 +9,16 @@ declare global {
 }
 
 // Fix express callable error
-declare module 'express' {
+declare module "express" {
   interface Response {
     flushHeaders(): void;
     write(chunk: any): boolean;
   }
-  
+
   interface Request {
     on(event: string, callback: (...args: any[]) => void): this;
   }
-  
+
   function express(): express.Express;
   export = express;
-} 
+}

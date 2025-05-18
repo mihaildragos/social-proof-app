@@ -50,4 +50,4 @@ compactor:
   shared_store: filesystem
 
 analytics:
-  reporting_enabled: false 
+  reporting_enabled: false

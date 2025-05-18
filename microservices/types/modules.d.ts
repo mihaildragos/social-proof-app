@@ -1,5 +1,5 @@
 // Declaration for ioredis
-declare module 'ioredis' {
+declare module "ioredis" {
   export default class Redis {
     constructor(url?: string, options?: any);
     on(event: string, listener: (...args: any[]) => void): this;
@@ -7,12 +7,12 @@ declare module 'ioredis' {
     unsubscribe(channel: string): Promise<void>;
     publish(channel: string, message: string): Promise<number>;
     ping(): Promise<string>;
-    quit(): Promise<'OK'>;
+    quit(): Promise<"OK">;
   }
 }
 
 // Declaration for kafkajs
-declare module 'kafkajs' {
+declare module "kafkajs" {
   export class Kafka {
     constructor(config: KafkaConfig);
     producer(config?: ProducerConfig): Producer;
@@ -131,7 +131,7 @@ declare module 'kafkajs' {
 }
 
 // Declaration for winston
-declare module 'winston' {
+declare module "winston" {
   export function createLogger(options: any): Logger;
   export const format: {
     combine: (...args: any[]) => any;
@@ -156,4 +156,4 @@ declare module 'winston' {
     child: (options: any) => Logger;
   }
   type LogMethod = (message: string, ...meta: any[]) => Logger;
-} 
+}

@@ -1,5 +1,5 @@
-import { db } from '../utils/db';
-import { logger } from '../utils/logger';
+import { db } from "../utils/db";
+import { logger } from "../utils/logger";
 
 /**
  * Service for handling audit logging
@@ -30,7 +30,7 @@ class AuditService {
         ipAddress,
         userAgent,
       } = params;
-      
+
       await db.query(
         `INSERT INTO audit_logs (
           user_id, organization_id, action, resource_type, resource_id,
@@ -47,8 +47,8 @@ class AuditService {
           userAgent,
         ]
       );
-      
-      logger.debug('Audit log created', {
+
+      logger.debug("Audit log created", {
         userId,
         organizationId,
         action,
@@ -57,13 +57,13 @@ class AuditService {
       });
     } catch (error) {
       // Log the error but don't throw (audit logging should never fail the main operation)
-      logger.error('Failed to create audit log', {
+      logger.error("Failed to create audit log", {
         error: (error as Error).message,
         params,
       });
     }
   }
-  
+
   /**
    * Get audit logs for an organization with pagination and filtering
    */
@@ -87,48 +87,48 @@ class AuditService {
       page = 1,
       pageSize = 50,
     } = params;
-    
+
     // Build WHERE clause for filtering
-    let whereClause = 'organization_id = $1';
+    let whereClause = "organization_id = $1";
     const queryParams: any[] = [organizationId];
     let paramIndex = 2;
-    
+
     if (userId) {
       whereClause += ` AND user_id = $${paramIndex++}`;
       queryParams.push(userId);
     }
-    
+
     if (resourceType) {
       whereClause += ` AND resource_type = $${paramIndex++}`;
       queryParams.push(resourceType);
     }
-    
+
     if (actionType) {
       whereClause += ` AND action = $${paramIndex++}`;
       queryParams.push(actionType);
     }
-    
+
     if (startDate) {
       whereClause += ` AND created_at >= $${paramIndex++}`;
       queryParams.push(startDate);
     }
-    
+
     if (endDate) {
       whereClause += ` AND created_at <= $${paramIndex++}`;
       queryParams.push(endDate);
     }
-    
+
     // Calculate pagination
     const offset = (page - 1) * pageSize;
-    
+
     // Get total count
     const countResult = await db.getOne(
       `SELECT COUNT(*) AS total FROM audit_logs WHERE ${whereClause}`,
       queryParams
     );
-    
+
     const total = parseInt(countResult.total, 10);
-    
+
     // Get paginated results
     const logs = await db.getMany(
       `SELECT 
@@ -140,7 +140,7 @@ class AuditService {
        LIMIT $${paramIndex++} OFFSET $${paramIndex++}`,
       [...queryParams, pageSize, offset]
     );
-    
+
     // Return paginated result
     return {
       logs,
@@ -152,7 +152,7 @@ class AuditService {
       },
     };
   }
-  
+
   /**
    * Create middleware for automatic audit logging
    */
@@ -160,16 +160,16 @@ class AuditService {
     return async (req: any, res: any, next: any) => {
       // Store original end function
       const originalEnd = res.end;
-      
+
       // Override end function to log after response is sent
-      res.end = function(chunk: any, encoding: any) {
+      res.end = function (chunk: any, encoding: any) {
         // Call original end function
         originalEnd.call(this, chunk, encoding);
-        
+
         // Only log successful requests
         if (res.statusCode >= 200 && res.statusCode < 300) {
           const resourceId = req.params.id || null;
-          
+
           auditService.logAction({
             userId: req.user?.id,
             organizationId: req.params.organizationId || req.body.organizationId,
@@ -180,18 +180,18 @@ class AuditService {
               method: req.method,
               path: req.path,
               query: req.query,
-              body: req.method !== 'GET' ? req.body : undefined,
+              body: req.method !== "GET" ? req.body : undefined,
               status: res.statusCode,
             },
             ipAddress: req.ip,
-            userAgent: req.get('user-agent'),
+            userAgent: req.get("user-agent"),
           });
         }
       };
-      
+
       next();
     };
   }
 }
 
-export const auditService = new AuditService(); 
+export const auditService = new AuditService();

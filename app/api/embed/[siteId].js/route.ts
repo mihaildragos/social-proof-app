@@ -3,23 +3,20 @@ import { createClerkSupabaseClientSsr } from "@/utils/supabase/server";
 import { SiteStatus } from "@/types/sites";
 
 // This route returns the JavaScript code that will be embedded on the client's website
-export async function GET(
-  req: Request,
-  { params }: { params: { siteId: string } }
-) {
+export async function GET(req: Request, { params }: { params: { siteId: string } }) {
   try {
     const { siteId } = params;
-    
+
     // No auth check here as this is a public endpoint
     const supabase = await createClerkSupabaseClientSsr();
-    
+
     // Get the site to verify it exists and is verified
     const { data: site, error } = await supabase
       .from("sites")
       .select("status, domain")
       .eq("id", siteId)
       .single();
-    
+
     if (error || !site) {
       console.error("Error fetching site for embed:", error);
       return new NextResponse("console.error('Social Proof: Invalid site ID');", {
@@ -30,7 +27,7 @@ export async function GET(
         },
       });
     }
-    
+
     // If site is not verified, don't provide the real code
     if (site.status !== SiteStatus.VERIFIED) {
       return new NextResponse("console.error('Social Proof: Site not verified');", {
@@ -41,15 +38,15 @@ export async function GET(
         },
       });
     }
-    
+
     // Generate the embed code with proper CSP and security measures
     const embedCode = `
 (function() {
   // Configuration
   var config = {
     siteId: "${siteId}",
-    apiHost: "${process.env.NEXT_PUBLIC_VERCEL_URL || 'localhost:3000'}",
-    apiEndpoint: "${process.env.NEXT_PUBLIC_VERCEL_URL || 'localhost:3000'}/api",
+    apiHost: "${process.env.NEXT_PUBLIC_VERCEL_URL || "localhost:3000"}",
+    apiEndpoint: "${process.env.NEXT_PUBLIC_VERCEL_URL || "localhost:3000"}/api",
     targetOrigin: "https://${site.domain}",
     position: "bottom-left",
     displayTime: 5000,
@@ -465,7 +462,7 @@ export async function GET(
   }
 })();
     `;
-    
+
     // Return the JavaScript with appropriate headers
     return new NextResponse(embedCode, {
       status: 200,
@@ -486,4 +483,4 @@ export async function GET(
       },
     });
   }
-} 
+}

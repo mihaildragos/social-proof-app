@@ -37,10 +37,10 @@ In `shopify.app.toml`, configure your redirect URLs:
 
 ```toml
 [auth]
-redirect_urls = [ 
+redirect_urls = [
   "http://localhost:8081/api/auth",
   "https://localhost:8081/api/auth",
-  "https://your-production-url.com/api/auth" 
+  "https://your-production-url.com/api/auth"
 ]
 ```
 
@@ -62,11 +62,7 @@ The Shopify OAuth flow consists of the following steps:
 The OAuth flow is implemented in `app/shopify.server.ts` using the Shopify App SDK:
 
 ```typescript
-import {
-  ApiVersion,
-  AppDistribution,
-  shopifyApp,
-} from "@shopify/shopify-app-remix/server";
+import { ApiVersion, AppDistribution, shopifyApp } from "@shopify/shopify-app-remix/server";
 import { PrismaSessionStorage } from "@shopify/shopify-app-session-storage-prisma";
 
 const shopify = shopifyApp({
@@ -136,4 +132,4 @@ When developing locally:
 
 - [Shopify OAuth Documentation](https://shopify.dev/apps/auth/oauth)
 - [Shopify App Remix Package](https://shopify.dev/docs/api/shopify-app-remix)
-- [Prisma Session Storage](https://github.com/Shopify/shopify-app-js/tree/main/packages/shopify-app-session-storage-prisma) 
+- [Prisma Session Storage](https://github.com/Shopify/shopify-app-js/tree/main/packages/shopify-app-session-storage-prisma)

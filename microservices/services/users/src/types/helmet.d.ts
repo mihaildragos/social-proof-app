@@ -1,5 +1,5 @@
-declare module 'helmet' {
-  import { Request, Response, NextFunction } from 'express';
+declare module "helmet" {
+  import { Request, Response, NextFunction } from "express";
 
   interface HelmetOptions {
     contentSecurityPolicy?: boolean | object;
@@ -19,7 +19,9 @@ declare module 'helmet' {
     xssFilter?: boolean | object;
   }
 
-  function helmet(options?: HelmetOptions): (req: Request, res: Response, next: NextFunction) => void;
-  
+  function helmet(
+    options?: HelmetOptions
+  ): (req: Request, res: Response, next: NextFunction) => void;
+
   export default helmet;
-} 
+}

@@ -1,5 +1,5 @@
-declare module 'cookie-parser' {
-  import { Request, Response, NextFunction } from 'express';
+declare module "cookie-parser" {
+  import { Request, Response, NextFunction } from "express";
 
   function cookieParser(
     secret?: string | string[],
@@ -13,4 +13,4 @@ declare module 'cookie-parser' {
   }
 
   export = cookieParser;
-} 
+}

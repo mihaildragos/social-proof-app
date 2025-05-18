@@ -149,16 +149,19 @@ This document provides a comprehensive checklist for quality assurance testing o
 ## Test Scenarios
 
 1. **Basic Purchase Notification**
+
    - Create a test order in Shopify admin
    - Verify notification appears on storefront
    - Verify notification content is accurate
 
 2. **High-Volume Testing**
+
    - Create multiple test orders in rapid succession
    - Verify all notifications are processed
    - Check for any performance degradation
 
 3. **Network Interruption Recovery**
+
    - Disconnect internet while widget is active
    - Reconnect internet
    - Verify widget reconnects and continues receiving notifications
@@ -166,4 +169,4 @@ This document provides a comprehensive checklist for quality assurance testing o
 4. **Configuration Change Propagation**
    - Update notification settings in admin
    - Verify changes take effect without page refresh
-   - Check that settings are persisted after refresh 
+   - Check that settings are persisted after refresh
