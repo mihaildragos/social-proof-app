@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
 
     try {
       // Get some additional browser info
-      let userAgent = req.headers.get("user-agent") || "";
+      const userAgent = req.headers.get("user-agent") || "";
       let ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "0.0.0.0";
       if (typeof ip === "string" && ip.includes(",")) {
         ip = ip.split(",")[0].trim();
