@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: billing-service
+  namespace: social-proof-system
+  labels:
+    app: billing-service
+    tier: backend
+    environment: ${{ vars.ENVIRONMENT }}
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: billing-service
+  template:
+    metadata:
+      labels:
+        app: billing-service
+        tier: backend
+        environment: ${{ vars.ENVIRONMENT }}
+    spec:
+      imagePullSecrets:
+        - name: gcr-json-key
+      containers:
+        - name: billing-service
+          image: ${{ vars.CONTAINER_REGISTRY }}/${{ vars.PROJECT_ID }}/billing:${{ vars.IMAGE_TAG_STRATEGY }}
+          ports:
+            - containerPort: 3006
+              protocol: TCP
+          env:
+            - name: PORT
+              value: "3006"
+          envFrom:
+            - configMapRef:
+                name: social-proof-config
+            - secretRef:
+                name: social-proof-secrets
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3006
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 3006
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          volumeMounts:
+            - name: tmp-volume
+              mountPath: /tmp
+      volumes:
+        - name: tmp-volume
+          emptyDir: {}
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1

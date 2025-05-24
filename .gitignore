@@ -10,6 +10,11 @@
 # terraform
 microservices/infrastructure/terraform/terraform.tfvars
 microservices/infrastructure/terraform/.terraform/
+gcp/terraform/terraform.tfvars
+gcp/terraform/.terraform/
+gcp/terraform/terraform.tfstate
+gcp/terraform/terraform.tfstate.backup
+gcp/terraform/.terraform.lock.hcl
 
 # testing
 /coverage

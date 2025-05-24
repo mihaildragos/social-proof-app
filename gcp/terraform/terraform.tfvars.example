@@ -1,0 +1,16 @@
+# Example Terraform variables for GCP Social Proof App deployment
+# Copy this file to terraform.tfvars and update with your actual values
+
+# Required: Your GCP project ID
+project_id = "my-social-proof-project"
+
+# Optional: Override default values as needed
+region       = "us-central1"
+zone         = "us-central1-a"
+environment  = "staging"
+
+# GKE cluster configuration
+cluster_name  = "social-proof-cluster"
+node_count    = 3
+machine_type  = "n1-standard-2"
+disk_size_gb  = 50 
