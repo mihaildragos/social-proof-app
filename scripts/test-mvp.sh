@@ -212,12 +212,12 @@ echo ""
 # Test 10: Environment Configuration
 print_status "=== Testing Environment Configuration ==="
 
-if [ -f "config/mvp.env" ]; then
-    run_test "Environment File Exists" "test -f config/mvp.env" "0"
-    run_test "Environment File Has Database URL" "grep -q 'DATABASE_URL' config/mvp.env" "0"
-    run_test "Environment File Has Kafka Config" "grep -q 'KAFKA_BROKERS' config/mvp.env" "0"
+if [ -f "config/.env.mvp" ]; then
+    run_test "Environment File Exists" "test -f config/.env.mvp" "0"
+    run_test "Environment File Has Database URL" "grep -q 'DATABASE_URL' config/.env.mvp" "0"
+    run_test "Environment File Has Kafka Config" "grep -q 'KAFKA_BROKERS' config/.env.mvp" "0"
 else
-    print_warning "Environment file config/mvp.env not found - this is optional for testing"
+    print_warning "Environment file config/.env.mvp not found - this is optional for testing"
 fi
 
 echo ""
