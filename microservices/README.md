@@ -1,14 +1,130 @@
-# Social Proof App - Microservices
+# Social Proof Microservices
 
-This repository contains the microservices implementation for the Social Proof App, a Fomo-style real-time social proof notification platform.
+This directory contains all the microservices for the Social Proof application, containerized with Docker.
 
-## Architecture
+## Services Architecture
 
-The application is built using a microservices architecture with the following components:
+The application consists of the following services:
 
-1. **Integrations Service**: Handles integration with third-party platforms like Shopify
-2. **Notifications Service**: Processes events and manages notification delivery
-3. **Frontend Service**: Serves the frontend and handles SSE connections
+- **Integrations Service**: Handles third-party platform integrations (Shopify, WooCommerce, etc.)
+- **Notification Stream Service**: Manages real-time notification delivery via SSE
+- **Notifications Service**: Core service for notification generation and management
+- **Users Service**: Handles user authentication and management
+- **Analytics Service**: Processes and stores analytics data
+- **Billing Service**: Manages subscription and payment processing
+
+## Infrastructure Services
+
+- **Redis**: Used for caching and pub/sub messaging
+- **Kafka**: Event streaming platform for service communication
+- **PostgreSQL**: Primary database for structured data
+- **ClickHouse**: Analytics database for high-performance queries
+
+## Running with Docker
+
+### Prerequisites
+
+- Docker and Docker Compose installed on your machine
+- Node.js 18+ and npm (for local development)
+
+### Building and Running All Services
+
+1. Make sure you're in the `microservices` directory:
+
+   ```bash
+   cd microservices
+   ```
+
+2. Run the build and run script:
+
+   ```bash
+   ./build-and-run.sh
+   ```
+
+   This will:
+   - Build all service images
+   - Start all containers in detached mode
+   - Display the status of all running containers
+
+### Running Individual Services
+
+To build and run a specific service:
+
+```bash
+docker-compose build [service_name]
+docker-compose up -d [service_name]
+```
+
+For example, to run just the integrations service:
+
+```bash
+docker-compose build integrations
+docker-compose up -d integrations
+```
+
+### Viewing Logs
+
+To view logs for all services:
+
+```bash
+docker-compose logs -f
+```
+
+For a specific service:
+
+```bash
+docker-compose logs -f [service_name]
+```
+
+### Stopping Services
+
+To stop all services:
+
+```bash
+docker-compose down
+```
+
+To stop and remove all data (volumes):
+
+```bash
+docker-compose down -v
+```
+
+## Development
+
+For local development without Docker:
+
+1. Install dependencies in each service directory:
+
+   ```bash
+   cd services/[service_name]
+   npm install
+   ```
+
+2. Run the service in development mode:
+
+   ```bash
+   npm run dev
+   ```
+
+## Environment Variables
+
+The docker-compose.yml file is configured with default environment variables for development. For production, you should:
+
+1. Create a `.env` file in the microservices directory
+2. Set the following variables (add more as needed):
+
+```
+# Infrastructure
+POSTGRES_PASSWORD=secure_password
+
+# API Keys
+STRIPE_SECRET_KEY=your_stripe_key
+STRIPE_WEBHOOK_SECRET=your_webhook_secret
+
+# Security
+NODE_ENV=production
+```
 
 ## Tech Stack
 
@@ -172,3 +288,19 @@ The Server-Sent Events (SSE) implementation requires the following to work corre
 ## License
 
 MIT
+
+## Docker Support
+
+All microservices can be run in Docker containers for easier development and deployment. For detailed instructions on using Docker with this project, see the [Docker documentation](DOCKER_MVP_SETUP.md).
+
+To quickly build and run all services in Docker:
+
+```bash
+# Make the script executable (if not already)
+chmod +x build-and-run.sh
+
+# Run the script
+./build-and-run.sh
+```
+
+This will build and start containers for all microservices.

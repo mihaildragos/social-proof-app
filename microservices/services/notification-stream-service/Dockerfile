@@ -5,6 +5,13 @@ FROM node:18-alpine AS builder
 # Set working directory
 WORKDIR /app
 
+# First create a layer with just the shared dependencies
+WORKDIR /app/shared
+COPY ../../shared ./
+
+# Set up main app directory
+WORKDIR /app/notification-stream-service
+
 # Copy package files and install dependencies
 COPY package*.json ./
 COPY tsconfig.json ./
@@ -14,10 +21,9 @@ RUN npm ci
 
 # Copy source code
 COPY . .
-COPY ../shared ./shared
 
 # Build TypeScript
-RUN npm run build:notification-stream-service
+RUN npm run build
 
 # Stage 2: Create production image
 FROM node:18-alpine AS production
@@ -35,7 +41,8 @@ COPY package*.json ./
 RUN npm ci --only=production
 
 # Copy built code from builder stage
-COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/notification-stream-service/dist ./dist
+COPY --from=builder /app/shared ./shared
 
 # Add custom labels
 LABEL maintainer="Pulse Social Proof Team"
@@ -55,4 +62,4 @@ USER nodeuser
 EXPOSE ${PORT:-3002}
 
 # Start the service
-CMD ["node", "dist/services/notification-stream-service/index.js"] 
+CMD ["node", "dist/index.js"] 

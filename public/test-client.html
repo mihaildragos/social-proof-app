@@ -1,0 +1,610 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <title>Test Store - Social Proof Demo</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
+          Cantarell, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        background: linear-gradient(135deg, #e3f2fd 0%, #e8eaf6 100%);
+        min-height: 100vh;
+      }
+
+      .header {
+        background: white;
+        border-bottom: 1px solid #e0e0e0;
+        padding: 1rem 0;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+
+      .header-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      .logo h1 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1976d2;
+      }
+
+      .status-badges {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+      }
+
+      .badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 500;
+      }
+
+      .badge-success {
+        background: #e8f5e8;
+        color: #2e7d32;
+        border: 1px solid #c8e6c9;
+      }
+
+      .badge-secondary {
+        background: #f5f5f5;
+        color: #666;
+        border: 1px solid #e0e0e0;
+      }
+
+      .badge-outline {
+        background: transparent;
+        color: #666;
+        border: 1px solid #ddd;
+      }
+
+      .hero {
+        background: linear-gradient(135deg, #1976d2 0%, #3f51b5 100%);
+        color: white;
+        padding: 4rem 0;
+        text-align: center;
+      }
+
+      .hero h1 {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+      }
+
+      .hero p {
+        font-size: 1.25rem;
+        opacity: 0.9;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+      }
+
+      .products {
+        padding: 3rem 0;
+      }
+
+      .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+      }
+
+      .product-card {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition:
+          transform 0.2s,
+          box-shadow 0.2s;
+      }
+
+      .product-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      }
+
+      .product-emoji {
+        font-size: 4rem;
+        text-align: center;
+        margin-bottom: 1rem;
+      }
+
+      .product-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+      }
+
+      .product-description {
+        color: #666;
+        font-size: 0.9rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .product-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .product-price {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #2e7d32;
+      }
+
+      .btn {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 6px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .btn-primary {
+        background: #1976d2;
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: #1565c0;
+      }
+
+      .btn-sm {
+        padding: 0.25rem 0.75rem;
+        font-size: 0.875rem;
+      }
+
+      .instructions {
+        background: #e3f2fd;
+        border: 1px solid #90caf9;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 3rem;
+      }
+
+      .instructions h3 {
+        color: #0d47a1;
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+      }
+
+      .instructions p {
+        color: #1565c0;
+        margin-bottom: 1rem;
+      }
+
+      .instructions-list {
+        color: #1565c0;
+        margin-bottom: 1.5rem;
+      }
+
+      .instructions-list h4 {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+      }
+
+      .instructions-list ol,
+      .instructions-list ul {
+        margin-left: 1.5rem;
+        margin-bottom: 1rem;
+      }
+
+      .instructions-list li {
+        margin-bottom: 0.25rem;
+      }
+
+      .footer {
+        background: #1a1a1a;
+        color: white;
+        padding: 3rem 0;
+        text-align: center;
+      }
+
+      .footer h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+      }
+
+      .footer p {
+        color: #ccc;
+        margin-bottom: 1.5rem;
+      }
+
+      .refresh-btn {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        background: #1976d2;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 3rem;
+        height: 3rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        transition: all 0.2s;
+      }
+
+      .refresh-btn:hover {
+        background: #1565c0;
+        transform: scale(1.1);
+      }
+
+      @media (max-width: 768px) {
+        .hero h1 {
+          font-size: 2rem;
+        }
+
+        .hero p {
+          font-size: 1rem;
+        }
+
+        .products-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Header -->
+    <header class="header">
+      <div class="header-content">
+        <div class="logo">
+          <span style="font-size: 1.5rem">🖥️</span>
+          <div>
+            <h1>Test Store</h1>
+            <p style="font-size: 0.875rem; color: #666; margin: 0">
+              Social proof notifications demo
+            </p>
+          </div>
+        </div>
+        <div class="status-badges">
+          <span
+            class="badge badge-secondary"
+            id="script-status"
+            >Script: Loading...</span
+          >
+          <span
+            class="badge badge-outline"
+            id="notification-count"
+            >Notifications: 0</span
+          >
+          <button
+            class="btn btn-sm btn-primary"
+            onclick="window.location.reload()"
+          >
+            🔄 Refresh
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="container">
+        <h1>Test Store</h1>
+        <p>Experience our amazing products with real-time social proof!</p>
+      </div>
+    </section>
+
+    <!-- Products Section -->
+    <section class="products">
+      <div class="container">
+        <div class="products-grid">
+          <div class="product-card">
+            <div class="product-emoji">🎧</div>
+            <h3 class="product-title">Premium Headphones</h3>
+            <p class="product-description">
+              High-quality wireless headphones with noise cancellation.
+            </p>
+            <div class="product-footer">
+              <span class="product-price">$199.99</span>
+              <button class="btn btn-primary">Add to Cart</button>
+            </div>
+          </div>
+
+          <div class="product-card">
+            <div class="product-emoji">⌚</div>
+            <h3 class="product-title">Smart Watch</h3>
+            <p class="product-description">Advanced fitness tracking and smart notifications.</p>
+            <div class="product-footer">
+              <span class="product-price">$299.99</span>
+              <button class="btn btn-primary">Add to Cart</button>
+            </div>
+          </div>
+
+          <div class="product-card">
+            <div class="product-emoji">💻</div>
+            <h3 class="product-title">Laptop Stand</h3>
+            <p class="product-description">Ergonomic aluminum laptop stand for better posture.</p>
+            <div class="product-footer">
+              <span class="product-price">$79.99</span>
+              <button class="btn btn-primary">Add to Cart</button>
+            </div>
+          </div>
+
+          <div class="product-card">
+            <div class="product-emoji">☕</div>
+            <h3 class="product-title">Coffee Maker</h3>
+            <p class="product-description">Professional-grade coffee maker for home use.</p>
+            <div class="product-footer">
+              <span class="product-price">$159.99</span>
+              <button class="btn btn-primary">Add to Cart</button>
+            </div>
+          </div>
+
+          <div class="product-card">
+            <div class="product-emoji">🖱️</div>
+            <h3 class="product-title">Wireless Mouse</h3>
+            <p class="product-description">Precision wireless mouse with long battery life.</p>
+            <div class="product-footer">
+              <span class="product-price">$49.99</span>
+              <button class="btn btn-primary">Add to Cart</button>
+            </div>
+          </div>
+
+          <div class="product-card">
+            <div class="product-emoji">💡</div>
+            <h3 class="product-title">Desk Lamp</h3>
+            <p class="product-description">LED desk lamp with adjustable brightness and color.</p>
+            <div class="product-footer">
+              <span class="product-price">$89.99</span>
+              <button class="btn btn-primary">Add to Cart</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="instructions">
+          <h3>🧪 How to Test Social Proof Notifications</h3>
+          <p>
+            This page simulates a real e-commerce website with social proof notifications enabled.
+          </p>
+
+          <div class="instructions-list">
+            <h4>Testing Steps:</h4>
+            <ol>
+              <li>Open the <strong>Test Control Panel</strong> in another tab</li>
+              <li>Go to the <strong>"Event Simulator"</strong> tab</li>
+              <li>Fill out the purchase event form with sample data</li>
+              <li>Click <strong>"Send Purchase Event"</strong></li>
+              <li>Watch for notifications to appear on this page!</li>
+            </ol>
+          </div>
+
+          <div class="instructions-list">
+            <h4>What You'll See:</h4>
+            <ul>
+              <li>Notifications will appear as pop-ups on this page</li>
+              <li>Each notification shows a recent purchase by another customer</li>
+              <li>The notification count in the header will increment</li>
+              <li>Notifications automatically disappear after a few seconds</li>
+            </ul>
+          </div>
+
+          <div style="display: flex; gap: 0.5rem; margin-top: 1rem">
+            <span
+              class="badge badge-outline"
+              id="site-id-badge"
+              >Site ID: Not Set</span
+            >
+            <span
+              class="badge badge-secondary"
+              id="script-active-badge"
+              >⏳ Loading Script</span
+            >
+            <a
+              href="/test-control-panel"
+              target="_blank"
+              class="btn btn-primary"
+            >
+              🔗 Open Control Panel
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container">
+        <h3>Test Store</h3>
+        <p>This is a demo page for testing social proof notifications.</p>
+        <button
+          class="btn btn-primary"
+          onclick="window.open('/test-control-panel', '_blank')"
+        >
+          🔗 Open Control Panel
+        </button>
+      </div>
+    </footer>
+
+    <!-- Floating Refresh Button -->
+    <button
+      class="refresh-btn"
+      onclick="window.location.reload()"
+      title="Refresh Page"
+    >
+      🔄
+    </button>
+
+    <script>
+      // State management
+      let siteId = null;
+      let scriptLoaded = false;
+      let notificationCount = 0;
+
+      // DOM elements
+      const scriptStatus = document.getElementById("script-status");
+      const notificationCountEl = document.getElementById("notification-count");
+      const siteIdBadge = document.getElementById("site-id-badge");
+      const scriptActiveBadge = document.getElementById("script-active-badge");
+
+      // Initialize the page
+      function init() {
+        // Get site ID from URL parameters or local storage
+        const params = new URLSearchParams(window.location.search);
+        const urlSiteId = params.get("siteId");
+
+        if (urlSiteId) {
+          siteId = urlSiteId;
+          localStorage.setItem("test-site-id", urlSiteId);
+        } else {
+          const storedSiteId = localStorage.getItem("test-site-id");
+          if (storedSiteId) {
+            siteId = storedSiteId;
+          }
+        }
+
+        updateUI();
+
+        if (siteId) {
+          loadSocialProofScript();
+        } else {
+          showNoSiteIdMessage();
+        }
+
+        // Listen for notification events
+        window.addEventListener("social-proof-notification", handleNotification);
+      }
+
+      // Update UI elements
+      function updateUI() {
+        if (siteId) {
+          siteIdBadge.textContent = `Site ID: ${siteId}`;
+        } else {
+          siteIdBadge.textContent = "Site ID: Not Set";
+        }
+
+        if (scriptLoaded) {
+          scriptStatus.textContent = "Script: Loaded";
+          scriptStatus.className = "badge badge-success";
+          scriptActiveBadge.textContent = "✓ Script Active";
+          scriptActiveBadge.className = "badge badge-success";
+        } else {
+          scriptStatus.textContent = "Script: Loading...";
+          scriptStatus.className = "badge badge-secondary";
+          scriptActiveBadge.textContent = "⏳ Loading Script";
+          scriptActiveBadge.className = "badge badge-secondary";
+        }
+
+        notificationCountEl.textContent = `Notifications: ${notificationCount}`;
+      }
+
+      // Load the social proof script
+      function loadSocialProofScript() {
+        const script = document.createElement("script");
+        script.src = `/api/embed/${siteId}.js`;
+        script.async = true;
+
+        script.onload = () => {
+          scriptLoaded = true;
+          updateUI();
+          console.log("Social proof script loaded successfully");
+          
+          // Initialize the social proof widget
+          if (window.SocialProof && window.SocialProof.init) {
+            window.SocialProof.init({
+              position: "bottom-left",
+              displayTime: 5000,
+              animation: "fade"
+            });
+            console.log("Social proof widget initialized");
+          } else {
+            console.error("SocialProof.init not found");
+          }
+        };
+
+        script.onerror = () => {
+          console.error("Failed to load social proof script");
+          scriptStatus.textContent = "Script: Error";
+          scriptStatus.className = "badge badge-error";
+        };
+
+        document.head.appendChild(script);
+      }
+
+      // Handle notification events
+      function handleNotification(event) {
+        notificationCount++;
+        updateUI();
+        console.log("Social proof notification received:", event.detail);
+      }
+
+      // Show message when no site ID is available
+      function showNoSiteIdMessage() {
+        // Replace the main content with a message
+        const container = document.querySelector(".products .container");
+        container.innerHTML = `
+                <div style="text-align: center; padding: 4rem 2rem; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">🖥️</div>
+                    <h2 style="margin-bottom: 1rem; color: #333;">Test Client Page</h2>
+                    <p style="color: #666; margin-bottom: 2rem;">No site ID provided. Please access this page from the test control panel.</p>
+                    
+                    <div style="text-align: left; max-width: 400px; margin: 0 auto 2rem;">
+                        <h4 style="margin-bottom: 1rem;">To test social proof notifications:</h4>
+                        <ol style="color: #666; line-height: 1.8;">
+                            <li>Go to the test control panel</li>
+                            <li>Initialize your test site</li>
+                            <li>Navigate to this page from the "Test Page" tab</li>
+                        </ol>
+                    </div>
+                    
+                    <a href="/test-control-panel" class="btn btn-primary">
+                        🔗 Go to Control Panel
+                    </a>
+                </div>
+            `;
+      }
+
+      // Initialize when DOM is loaded
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", init);
+      } else {
+        init();
+      }
+    </script>
+  </body>
+</html>
