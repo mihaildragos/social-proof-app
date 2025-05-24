@@ -93,7 +93,7 @@ __Testing Coverage__:
 
 ### 🔧 Configuration ✅
 
-* ✅ __Environment Configuration__ - `config/mvp.env` with all variables
+* ✅ __Environment Configuration__ - `config/.env.mvp` with all variables
 * ✅ __Service Discovery__ - Internal networking and communication
 * ✅ __Health Checks__ - Service availability monitoring
 * ✅ __Volume Management__ - Persistent data storage

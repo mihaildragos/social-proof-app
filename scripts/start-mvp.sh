@@ -41,11 +41,11 @@ if ! command -v docker-compose &>/dev/null; then
 fi
 
 # Load environment variables
-if [ -f "config/mvp.env" ]; then
-    print_status "Loading environment variables from config/mvp.env"
-    export $(cat config/mvp.env | grep -v '^#' | grep -v '^$' | xargs)
+if [ -f "config/.env.mvp" ]; then
+    print_status "Loading environment variables from config/.env.mvp"
+    export $(cat config/.env.mvp | grep -v '^#' | grep -v '^$' | xargs)
 else
-    print_warning "Environment file config/mvp.env not found. Using defaults."
+    print_warning "Environment file config/.env.mvp not found. Using defaults."
 fi
 
 # Clean up any existing containers

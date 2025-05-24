@@ -110,7 +110,7 @@ This will:
 
 ### Environment Configuration
 
-Environment variables are configured in `config/mvp.env`. Key variables:
+Environment variables are configured in `config/.env.mvp`. Key variables:
 
 ```env
 # Database
