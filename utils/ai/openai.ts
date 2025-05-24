@@ -1,19 +1,24 @@
 import { OpenAI } from "openai";
-import { ChatCompletionCreateParamsBase, ChatCompletionMessageParam } from "openai/resources/chat/completions";
+import {
+  ChatCompletionCreateParamsBase,
+  ChatCompletionMessageParam,
+} from "openai/resources/chat/completions";
 
 interface GenerateCompletionArgs {
-    chat: ChatCompletionMessageParam[];
-    maxTokens?: number;
-    onComplete?: (data: OpenAI.Chat.Completions.ChatCompletion) => void;
-    responseFormatType?: ChatCompletionCreateParamsBase['response_format'];
-    model?: OpenAI.Chat.ChatModel;
-    toolParams?: {
-        toolsChoice?: OpenAI.Chat.Completions.ChatCompletionToolChoiceOption;
-        tools: OpenAI.Chat.Completions.ChatCompletionTool[];
-    };
+  chat: ChatCompletionMessageParam[];
+  maxTokens?: number;
+  onComplete?: (data: OpenAI.Chat.Completions.ChatCompletion) => void;
+  responseFormatType?: ChatCompletionCreateParamsBase["response_format"];
+  model?: OpenAI.Chat.ChatModel;
+  toolParams?: {
+    toolsChoice?: OpenAI.Chat.Completions.ChatCompletionToolChoiceOption;
+    tools: OpenAI.Chat.Completions.ChatCompletionTool[];
+  };
 }
 
-type CompletionResult = string | OpenAI.Chat.Completions.ChatCompletionMessage & { reasoning_content: string };
+type CompletionResult =
+  | string
+  | (OpenAI.Chat.Completions.ChatCompletionMessage & { reasoning_content: string });
 
 /**
  * Generate a completion using OpenAI API
@@ -28,48 +33,46 @@ type CompletionResult = string | OpenAI.Chat.Completions.ChatCompletionMessage &
  * @throws Error if the API call fails or no completion is returned
  */
 export async function generateCompletion(args: GenerateCompletionArgs): Promise<CompletionResult> {
-    const {
-        chat,
-        maxTokens = 200,
-        onComplete,
-        responseFormatType,
-        model = "gpt-4o",
-        toolParams,
-    } = args;
+  const {
+    chat,
+    maxTokens = 200,
+    onComplete,
+    responseFormatType,
+    model = "gpt-4o",
+    toolParams,
+  } = args;
 
-    const openaiKey = process.env.OPENAI_API_KEY;
-    if (!openaiKey) {
-        throw new Error("OpenAI API key is not configured");
+  const openaiKey = process.env.OPENAI_API_KEY;
+  if (!openaiKey) {
+    throw new Error("OpenAI API key is not configured");
+  }
+
+  const openai = new OpenAI({ apiKey: openaiKey });
+
+  const isReadoningModel = model.includes("o3") || model.includes("o1");
+
+  try {
+    const response = await openai.chat.completions.create({
+      model,
+      messages: chat,
+      max_tokens: isReadoningModel ? undefined : maxTokens,
+      response_format: responseFormatType ?? { type: "text" },
+      tool_choice: toolParams?.toolsChoice,
+      tools: toolParams?.tools,
+      max_completion_tokens: isReadoningModel ? maxTokens : undefined,
+    });
+
+    onComplete?.(response);
+
+    const messageContent = response.choices[0]?.message?.content;
+    if (!messageContent) {
+      console.error("Unexpected OpenAI response:", JSON.stringify(response));
+      throw new Error("No completion content found in the response");
     }
 
-    const openai = new OpenAI({ apiKey: openaiKey });
-
-    const isReadoningModel = model.includes("o3") || model.includes("o1")
-
-    try {
-        const response = await openai.chat.completions.create({
-            model,
-            messages: chat,
-            max_tokens: isReadoningModel ? undefined : maxTokens,
-            response_format: responseFormatType ?? { type: "text" },
-            tool_choice: toolParams?.toolsChoice,
-            tools: toolParams?.tools,
-            max_completion_tokens: isReadoningModel ? maxTokens : undefined,
-        });
-
-        onComplete?.(response);
-
-        const messageContent = response.choices[0]?.message?.content;
-        if (!messageContent) {
-            console.error("Unexpected OpenAI response:", JSON.stringify(response));
-            throw new Error("No completion content found in the response");
-        }
-
-        return messageContent;
-    } catch (error) {
-        console.error("Error generating completion:", error);
-        throw error instanceof Error
-            ? error
-            : new Error("Failed to generate completion");
-    }
+    return messageContent;
+  } catch (error) {
+    console.error("Error generating completion:", error);
+    throw error instanceof Error ? error : new Error("Failed to generate completion");
+  }
 }

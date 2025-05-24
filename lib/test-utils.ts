@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import { NextRequest } from "next/server";
 
 /**
  * Utility to check if the request is in test mode
@@ -7,25 +7,25 @@ import { NextRequest } from 'next/server';
  */
 export function checkTestMode(req: Request | NextRequest) {
   const headers = req.headers;
-  
+
   // More reliable test mode detection including environment vars
-  const isTestMode = 
-    headers.get('X-Test-Auth') === 'true' || 
-    process.env.TEST_MODE === 'true' || 
-    process.env.NODE_ENV === 'test';
-    
-  const testUserId = headers.get('x-middleware-test-user-id') || 'test_user_123';
-  
-  console.log('Test mode detection:', { 
-    isTestMode, 
+  const isTestMode =
+    headers.get("X-Test-Auth") === "true" ||
+    process.env.TEST_MODE === "true" ||
+    process.env.NODE_ENV === "test";
+
+  const testUserId = headers.get("x-middleware-test-user-id") || "test_user_123";
+
+  console.log("Test mode detection:", {
+    isTestMode,
     testUserId,
     envTestMode: process.env.TEST_MODE,
     nodeEnv: process.env.NODE_ENV,
-    testHeader: headers.get('X-Test-Auth')
+    testHeader: headers.get("X-Test-Auth"),
   });
-  
+
   return {
     isTestMode,
-    testUserId: isTestMode ? testUserId : null
+    testUserId: isTestMode ? testUserId : null,
   };
-} 
+}

@@ -1,0 +1,40 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "1489f692f0fa6b998f2e9e28140f0233"
+name = "pulse-social-proof-shop-app"
+handle = "pulse-social-proof-shop-app"
+application_url = "https://more-prairie-sentence-chemicals.trycloudflare.com"
+embedded = true
+
+[build]
+include_config_on_deploy = true
+automatically_update_urls_on_dev = true
+
+[webhooks]
+api_version = "2025-01"
+
+  [[webhooks.subscriptions]]
+  topics = [ "app/uninstalled" ]
+  uri = "/webhooks/app/uninstalled"
+
+  [[webhooks.subscriptions]]
+  topics = [ "app/scopes_update" ]
+  uri = "/webhooks/app/scopes_update"
+
+  [[webhooks.subscriptions]]
+  topics = [ "orders/create" ]
+  uri = "/webhooks/orders/create"
+
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "write_products,read_orders"
+
+[auth]
+redirect_urls = [
+  "https://more-prairie-sentence-chemicals.trycloudflare.com/auth/callback",
+  "https://more-prairie-sentence-chemicals.trycloudflare.com/auth/shopify/callback",
+  "https://more-prairie-sentence-chemicals.trycloudflare.com/api/auth/callback"
+]
+
+[pos]
+embedded = false

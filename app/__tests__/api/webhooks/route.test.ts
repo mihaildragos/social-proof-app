@@ -12,7 +12,8 @@ jest.mock("@/utils/supabase/admin", () => ({
   upsertPriceRecord: require("../../../__tests__/__mocks__/supabase-admin").upsertPriceRecord,
   deleteProductRecord: require("../../../__tests__/__mocks__/supabase-admin").deleteProductRecord,
   deletePriceRecord: require("../../../__tests__/__mocks__/supabase-admin").deletePriceRecord,
-  manageSubscriptionStatusChange: require("../../../__tests__/__mocks__/supabase-admin").manageSubscriptionStatusChange,
+  manageSubscriptionStatusChange: require("../../../__tests__/__mocks__/supabase-admin")
+    .manageSubscriptionStatusChange,
 }));
 
 // Import mocked functions for direct testing
@@ -22,7 +23,7 @@ import {
   upsertPriceRecord,
   deleteProductRecord,
   deletePriceRecord,
-  manageSubscriptionStatusChange
+  manageSubscriptionStatusChange,
 } from "../../../__tests__/__mocks__/supabase-admin";
 
 // Mock environment variables
@@ -46,17 +47,17 @@ describe("Webhooks API Route", () => {
   it("should return 400 if webhook secret is not found", async () => {
     // Setup - remove the webhook secret
     process.env.STRIPE_WEBHOOK_SECRET = "";
-    
+
     const req = createWebhookRequest(
       "POST",
       "https://example.com/api/webhooks",
       { type: "product.created" },
       { "stripe-signature": "valid-signature" }
     );
-    
+
     // Execute
     const response = await POST(req);
-    
+
     // Assert
     expect(response).toBeInstanceOf(Response);
     expect(response.status).toBe(400);
@@ -71,10 +72,10 @@ describe("Webhooks API Route", () => {
       { type: "product.created" },
       { "stripe-signature": "invalid-signature" }
     );
-    
+
     // Execute
     const response = await POST(req);
-    
+
     // Assert
     expect(response).toBeInstanceOf(Response);
     expect(response.status).toBe(400);
@@ -89,26 +90,23 @@ describe("Webhooks API Route", () => {
         object: {
           id: "prod_test123",
           name: "Test Product",
-          active: true
-        }
-      }
+          active: true,
+        },
+      },
     };
-    
-    const req = createWebhookRequest(
-      "POST",
-      "https://example.com/api/webhooks",
-      eventData,
-      { "stripe-signature": "valid-signature" }
-    );
-    
+
+    const req = createWebhookRequest("POST", "https://example.com/api/webhooks", eventData, {
+      "stripe-signature": "valid-signature",
+    });
+
     // Execute
     const response = await POST(req);
-    
+
     // Assert
     expect(response).toBeInstanceOf(Response);
     expect(response.status).toBe(200);
     expect(upsertProductRecord).toHaveBeenCalledWith(eventData.data.object);
-    
+
     const responseBody = await response.json();
     expect(responseBody).toEqual({ received: true });
   });
@@ -121,26 +119,23 @@ describe("Webhooks API Route", () => {
           id: "price_test123",
           product: "prod_test123",
           unit_amount: 1000,
-          currency: "usd"
-        }
-      }
+          currency: "usd",
+        },
+      },
     };
-    
-    const req = createWebhookRequest(
-      "POST",
-      "https://example.com/api/webhooks",
-      eventData,
-      { "stripe-signature": "valid-signature" }
-    );
-    
+
+    const req = createWebhookRequest("POST", "https://example.com/api/webhooks", eventData, {
+      "stripe-signature": "valid-signature",
+    });
+
     // Execute
     const response = await POST(req);
-    
+
     // Assert
     expect(response).toBeInstanceOf(Response);
     expect(response.status).toBe(200);
     expect(upsertPriceRecord).toHaveBeenCalledWith(eventData.data.object);
-    
+
     const responseBody = await response.json();
     expect(responseBody).toEqual({ received: true });
   });
@@ -151,26 +146,23 @@ describe("Webhooks API Route", () => {
       data: {
         object: {
           id: "price_test123",
-          product: "prod_test123"
-        }
-      }
+          product: "prod_test123",
+        },
+      },
     };
-    
-    const req = createWebhookRequest(
-      "POST",
-      "https://example.com/api/webhooks",
-      eventData,
-      { "stripe-signature": "valid-signature" }
-    );
-    
+
+    const req = createWebhookRequest("POST", "https://example.com/api/webhooks", eventData, {
+      "stripe-signature": "valid-signature",
+    });
+
     // Execute
     const response = await POST(req);
-    
+
     // Assert
     expect(response).toBeInstanceOf(Response);
     expect(response.status).toBe(200);
     expect(deletePriceRecord).toHaveBeenCalledWith(eventData.data.object);
-    
+
     const responseBody = await response.json();
     expect(responseBody).toEqual({ received: true });
   });
@@ -180,26 +172,23 @@ describe("Webhooks API Route", () => {
       type: "product.deleted",
       data: {
         object: {
-          id: "prod_test123"
-        }
-      }
+          id: "prod_test123",
+        },
+      },
     };
-    
-    const req = createWebhookRequest(
-      "POST",
-      "https://example.com/api/webhooks",
-      eventData,
-      { "stripe-signature": "valid-signature" }
-    );
-    
+
+    const req = createWebhookRequest("POST", "https://example.com/api/webhooks", eventData, {
+      "stripe-signature": "valid-signature",
+    });
+
     // Execute
     const response = await POST(req);
-    
+
     // Assert
     expect(response).toBeInstanceOf(Response);
     expect(response.status).toBe(200);
     expect(deleteProductRecord).toHaveBeenCalledWith(eventData.data.object);
-    
+
     const responseBody = await response.json();
     expect(responseBody).toEqual({ received: true });
   });
@@ -210,26 +199,23 @@ describe("Webhooks API Route", () => {
       data: {
         object: {
           id: "sub_test123",
-          customer: "cus_test123"
-        }
-      }
+          customer: "cus_test123",
+        },
+      },
     };
-    
-    const req = createWebhookRequest(
-      "POST",
-      "https://example.com/api/webhooks",
-      eventData,
-      { "stripe-signature": "valid-signature" }
-    );
-    
+
+    const req = createWebhookRequest("POST", "https://example.com/api/webhooks", eventData, {
+      "stripe-signature": "valid-signature",
+    });
+
     // Execute
     const response = await POST(req);
-    
+
     // Assert
     expect(response).toBeInstanceOf(Response);
     expect(response.status).toBe(200);
     expect(manageSubscriptionStatusChange).toHaveBeenCalledWith("sub_test123", "cus_test123", true);
-    
+
     const responseBody = await response.json();
     expect(responseBody).toEqual({ received: true });
   });
@@ -241,26 +227,23 @@ describe("Webhooks API Route", () => {
         object: {
           mode: "subscription",
           subscription: "sub_test123",
-          customer: "cus_test123"
-        }
-      }
+          customer: "cus_test123",
+        },
+      },
     };
-    
-    const req = createWebhookRequest(
-      "POST",
-      "https://example.com/api/webhooks",
-      eventData,
-      { "stripe-signature": "valid-signature" }
-    );
-    
+
+    const req = createWebhookRequest("POST", "https://example.com/api/webhooks", eventData, {
+      "stripe-signature": "valid-signature",
+    });
+
     // Execute
     const response = await POST(req);
-    
+
     // Assert
     expect(response).toBeInstanceOf(Response);
     expect(response.status).toBe(200);
     expect(manageSubscriptionStatusChange).toHaveBeenCalledWith("sub_test123", "cus_test123", true);
-    
+
     const responseBody = await response.json();
     expect(responseBody).toEqual({ received: true });
   });
@@ -271,26 +254,23 @@ describe("Webhooks API Route", () => {
       data: {
         object: {
           mode: "payment",
-          customer: "cus_test123"
-        }
-      }
+          customer: "cus_test123",
+        },
+      },
     };
-    
-    const req = createWebhookRequest(
-      "POST",
-      "https://example.com/api/webhooks",
-      eventData,
-      { "stripe-signature": "valid-signature" }
-    );
-    
+
+    const req = createWebhookRequest("POST", "https://example.com/api/webhooks", eventData, {
+      "stripe-signature": "valid-signature",
+    });
+
     // Execute
     const response = await POST(req);
-    
+
     // Assert
     expect(response).toBeInstanceOf(Response);
     expect(response.status).toBe(200);
     expect(manageSubscriptionStatusChange).not.toHaveBeenCalled();
-    
+
     const responseBody = await response.json();
     expect(responseBody).toEqual({ received: true });
   });
@@ -302,31 +282,28 @@ describe("Webhooks API Route", () => {
       data: {
         object: {
           id: "prod_test123",
-          name: "Updated Product Name"
-        }
-      }
+          name: "Updated Product Name",
+        },
+      },
     };
-    
-    const req = createWebhookRequest(
-      "POST",
-      "https://example.com/api/webhooks",
-      eventData,
-      { "stripe-signature": "valid-signature" }
-    );
-    
+
+    const req = createWebhookRequest("POST", "https://example.com/api/webhooks", eventData, {
+      "stripe-signature": "valid-signature",
+    });
+
     // Spy on console.log to check for unhandled event message
-    jest.spyOn(global.console, 'log').mockImplementation(() => {});
-    
+    jest.spyOn(global.console, "log").mockImplementation(() => {});
+
     // Execute
     const response = await POST(req);
-    
+
     // Assert
     expect(response).toBeInstanceOf(Response);
     expect(response.status).toBe(200);
-    
+
     // In this case, it should fall through to the default case and log the unhandled event type
     expect(console.log).toHaveBeenCalledWith(`🔔  Webhook received: ${eventData.type}`);
-    
+
     const responseBody = await response.json();
     expect(responseBody).toEqual({ received: true });
   });
@@ -335,20 +312,17 @@ describe("Webhooks API Route", () => {
     const eventData = {
       type: "unsupported.event",
       data: {
-        object: {}
-      }
+        object: {},
+      },
     };
-    
-    const req = createWebhookRequest(
-      "POST",
-      "https://example.com/api/webhooks",
-      eventData,
-      { "stripe-signature": "valid-signature" }
-    );
-    
+
+    const req = createWebhookRequest("POST", "https://example.com/api/webhooks", eventData, {
+      "stripe-signature": "valid-signature",
+    });
+
     // Execute
     const response = await POST(req);
-    
+
     // Assert
     expect(response).toBeInstanceOf(Response);
     // The implementation returns 200 for all event types, even unsupported ones
@@ -367,25 +341,22 @@ describe("Webhooks API Route", () => {
       type: "product.created",
       data: {
         object: {
-          id: "prod_test123"
-        }
-      }
+          id: "prod_test123",
+        },
+      },
     };
-    
-    const req = createWebhookRequest(
-      "POST",
-      "https://example.com/api/webhooks",
-      eventData,
-      { "stripe-signature": "valid-signature" }
-    );
-    
+
+    const req = createWebhookRequest("POST", "https://example.com/api/webhooks", eventData, {
+      "stripe-signature": "valid-signature",
+    });
+
     // Execute
     const response = await POST(req);
-    
+
     // Assert
     expect(response).toBeInstanceOf(Response);
     expect(response.status).toBe(400);
     const text = await response.text();
     expect(text).toBe("Webhook handler failed. View your Next.js function logs.");
   });
-}); 
+});

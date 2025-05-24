@@ -1,2 +1,2 @@
 // TypeScript types
-// Export all types here for easier imports 
+// Export all types here for easier imports

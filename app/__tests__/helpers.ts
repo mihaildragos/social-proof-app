@@ -16,45 +16,50 @@ interface MockRequest extends Request {
 export function createRequest(method: string, url: string, body?: any): Request {
   // Create body if provided
   const bodyStr = body ? JSON.stringify(body) : undefined;
-  
+
   // Create a headers object
   const headers = new Headers({
-    "Content-Type": "application/json"
+    "Content-Type": "application/json",
   });
-  
+
   // Create a full Request object
   return new Request(url, {
     method,
     headers,
-    body: bodyStr
+    body: bodyStr,
   });
 }
 
 // Create a Request object for testing webhooks
-export function createWebhookRequest(method: string, url: string, body?: any, headers?: Record<string, string>): Request {
+export function createWebhookRequest(
+  method: string,
+  url: string,
+  body?: any,
+  headers?: Record<string, string>
+): Request {
   const init: RequestInit = {
     method,
     headers: {
       "Content-Type": "application/json",
-      ...headers
-    }
+      ...headers,
+    },
   };
-  
+
   if (body) {
-    if (typeof body === 'string') {
+    if (typeof body === "string") {
       init.body = body;
     } else {
       init.body = JSON.stringify(body);
     }
   }
-  
+
   return new Request(url, init);
 }
 
 // Helper to parse NextResponse
 export async function parseResponse<T>(response: NextResponse): Promise<T> {
   // For NextResponse objects
-  if (response && typeof response.text === 'function') {
+  if (response && typeof response.text === "function") {
     try {
       const text = await response.text();
       try {
@@ -67,7 +72,7 @@ export async function parseResponse<T>(response: NextResponse): Promise<T> {
       return {} as T;
     }
   }
-  
+
   // For direct object responses in tests
   return response as unknown as T;
 }
@@ -92,4 +97,4 @@ export function setAuthorized(userId: string = "test-user-id") {
 // Helper to create params object for route handlers
 export function createParams<T extends Record<string, string>>(params: T): { params: T } {
   return { params };
-} 
+}

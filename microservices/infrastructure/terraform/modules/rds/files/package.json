@@ -1,0 +1,11 @@
+{
+  "name": "db-init-lambda",
+  "version": "1.0.0",
+  "description": "Lambda function to initialize RDS with Row-Level Security",
+  "main": "db_init.js",
+  "dependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.445.0",
+    "@aws-sdk/client-s3": "^3.445.0",
+    "pg": "^8.11.3"
+  }
+}
