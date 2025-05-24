@@ -2,9 +2,14 @@
 
 # dependencies
 /node_modules
+**/node_modules/**
 /.pnp
 .pnp.js
 .yarn/install-state.gz
+
+# terraform
+microservices/infrastructure/terraform/terraform.tfvars
+microservices/infrastructure/terraform/.terraform/
 
 # testing
 /coverage
@@ -29,6 +34,8 @@ yarn-error.log*
 .env*.local
 .env.test
 .env
+.env.*
+!env.example
 
 # vercel
 .vercel
@@ -39,3 +46,7 @@ next-env.d.ts
 
 # cursor
 .cursor/mcp.json
+
+
+
+documentation/old_shopify_app/*

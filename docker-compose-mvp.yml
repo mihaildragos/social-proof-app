@@ -1,0 +1,281 @@
+services:
+  # Infrastructure Services
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: social-proof-kafka
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: true
+    ports:
+      - "29092:29092"
+    depends_on:
+      - zookeeper
+    networks:
+      - social-proof-network
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    container_name: social-proof-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - social-proof-network
+    volumes:
+      - zookeeper-data:/var/lib/zookeeper/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: social-proof-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - social-proof-network
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+
+  postgres:
+    image: timescale/timescaledb:latest-pg15
+    container_name: social-proof-postgres
+    environment:
+      POSTGRES_DB: social_proof_mvp
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - social-proof-network
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:23.8
+    container_name: social-proof-clickhouse
+    environment:
+      CLICKHOUSE_DB: analytics
+      CLICKHOUSE_USER: default
+      CLICKHOUSE_PASSWORD: ""
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    networks:
+      - social-proof-network
+    volumes:
+      - clickhouse-data:/var/lib/clickhouse
+      - ./database/clickhouse:/docker-entrypoint-initdb.d
+
+  # Microservices
+  integrations-service:
+    build:
+      context: ./microservices/services/integrations
+      dockerfile: Dockerfile.basic
+    container_name: social-proof-integrations
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      KAFKA_BROKERS: kafka:9092
+      REDIS_URL: redis://redis:6379
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/social_proof_mvp
+    ports:
+      - "3001:3001"
+    depends_on:
+      - kafka
+      - redis
+      - postgres
+    networks:
+      - social-proof-network
+    volumes:
+      - ./microservices/services/integrations:/app
+      - /app/node_modules
+
+  notification-stream-service:
+    build:
+      context: ./microservices/services/notification-stream-service
+      dockerfile: Dockerfile.basic
+    container_name: social-proof-notification-stream
+    environment:
+      NODE_ENV: development
+      PORT: 3002
+      KAFKA_BROKERS: kafka:9092
+      REDIS_URL: redis://redis:6379
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/social_proof_mvp
+    ports:
+      - "3002:3002"
+    depends_on:
+      - kafka
+      - redis
+      - postgres
+    networks:
+      - social-proof-network
+    volumes:
+      - ./microservices/services/notification-stream-service:/app
+      - /app/node_modules
+
+  notifications-service:
+    build:
+      context: ./microservices/services/notifications
+      dockerfile: Dockerfile.basic
+    container_name: social-proof-notifications
+    environment:
+      NODE_ENV: development
+      PORT: 3003
+      KAFKA_BROKERS: kafka:9092
+      REDIS_URL: redis://redis:6379
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/social_proof_mvp
+      SENDGRID_API_KEY: mock_sendgrid_key
+      FIREBASE_PROJECT_ID: mock_firebase_project
+    ports:
+      - "3003:3003"
+    depends_on:
+      - kafka
+      - redis
+      - postgres
+    networks:
+      - social-proof-network
+    volumes:
+      - ./microservices/services/notifications:/app
+      - /app/node_modules
+
+  users-service:
+    build:
+      context: ./microservices/services/users
+      dockerfile: Dockerfile.basic
+    container_name: social-proof-users
+    environment:
+      NODE_ENV: development
+      PORT: 3004
+      KAFKA_BROKERS: kafka:9092
+      REDIS_URL: redis://redis:6379
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/social_proof_mvp
+      CLERK_SECRET_KEY: mock_clerk_secret
+    ports:
+      - "3004:3004"
+    depends_on:
+      - kafka
+      - redis
+      - postgres
+    networks:
+      - social-proof-network
+    volumes:
+      - ./microservices/services/users:/app
+      - /app/node_modules
+
+  analytics-service:
+    build:
+      context: ./microservices/services/analytics
+      dockerfile: Dockerfile.basic
+    container_name: social-proof-analytics
+    environment:
+      NODE_ENV: development
+      PORT: 3005
+      KAFKA_BROKERS: kafka:9092
+      REDIS_URL: redis://redis:6379
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/social_proof_mvp
+      CLICKHOUSE_URL: http://clickhouse:8123
+      CLICKHOUSE_DATABASE: analytics
+    ports:
+      - "3005:3005"
+    depends_on:
+      - kafka
+      - redis
+      - postgres
+      - clickhouse
+    networks:
+      - social-proof-network
+    volumes:
+      - ./microservices/services/analytics:/app
+      - /app/node_modules
+
+  billing-service:
+    build:
+      context: ./microservices/services/billing
+      dockerfile: Dockerfile.basic
+    container_name: social-proof-billing
+    environment:
+      NODE_ENV: development
+      PORT: 3006
+      KAFKA_BROKERS: kafka:9092
+      REDIS_URL: redis://redis:6379
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/social_proof_mvp
+      STRIPE_SECRET_KEY: mock_stripe_secret
+    ports:
+      - "3006:3006"
+    depends_on:
+      - kafka
+      - redis
+      - postgres
+    networks:
+      - social-proof-network
+    volumes:
+      - ./microservices/services/billing:/app
+      - /app/node_modules
+
+  # Next.js Frontend Application
+  nextjs-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.nextjs
+    container_name: social-proof-nextjs
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: mock_clerk_publishable
+      CLERK_SECRET_KEY: mock_clerk_secret
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/social_proof_mvp
+      INTEGRATIONS_SERVICE_URL: http://integrations-service:3001
+      NOTIFICATIONS_SERVICE_URL: http://notifications-service:3003
+      USERS_SERVICE_URL: http://users-service:3004
+      ANALYTICS_SERVICE_URL: http://analytics-service:3005
+      BILLING_SERVICE_URL: http://billing-service:3006
+    ports:
+      - "3000:3000"
+    depends_on:
+      - integrations-service
+      - notifications-service
+      - users-service
+      - analytics-service
+      - billing-service
+    networks:
+      - social-proof-network
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+
+  # External Service Mocks
+  external-service-mocks:
+    build:
+      context: ./testing
+      dockerfile: Dockerfile.mocks
+    container_name: social-proof-mocks
+    environment:
+      NODE_ENV: development
+      PORT: 4000
+    ports:
+      - "4000:4000"
+    networks:
+      - social-proof-network
+    volumes:
+      - ./testing:/app
+      - /app/node_modules
+
+networks:
+  social-proof-network:
+    driver: bridge
+
+volumes:
+  kafka-data:
+  zookeeper-data:
+  redis-data:
+  postgres-data:
+  clickhouse-data: 

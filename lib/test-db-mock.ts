@@ -27,4 +27,4 @@ export function resetMockDb(): void {
  */
 export function getMockDb() {
   return mockDb;
-} 
+}

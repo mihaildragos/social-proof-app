@@ -56,4 +56,4 @@ The tests use a preset collection of mock data defined in `__mocks__/supabase.ts
 - `mockVerifications`: Sample verification records
 - `mockResponseData`: Collection of all mock data for the tests
 
-For tests that need to modify data, you can use `resetMockData()` in the `beforeEach` hook to reset the data between tests. 
+For tests that need to modify data, you can use `resetMockData()` in the `beforeEach` hook to reset the data between tests.

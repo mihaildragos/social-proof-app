@@ -2,13 +2,13 @@
 
 ## Phase 1: Environment Setup
 
-1. __Prevalidation__: Check if current directory contains `package.json` or `.git` folder; if yes, prompt user to confirm re-initialization of the Fomo project (Project Overview).
+1. **Prevalidation**: Check if current directory contains `package.json` or `.git` folder; if yes, prompt user to confirm re-initialization of the Fomo project (Project Overview).
 2. Install Node.js v20.2.1 (handles Next.js and microservices) if not already installed (Tech Stack: Frontend).
-3. __Validation__: Run `node -v` and verify output equals `v20.2.1` (Tech Stack: Frontend).
+3. **Validation**: Run `node -v` and verify output equals `v20.2.1` (Tech Stack: Frontend).
 4. Install Docker Engine v24.0.5 for container builds (Tech Stack: DevOps).
-5. __Validation__: Run `docker --version` and confirm `Docker version 24.0.5` (Tech Stack: DevOps).
+5. **Validation**: Run `docker --version` and confirm `Docker version 24.0.5` (Tech Stack: DevOps).
 6. Install Git CLI v2.41.0 to manage source control (Core Tools).
-7. __Validation__: Run `git --version` and confirm `git version 2.41.0` (Core Tools).
+7. **Validation**: Run `git --version` and confirm `git version 2.41.0` (Core Tools).
 8. Create project root directory `fomo-notifications-platform` if it does not exist, then `cd fomo-notifications-platform` (Project Overview).
 9. Initialize a new Git repository: `git init` (Project Overview).
 10. Create `cursor_metrics.md` in the project root to capture Cursor metrics (Tools: Cursor).
@@ -29,9 +29,9 @@
 
 1. Create `/frontend` and initialize a Next.js 14 app with TypeScript:
 
-`cd frontend npx create-next-app@14 fomo-frontend --typescript `__Note:__ Next.js 14 is required for AI coding tools and LLM integration (Tech Stack: Frontend).
+`cd frontend npx create-next-app@14 fomo-frontend --typescript `**Note:** Next.js 14 is required for AI coding tools and LLM integration (Tech Stack: Frontend).
 
-1. __Validation__: Run `npm run dev` inside `/frontend` and verify default page at <http://localhost:3000> (Tech Stack: Frontend).
+1. **Validation**: Run `npm run dev` inside `/frontend` and verify default page at <http://localhost:3000> (Tech Stack: Frontend).
 2. Install Tailwind CSS v3 dependencies in `/frontend`:
 
 `npm install tailwindcss@3 postcss@8 autoprefixer@10 npx tailwindcss init -p `(Tech Stack: Frontend)
@@ -40,7 +40,7 @@
 
 `module.exports = { content: ["./app/**/*.{js,ts,jsx,tsx}", "./components/**/*.{js,ts,jsx,tsx}"], theme: { extend: {} }, plugins: [] } `(Tech Stack: Frontend)
 
-1. Create `/frontend/app/globals.css` and add:
+1. Create `/notification-stream-service/app/globals.css` and add:
 
 `@tailwind base; @tailwind components; @tailwind utilities; `(Tech Stack: Frontend)
 
@@ -60,15 +60,15 @@
 
 `npm install @tanstack/router `(App Flow: Routing)
 
-1. Create `/frontend/app/layout.tsx` importing Tailwind CSS, wrapping children with React Query and Zustand providers (Tech Stack: Frontend).
+1. Create `/notification-stream-service/app/layout.tsx` importing Tailwind CSS, wrapping children with React Query and Zustand providers (Tech Stack: Frontend).
 
 2. Create placeholder pages:
 
-   * `/frontend/app/page.tsx` for Dashboard
-   * `/frontend/app/sites/page.tsx` for Site Management\
+   - `/notification-stream-service/app/page.tsx` for Dashboard
+   - `/notification-stream-service/app/sites/page.tsx` for Site Management\
      (App Flow: Page Structure)
 
-3. __Validation__: Add a simple Jest + React Testing Library test in `/frontend/tests/layout.test.tsx` to verify `layout.tsx` renders children, then run `npm test` and ensure tests pass (QA: Unit Tests).
+3. **Validation**: Add a simple Jest + React Testing Library test in `/notification-stream-service/tests/layout.test.tsx` to verify `layout.tsx` renders children, then run `npm test` and ensure tests pass (QA: Unit Tests).
 
 ## Phase 3: Backend Development
 
@@ -82,53 +82,61 @@
 
 3. Add Terraform provider block for Supabase and configure project in `/infra/terraform/main.tf` (Tech Stack: Database).
 
-4. Create `/docs/schema.sql` containing Postgres schema for core tables:
+4. ✅ COMPLETED: Created `/schema.sql` containing comprehensive PostgreSQL schema with:
 
-   * `accounts(site_id UUID, ... )`
-   * `sites(...)`
-   * `notifications(...)`
-   * `notification_events(...)` partitioned by RANGE on `created_at` and HASH on `site_id`
-   * `ab_tests(...)`
-   * `translations(...)`
-   * `templates(...)`
-   * `users(...)`
-   * `billing_invoices(...)`\
+   - `users` with PII encryption for email and full_name
+   - `accounts` with data residency controls
+   - `sites` for tenant management
+   - `notifications` for campaign management
+   - `notification_events` partitioned by RANGE on `created_at` and HASH on `site_id`
+   - `ab_tests` and `ab_test_variants` with winner tracking
+   - `translations` for internationalization
+   - `templates` for notification styling
+   - `webhook_deliveries` for tracking outbound notifications
+   - `visitor_profiles` for aggregated behavioral data
+   - `custom_field_definitions` for merchant-defined fields
+   - `encryption_keys` for field-level PII protection
+   - `permissions` framework for fine-grained access control
+   - `webhook_templates` for integration transformations
+   - `integration_marketplace` for pre-built integrations
+   - `archival_framework` for data retention management
+   - All with proper Row Level Security and foreign key constraints
      (Tech Stack: Database)
 
-5. __Validation__: Launch Supabase MCP server via Cursor:
+5. **Validation**: Launch Supabase MCP server via Cursor:
 
-`npx @modelcontextprotocol/server-postgres "<connection-string>" `then run `psql` or Supabase SQL editor to execute `/docs/schema.sql` and verify tables exist (Tools: Cursor).
+`npx @modelcontextprotocol/server-postgres "<connection-string>"` then run `psql` or Supabase SQL editor to execute `/schema.sql` and verify tables exist (Tools: Cursor).
 
 1. Create `/backend/notification-service/Dockerfile` using Node 20.2.1 base image and copy `src` (Microservices).
 2. Create `/backend/notification-service/src/index.ts` implementing an Express.js SSE endpoint at `GET /events` (PRD: Real-time Notifications).
-3. __Validation__: Build and run the notification service:
+3. **Validation**: Build and run the notification service:
 
 `docker build -t notification-service ./backend/notification-service docker run -p 4000:4000 notification-service curl -i http://localhost:4000/events `and confirm SSE headers (Performance Test).
 
 1. Create `/backend/user-service/src/config.ts` to integrate Clerk with JWT cookies and SCIM provisioning (Tech Stack: Auth).
 2. Create `/backend/integration-service/src` with stub endpoints for Shopify, WooCommerce, and Zapier connectors (PRD: Integrations).
-3. __Validation__: Run `npm test` across `/backend` and ensure unit tests cover >80% of code (QA: Backend Tests).
+3. **Validation**: Run `npm test` across `/backend` and ensure unit tests cover >80% of code (QA: Backend Tests).
 
 ## Phase 4: Integration
 
-1. In `/frontend/src/services/api.ts`, configure Axios base URL to the Kong API Gateway at `https://api.fomo.com/v1` (Tech Stack: API Gateway).
-2. Implement `/frontend/src/hooks/useNotifications.ts` using React Query to connect to the SSE stream at `/events` (App Flow: SSE).
+1. In `/notification-stream-service/src/services/api.ts`, configure Axios base URL to the Kong API Gateway at `https://api.fomo.com/v1` (Tech Stack: API Gateway).
+2. Implement `/notification-stream-service/src/hooks/useNotifications.ts` using React Query to connect to the SSE stream at `/events` (App Flow: SSE).
 3. Configure Kong CORS plugin to allow `http://localhost:3000` and require mTLS for service-to-service calls (Tech Stack: Security).
-4. __Validation__: Trigger a notification via `curl -X POST https://api.fomo.com/v1/notifications` and verify the SSE event arrives in the frontend within 100ms (Performance Test).
+4. **Validation**: Trigger a notification via `curl -X POST https://api.fomo.com/v1/notifications` and verify the SSE event arrives in the frontend within 100ms (Performance Test).
 
 ## Phase 5: Deployment
 
 1. Create GitHub Actions workflow `.github/workflows/ci-cd.yml` with jobs:
 
-   * Terraform `plan`/`apply`
-   * Docker build & push to ECR
-   * Argo Rollouts promotion to EKS
-   * Frontend deployment to Vercel (Tech Stack: CI/CD).
+   - Terraform `plan`/`apply`
+   - Docker build & push to ECR
+   - Argo Rollouts promotion to EKS
+   - Frontend deployment to Vercel (Tech Stack: CI/CD).
 
 2. Add AWS credentials and GitHub secrets for Terraform state, ECR and Argo in repository settings (Tech Stack: DevOps).
 
-3. __Validation__: Merge to `main`, confirm GitHub Actions completes successfully, and check EKS services health in AWS Console (Availability Test).
+3. **Validation**: Merge to `main`, confirm GitHub Actions completes successfully, and check EKS services health in AWS Console (Availability Test).
 
 4. Configure CloudFront distribution in Terraform to serve `/frontend` build from S3 bucket `fomo-static-assets` in `us-east-1` with caching rules (Tech Stack: Deployment).
 
-5. __Validation__: Visit `https://app.fomo.com`, ensure dashboard loads within 1s, and verify real-time notification overlay functions correctly (PRD: Performance & Availability).
+5. **Validation**: Visit `https://app.fomo.com`, ensure dashboard loads within 1s, and verify real-time notification overlay functions correctly (PRD: Performance & Availability).

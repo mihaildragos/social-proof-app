@@ -1,6 +1,6 @@
 # Security Guidelines for Fomo-Style Social-Proof Notification Platform
 
-This document defines the security principles, controls, and best practices to be applied throughout the design, implementation, and operation of the Fomo-Style Social-Proof Notification Platform. It aligns with the organization’s core security requirements and the project’s multi-tenant architecture, ensuring confidentiality, integrity, availability, and compliance.
+This document defines the security principles, controls, and best practices to be applied throughout the design, implementation, and operation of the Fomo-Style Social-Proof Notification Platform. It aligns with the organization's core security requirements and the project's multi-tenant architecture, ensuring confidentiality, integrity, availability, and compliance.
 
 ## 1. Security by Design & Core Principles
 
@@ -10,7 +10,7 @@ This document defines the security principles, controls, and best practices to b
 
 ### 2.1 User Authentication
 
-• Use Clerk’s SAML/OIDC SSO and email/password flows, enforce unique salted hashing (bcrypt/Argon2) for any local credentials. • Enforce strong password policy: minimum 12 characters, complexity rules, block common passwords. • Enable Multi-Factor Authentication (TOTP or SMS backup codes) for Admin and Owner roles. • Protect login endpoints with brute-force throttling (e.g., Redis-backed rate limit).
+• Use Clerk's SAML/OIDC SSO and email/password flows, enforce unique salted hashing (bcrypt/Argon2) for any local credentials. • Enforce strong password policy: minimum 12 characters, complexity rules, block common passwords. • Enable Multi-Factor Authentication (TOTP or SMS backup codes) for Admin and Owner roles. • Protect login endpoints with brute-force throttling (e.g., Redis-backed rate limit).
 
 ### 2.2 Session & Token Management
 
@@ -28,11 +28,32 @@ This document defines the security principles, controls, and best practices to b
 
 ### 4.1 Encryption & Secrets Management
 
-• Enforce TLS 1.3 for all in-transit traffic (clients ↔ CDN/Edge ↔ API Gateway ↔ Microservices). • Use mTLS between services (API Gateway ↔ EKS pods/Lambdas) to prevent unauthorized access. • Encrypt sensitive fields (PII: email, name) at rest in Postgres using `pgcrypto`. • Store secrets (DB credentials, JWT keys, SendGrid API key, Firebase credentials) in a secrets manager (AWS Secrets Manager or HashiCorp Vault), not in code or env files.
+• Enforce TLS 1.3 for all in-transit traffic (clients ↔ CDN/Edge ↔ API Gateway ↔ Microservices).
+• Use mTLS between services (API Gateway ↔ EKS pods/Lambdas) to prevent unauthorized access.
+• Encrypt sensitive PII fields at rest using field-level encryption:
 
-### 4.2 Data Retention & Erasure
+- User emails are stored as encrypted BYTEA with `email_encrypted` and `email_encryption_key_id` fields
+- Full names are stored as encrypted BYTEA with `full_name_encrypted` and `full_name_encryption_key_id` fields
+- Encryption uses pgcrypto with secure key management
+- Access is controlled via security-definer functions (`get_user_email()`, `get_user_full_name()`)
+- Application provides plaintext during insert/update via triggers that encrypt and discard plaintext
+  • Store encryption keys in a dedicated `encryption_keys` table with rotation support
+  • Store secrets (DB credentials, JWT keys, SendGrid API key, Firebase credentials) in a secrets manager (AWS Secrets Manager or HashiCorp Vault), not in code or env files.
 
-• Retain raw events in Postgres for 90 days; automatically export to S3 Glacier with server-side encryption (AES-256). • Implement GDPR/CCPA workflows: data export (CSV/PDF) and secure erasure on user or site deletion. • Audit logs: write-once logs stored for up to 7 years with integrity checks (hash chaining).
+### 4.2 Data Residency & Sovereignty
+
+• Account data region selection (`us`, `eu`, `ap`, `global`) enforced at database level
+• Region verification function (`verify_data_residency()`) ensures compliance with regional requirements
+• Multi-region deployment with data segregation for enterprise customers
+• Automated checks prevent unauthorized cross-region data access
+
+### 4.3 Data Retention & Erasure
+
+• Retain raw events in Postgres for 90 days; automatically export to S3 Glacier with server-side encryption (AES-256).
+• Implement archival policies with configurable retention periods by data type
+• Archival jobs track status, location, and metadata for compliance reporting
+• Implement GDPR/CCPA workflows: data export (CSV/PDF) and secure erasure on user or site deletion.
+• Audit logs: write-once logs stored for up to 7 years with integrity checks (hash chaining).
 
 ## 5. API & Service Security
 
@@ -44,15 +65,15 @@ This document defines the security principles, controls, and best practices to b
 
 ## 7. Infrastructure & Configuration Management
 
-• **Harden Hosts**: Apply CIS benchmarks to EKS nodes and Lambda environments; disable unused ports and services. • **Immutable Infrastructure**: Use Terraform for defining infrastructure; avoid manual changes in production. • **Network Segmentation**: Deploy microservices in private subnets with limited egress; expose only necessary ports (443, 80 for redirect). • **Secrets Rotation**: Rotate database and API credentials quarterly; automate with secrets manager. • **TLS Configuration**: Use Let’s Encrypt or ACM; enforce strong ciphers (ECDHE-RSA-AES256-GCM). • **Disable Debug**: Ensure Next.js runs in production mode; remove verbose error pages and stack traces.
+• **Harden Hosts**: Apply CIS benchmarks to EKS nodes and Lambda environments; disable unused ports and services. • **Immutable Infrastructure**: Use Terraform for defining infrastructure; avoid manual changes in production. • **Network Segmentation**: Deploy microservices in private subnets with limited egress; expose only necessary ports (443, 80 for redirect). • **Secrets Rotation**: Rotate database and API credentials quarterly; automate with secrets manager. • **TLS Configuration**: Use Let's Encrypt or ACM; enforce strong ciphers (ECDHE-RSA-AES256-GCM). • **Disable Debug**: Ensure Next.js runs in production mode; remove verbose error pages and stack traces.
 
 ## 8. Dependency Management & CI/CD Security
 
 • **Lockfiles**: Commit `package-lock.json`, `yarn.lock`, `Pipfile.lock` for deterministic builds. • **Vulnerability Scanning**: Integrate SCA tools (Dependabot, Snyk) in CI to detect CVEs in dependencies. • **Minimal Dependencies**: Only include libraries that are actively maintained; remove unused packages. • **CI/CD Guardrails**:
 
-*   Require code reviews and security approvals for pull requests.
-*   Run automated tests: unit, integration, and security (SAST/DAST) in GitHub Actions before merge.
-*   Use Argo Rollouts for safe canary/blue-green deployments; rollback on errors/thresholds.
+- Require code reviews and security approvals for pull requests.
+- Run automated tests: unit, integration, and security (SAST/DAST) in GitHub Actions before merge.
+- Use Argo Rollouts for safe canary/blue-green deployments; rollback on errors/thresholds.
 
 ## 9. Logging, Monitoring & Incident Response
 
