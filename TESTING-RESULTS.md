@@ -19,7 +19,6 @@
 ### External Service Mocks - **100% FUNCTIONAL**
 - **Health Check**: ✅ Responding properly
 - **SendGrid Email API**: ✅ Mock emails processed
-- **Firebase Push API**: ✅ Push notifications processed
 - **Shopify Webhooks**: ✅ Webhook processing working
 
 ## 🔬 How to Test the Application

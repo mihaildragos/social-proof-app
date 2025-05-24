@@ -121,7 +121,6 @@ KAFKA_BROKERS=localhost:29092
 
 # External Services (Mocked)
 SENDGRID_API_KEY=SG.mock_sendgrid_api_key_for_testing
-FIREBASE_PROJECT_ID=mock-firebase-project-mvp
 STRIPE_SECRET_KEY=sk_test_mock_stripe_secret_key_for_testing
 ```
 
@@ -300,8 +299,7 @@ docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
 ### Phase 2: Integration
 1. Real Shopify/WooCommerce webhook handling
 2. SendGrid email integration
-3. Firebase push notifications
-4. Stripe billing integration
+3. Stripe billing integration
 
 ### Phase 3: Advanced Features
 1. A/B testing framework

@@ -222,9 +222,6 @@ jobs:
           echo "CLERK_SECRET_KEY_B64=$(echo -n '${{ secrets.CLERK_SECRET_KEY }}' | base64 -w 0)" >> $GITHUB_OUTPUT
           echo "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_B64=$(echo -n '${{ vars.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}' | base64 -w 0)" >> $GITHUB_OUTPUT
           echo "SENDGRID_API_KEY_B64=$(echo -n '${{ secrets.SENDGRID_API_KEY }}' | base64 -w 0)" >> $GITHUB_OUTPUT
-          echo "FIREBASE_PROJECT_ID_B64=$(echo -n '${{ secrets.FIREBASE_PROJECT_ID }}' | base64 -w 0)" >> $GITHUB_OUTPUT
-          echo "FIREBASE_PRIVATE_KEY_B64=$(echo -n '${{ secrets.FIREBASE_PRIVATE_KEY }}' | base64 -w 0)" >> $GITHUB_OUTPUT
-          echo "FIREBASE_CLIENT_EMAIL_B64=$(echo -n '${{ secrets.FIREBASE_CLIENT_EMAIL }}' | base64 -w 0)" >> $GITHUB_OUTPUT
           echo "STRIPE_SECRET_KEY_B64=$(echo -n '${{ secrets.STRIPE_SECRET_KEY }}' | base64 -w 0)" >> $GITHUB_OUTPUT
           echo "STRIPE_WEBHOOK_SECRET_B64=$(echo -n '${{ secrets.STRIPE_WEBHOOK_SECRET }}' | base64 -w 0)" >> $GITHUB_OUTPUT
           echo "POSTGRES_PASSWORD_B64=$(echo -n '${{ secrets.POSTGRES_PASSWORD }}' | base64 -w 0)" >> $GITHUB_OUTPUT
@@ -261,9 +258,6 @@ jobs:
           export CLERK_SECRET_KEY_B64="${{ steps.prepare-secrets.outputs.CLERK_SECRET_KEY_B64 }}"
           export NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_B64="${{ steps.prepare-secrets.outputs.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_B64 }}"
           export SENDGRID_API_KEY_B64="${{ steps.prepare-secrets.outputs.SENDGRID_API_KEY_B64 }}"
-          export FIREBASE_PROJECT_ID_B64="${{ steps.prepare-secrets.outputs.FIREBASE_PROJECT_ID_B64 }}"
-          export FIREBASE_PRIVATE_KEY_B64="${{ steps.prepare-secrets.outputs.FIREBASE_PRIVATE_KEY_B64 }}"
-          export FIREBASE_CLIENT_EMAIL_B64="${{ steps.prepare-secrets.outputs.FIREBASE_CLIENT_EMAIL_B64 }}"
           export STRIPE_SECRET_KEY_B64="${{ steps.prepare-secrets.outputs.STRIPE_SECRET_KEY_B64 }}"
           export STRIPE_WEBHOOK_SECRET_B64="${{ steps.prepare-secrets.outputs.STRIPE_WEBHOOK_SECRET_B64 }}"
           export POSTGRES_PASSWORD_B64="${{ steps.prepare-secrets.outputs.POSTGRES_PASSWORD_B64 }}"
@@ -328,9 +322,6 @@ jobs:
           echo "CLERK_SECRET_KEY_B64=$(echo -n '${{ secrets.CLERK_SECRET_KEY }}' | base64 -w 0)" >> $GITHUB_OUTPUT
           echo "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_B64=$(echo -n '${{ vars.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}' | base64 -w 0)" >> $GITHUB_OUTPUT
           echo "SENDGRID_API_KEY_B64=$(echo -n '${{ secrets.SENDGRID_API_KEY }}' | base64 -w 0)" >> $GITHUB_OUTPUT
-          echo "FIREBASE_PROJECT_ID_B64=$(echo -n '${{ secrets.FIREBASE_PROJECT_ID }}' | base64 -w 0)" >> $GITHUB_OUTPUT
-          echo "FIREBASE_PRIVATE_KEY_B64=$(echo -n '${{ secrets.FIREBASE_PRIVATE_KEY }}' | base64 -w 0)" >> $GITHUB_OUTPUT
-          echo "FIREBASE_CLIENT_EMAIL_B64=$(echo -n '${{ secrets.FIREBASE_CLIENT_EMAIL }}' | base64 -w 0)" >> $GITHUB_OUTPUT
           echo "STRIPE_SECRET_KEY_B64=$(echo -n '${{ secrets.STRIPE_SECRET_KEY }}' | base64 -w 0)" >> $GITHUB_OUTPUT
           echo "STRIPE_WEBHOOK_SECRET_B64=$(echo -n '${{ secrets.STRIPE_WEBHOOK_SECRET }}' | base64 -w 0)" >> $GITHUB_OUTPUT
           echo "POSTGRES_PASSWORD_B64=$(echo -n '${{ secrets.POSTGRES_PASSWORD }}' | base64 -w 0)" >> $GITHUB_OUTPUT
@@ -367,9 +358,6 @@ jobs:
           export CLERK_SECRET_KEY_B64="${{ steps.prepare-secrets.outputs.CLERK_SECRET_KEY_B64 }}"
           export NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_B64="${{ steps.prepare-secrets.outputs.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_B64 }}"
           export SENDGRID_API_KEY_B64="${{ steps.prepare-secrets.outputs.SENDGRID_API_KEY_B64 }}"
-          export FIREBASE_PROJECT_ID_B64="${{ steps.prepare-secrets.outputs.FIREBASE_PROJECT_ID_B64 }}"
-          export FIREBASE_PRIVATE_KEY_B64="${{ steps.prepare-secrets.outputs.FIREBASE_PRIVATE_KEY_B64 }}"
-          export FIREBASE_CLIENT_EMAIL_B64="${{ steps.prepare-secrets.outputs.FIREBASE_CLIENT_EMAIL_B64 }}"
           export STRIPE_SECRET_KEY_B64="${{ steps.prepare-secrets.outputs.STRIPE_SECRET_KEY_B64 }}"
           export STRIPE_WEBHOOK_SECRET_B64="${{ steps.prepare-secrets.outputs.STRIPE_WEBHOOK_SECRET_B64 }}"
           export POSTGRES_PASSWORD_B64="${{ steps.prepare-secrets.outputs.POSTGRES_PASSWORD_B64 }}"
