@@ -5,7 +5,8 @@ import { SiteStatus } from "@/types/sites";
 // This route returns the JavaScript code that will be embedded on the client's website
 export async function GET(req: Request, { params }: { params: { siteId: string } }) {
   try {
-    const { siteId } = params;
+    // Strip .js extension if it exists (since route is [siteId].js)
+    const siteId = params.siteId.replace(/\.js$/, '');
 
     // No auth check here as this is a public endpoint
     const supabase = await createClerkSupabaseClientSsr();
@@ -50,7 +51,8 @@ export async function GET(req: Request, { params }: { params: { siteId: string }
     targetOrigin: "https://${site.domain}",
     position: "bottom-left",
     displayTime: 5000,
-    animation: "fade"
+    animation: "fade",
+    protocol: "${process.env.NODE_ENV === 'development' ? 'http' : 'https'}"
   };
   
   // Notification container
@@ -88,6 +90,9 @@ export async function GET(req: Request, { params }: { params: { siteId: string }
     connectSSE();
   };
   
+  // Expose showNotification for debugging
+  window.SocialProof.showNotification = showNotification;
+  
   // Set the container position based on configuration
   function setContainerPosition(position) {
     var posStyles = {
@@ -109,7 +114,7 @@ export async function GET(req: Request, { params }: { params: { siteId: string }
     }
     
     try {
-      var sseUrl = 'https://' + config.apiHost + '/api/notifications/sse/' + config.siteId;
+      var sseUrl = config.protocol + '://' + config.apiHost + '/api/notifications/sse/' + config.siteId;
       eventSource = new EventSource(sseUrl);
       
       // Set up event listeners
@@ -120,7 +125,9 @@ export async function GET(req: Request, { params }: { params: { siteId: string }
       
       eventSource.onmessage = function(event) {
         try {
+          console.log('Social Proof: Raw SSE data received:', event.data);
           var notification = JSON.parse(event.data);
+          console.log('Social Proof: Parsed notification data:', notification);
           showNotification(notification);
         } catch (err) {
           console.error('Social Proof: Error processing notification:', err);
@@ -172,7 +179,7 @@ export async function GET(req: Request, { params }: { params: { siteId: string }
   // Fetch notifications from the API (fallback method)
   function fetchNotifications() {
     var xhr = new XMLHttpRequest();
-    xhr.open('GET', 'https://' + config.apiEndpoint + '/notifications?siteId=' + config.siteId);
+    xhr.open('GET', config.protocol + '://' + config.apiEndpoint + '/notifications?siteId=' + config.siteId);
     xhr.onload = function() {
       if (xhr.status === 200) {
         var response = JSON.parse(xhr.responseText);
@@ -186,6 +193,15 @@ export async function GET(req: Request, { params }: { params: { siteId: string }
   
   // Display a notification
   function showNotification(notification) {
+    console.log('Social Proof: showNotification called with:', notification);
+    console.log('Social Proof: Container element:', container);
+    console.log('Social Proof: Container exists:', !!container);
+    
+    if (!container) {
+      console.error('Social Proof: Cannot display notification - container not found');
+      return;
+    }
+    
     var notifEl = document.createElement('div');
     notifEl.className = 'social-proof-notification';
     
@@ -298,16 +314,34 @@ export async function GET(req: Request, { params }: { params: { siteId: string }
   
   // Send events back to our API
   function sendEvent(eventType, data) {
-    var xhr = new XMLHttpRequest();
-    xhr.open('POST', 'https://' + config.apiEndpoint + '/events');
-    xhr.setRequestHeader('Content-Type', 'application/json');
-    xhr.send(JSON.stringify({
-      site_id: config.siteId,
-      event_type: eventType,
-      data: data,
-      url: window.location.href,
-      timestamp: new Date().toISOString()
-    }));
+    try {
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', config.protocol + '://' + config.apiEndpoint + '/events');
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      
+      // Handle success/error without blocking notification display
+      xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          console.log('Social Proof: Event tracked successfully:', eventType);
+        } else {
+          console.warn('Social Proof: Event tracking failed:', xhr.status, xhr.responseText);
+        }
+      };
+      
+      xhr.onerror = function() {
+        console.warn('Social Proof: Event tracking request failed:', eventType);
+      };
+      
+      xhr.send(JSON.stringify({
+        site_id: config.siteId,
+        event_type: eventType,
+        data: data,
+        url: window.location.href,
+        timestamp: new Date().toISOString()
+      }));
+    } catch (err) {
+      console.warn('Social Proof: Event tracking error:', err);
+    }
   }
   
   // Add necessary styles

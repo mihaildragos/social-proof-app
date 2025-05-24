@@ -1,0 +1,27 @@
+FROM node:18-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Copy the microservices directory structure
+COPY . .
+
+# Install dependencies for shared modules first
+WORKDIR /app/shared
+RUN npm install
+
+# Install dependencies for integrations service
+WORKDIR /app/services/integrations
+RUN npm install
+
+# Install tsx for running TypeScript with ES modules
+RUN npm install -g tsx
+
+# Create a healthcheck file
+RUN echo "console.log('Server is healthy')" > healthcheck.js
+
+# Expose port
+EXPOSE 3001
+
+# Start the server with tsx (better ES module support)
+CMD ["tsx", "index.ts"] 

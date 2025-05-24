@@ -1,6 +1,7 @@
 import { RedisPublisher } from "../../../shared/redis/publisher";
 import { NotificationService } from "../services/notification-service";
 import { getContextLogger } from "../../../shared/utils/logger";
+import { Pool } from "pg";
 
 const logger = getContextLogger({ service: "order-event-handler" });
 
@@ -8,6 +9,8 @@ const logger = getContextLogger({ service: "order-event-handler" });
  * Handler for processing order events from Kafka
  */
 export class OrderEventHandler {
+  private dbPool: Pool;
+
   /**
    * Create a new order event handler
    * @param redisPublisher - Redis publisher for sending notifications
@@ -16,7 +19,42 @@ export class OrderEventHandler {
   constructor(
     private redisPublisher: RedisPublisher,
     private notificationService: NotificationService
-  ) {}
+  ) {
+    // Initialize database connection pool
+    this.dbPool = new Pool({
+      connectionString: process.env.DATABASE_URL || "postgresql://postgres:postgres@localhost:5432/social_proof_mvp"
+    });
+  }
+
+  /**
+   * Get site ID from shop domain using integrations table
+   * @param shopDomain - The Shopify shop domain
+   * @returns Site ID or null if not found
+   */
+  private async getSiteIdByShopDomain(shopDomain: string): Promise<string | null> {
+    try {
+      const query = `
+        SELECT i.site_id 
+        FROM integrations i 
+        WHERE i.provider = 'shopify' 
+        AND i.settings->>'shop_domain' = $1 
+        AND i.status = 'active'
+        LIMIT 1
+      `;
+      
+      const result = await this.dbPool.query(query, [shopDomain]);
+      
+      if (result.rows.length > 0) {
+        return result.rows[0].site_id;
+      }
+      
+      logger.warn(`No active Shopify integration found for shop domain: ${shopDomain}`);
+      return null;
+    } catch (error: any) {
+      logger.error(`Error looking up site ID for shop domain ${shopDomain}:`, error);
+      return null;
+    }
+  }
 
   /**
    * Main message handler that routes to specific event type handlers
@@ -49,17 +87,28 @@ export class OrderEventHandler {
    */
   async handleOrderCreated(message: any): Promise<void> {
     try {
-      const { shop_domain, data } = message;
+      const { shop_domain, data, site_id } = message;
 
       if (!shop_domain || !data) {
         logger.warn("Invalid message format: missing shop_domain or data");
         return;
       }
 
+      // Get site_id from message or lookup by shop_domain
+      let resolvedSiteId = site_id;
+      if (!resolvedSiteId) {
+        resolvedSiteId = await this.getSiteIdByShopDomain(shop_domain);
+        if (!resolvedSiteId) {
+          logger.error(`Cannot resolve site_id for shop_domain: ${shop_domain}`);
+          return;
+        }
+      }
+
       // Create a notification for this order
       const notification = await this.notificationService.createNotification({
         type: "order.created",
         shopDomain: shop_domain,
+        siteId: resolvedSiteId,
         title: "New Order",
         message: this.generateOrderMessage(data),
         data: {
@@ -71,11 +120,11 @@ export class OrderEventHandler {
         },
       });
 
-      // Publish the notification to Redis
-      const channel = `notifications:${shop_domain}`;
+      // Publish the notification to Redis using site_id format to match SSE endpoint
+      const channel = `notifications:site:${resolvedSiteId}`;
       await this.redisPublisher.publish(channel, JSON.stringify(notification));
 
-      logger.info(`Published order.created notification to ${channel}`);
+      logger.info(`Published order.created notification to ${channel} for shop_domain: ${shop_domain}`);
     } catch (error: any) {
       logger.error("Error handling order.created event:", error);
       throw error;
@@ -109,20 +158,21 @@ export class OrderEventHandler {
    */
   private generateOrderMessage(orderData: any): string {
     const customerName = this.getCustomerName(orderData.customer);
+    const location = this.getCustomerLocation(orderData.customer);
 
     // If multiple products, mention the first one and the count
     if (orderData.products && orderData.products.length > 1) {
       const firstProduct = orderData.products[0].title;
-      return `${customerName} just purchased ${firstProduct} and ${orderData.products.length - 1} other item(s)`;
+      return `${customerName}${location} just purchased ${firstProduct} and ${orderData.products.length - 1} other item(s)`;
     }
 
     // Single product
     if (orderData.products && orderData.products.length === 1) {
-      return `${customerName} just purchased ${orderData.products[0].title}`;
+      return `${customerName}${location} just purchased ${orderData.products[0].title}`;
     }
 
     // Fallback if no product info
-    return `${customerName} just placed an order`;
+    return `${customerName}${location} just placed an order`;
   }
 
   /**
@@ -148,11 +198,50 @@ export class OrderEventHandler {
   }
 
   /**
+   * Get customer location for more engaging notifications
+   * @param customer - The customer data
+   * @returns Formatted location string or empty string
+   */
+  private getCustomerLocation(customer: any): string {
+    // Check for location in customer data
+    if (customer?.location) {
+      return ` from ${customer.location}`;
+    }
+    
+    // Check for shipping address
+    if (customer?.shipping_address) {
+      const address = customer.shipping_address;
+      if (address.city && address.country) {
+        return ` from ${address.city}, ${address.country}`;
+      }
+      if (address.city) {
+        return ` from ${address.city}`;
+      }
+      if (address.country) {
+        return ` from ${address.country}`;
+      }
+    }
+    
+    // Check for billing address as fallback
+    if (customer?.billing_address) {
+      const address = customer.billing_address;
+      if (address.city && address.country) {
+        return ` from ${address.city}, ${address.country}`;
+      }
+      if (address.city) {
+        return ` from ${address.city}`;
+      }
+    }
+    
+    return "";
+  }
+
+  /**
    * Extract product information for the notification
    * @param products - The product data from the order
-   * @returns Simplified product information
+   * @returns Simplified product information with image URLs
    */
-  private extractProductInfo(products: any[]): { id: string; title: string; price: string }[] {
+  private extractProductInfo(products: any[]): { id: string; title: string; price: string; image?: string }[] {
     if (!products || !Array.isArray(products)) {
       return [];
     }
@@ -161,6 +250,8 @@ export class OrderEventHandler {
       id: product.id?.toString() || "",
       title: product.title || "Product",
       price: product.price?.toString() || "0",
+      // Include image URL if available
+      image: product.image || product.featured_image || undefined,
     }));
   }
 }

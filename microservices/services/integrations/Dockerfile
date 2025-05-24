@@ -16,7 +16,7 @@ RUN npm ci
 COPY . .
 
 # Build TypeScript
-RUN npm run build:integrations
+RUN npm run build
 
 # Stage 2: Create production image
 FROM node:18-alpine AS production
@@ -54,4 +54,4 @@ USER nodeuser
 EXPOSE ${PORT:-3001}
 
 # Start the service
-CMD ["node", "dist/services/integrations/index.js"] 
+CMD ["node", "dist/index.js"] 
