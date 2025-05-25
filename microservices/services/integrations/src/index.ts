@@ -2,7 +2,7 @@ import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import webhookRoutes from "./routes/webhookRoutes.js";
 import { kafkaProducer } from "./utils/kafka.js";
-import { logger } from "../../../shared/src/utils/logger.js";
+import { logger } from "@social-proof/shared";
 
 // Create express application
 const app = express();

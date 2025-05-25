@@ -5,9 +5,8 @@ import express, {
 } from "express";
 import cors from "cors";
 import helmet from "helmet";
-import { RedisSubscriber } from "../../shared/redis/subscriber";
-import { requestLogger } from "../../shared/utils/logger";
-import createHealthCheckMiddleware from "../../shared/middleware/health-check";
+import { RedisSubscriber, requestLogger } from "@social-proof/shared";
+import createHealthCheckMiddleware from "@social-proof/shared/middleware/health-check";
 import { IncomingMessage, ServerResponse } from "http";
 
 // Extend the Express types for SSE

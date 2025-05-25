@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import { ShopifyIntegration, ShopifyStore, ShopifyWebhook } from "../models/shopify.js";
 import { kafkaProducer } from "../utils/kafka.js";
-import { logger } from "../../../../shared/src/utils/logger.js";
+import { logger } from "@social-proof/shared";
 
 /**
  * Shopify API endpoints

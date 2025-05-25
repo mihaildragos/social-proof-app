@@ -1,5 +1,6 @@
 import * as opentelemetry from "@opentelemetry/sdk-node";
 import { getNodeAutoInstrumentations } from "@opentelemetry/auto-instrumentations-node";
+import { KafkaJsInstrumentation } from "@opentelemetry/instrumentation-kafkajs";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-proto";
 import { OTLPMetricExporter } from "@opentelemetry/exporter-metrics-otlp-proto";
 import { Resource } from "@opentelemetry/resources";
@@ -9,7 +10,7 @@ import { trace, context, SpanStatusCode, Span } from "@opentelemetry/api";
 import { Request, Response } from "express";
 
 // Initialize OpenTelemetry SDK
-export const initializeTracing = (serviceName: string): opentelemetry.NodeSDK => {
+export const initializeTracing = async (serviceName: string): Promise<opentelemetry.NodeSDK> => {
   const otlpEndpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT || "http://localhost:4318";
 
   const sdk = new opentelemetry.NodeSDK({
@@ -42,23 +43,21 @@ export const initializeTracing = (serviceName: string): opentelemetry.NodeSDK =>
         "@opentelemetry/instrumentation-redis": {
           enabled: true,
         },
-        "@opentelemetry/instrumentation-kafkajs": {
-          enabled: true,
-        },
+      }),
+      new KafkaJsInstrumentation({
+        enabled: true,
       }),
     ],
   });
 
-  sdk
-    .start()
-    .then(() => {
-      console.log("OpenTelemetry instrumentation initialized");
-    })
-    .catch((error) => {
-      console.error("Error initializing OpenTelemetry instrumentation:", error);
-    });
-
-  return sdk;
+  try {
+    await sdk.start();
+    console.log("OpenTelemetry instrumentation initialized");
+    return sdk;
+  } catch (error: any) {
+    console.error("Error initializing OpenTelemetry instrumentation:", error);
+    throw error;
+  }
 };
 
 // Function to create a new span

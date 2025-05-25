@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
         - name: billing-service
-          image: europe-west1-docker.pkg.dev/social-proof-app-gcp/social-proof-app/billing-service:staging
+          image: gcr.io/social-proof-app-gcp/social-proof-app/billing-service:staging
           ports:
             - containerPort: 3000
               protocol: TCP

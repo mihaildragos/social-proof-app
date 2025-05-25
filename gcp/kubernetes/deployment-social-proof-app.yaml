@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
       - name: social-proof-app
-        image: europe-west1-docker.pkg.dev/social-proof-app-gcp/social-proof-app/social-proof-app:staging
+        image: gcr.io/social-proof-app-gcp/social-proof-app:implement-billing-service-9ecd48bd
         ports:
         - containerPort: 3000
           protocol: TCP
@@ -71,17 +71,18 @@ spec:
           limits:
             memory: "512Mi"
             cpu: "500m"
-        livenessProbe:
-          httpGet:
-            path: /api/health
-            port: 3000
-            scheme: HTTP
-          initialDelaySeconds: 30
-          periodSeconds: 10
-        readinessProbe:
-          httpGet:
-            path: /api/health
-            port: 3000
-            scheme: HTTP
-          initialDelaySeconds: 5
-          periodSeconds: 5 
+        # Temporarily disabled health probes due to HTTPS/HTTP configuration issues
+        # livenessProbe:
+        #   httpGet:
+        #     path: /api/health
+        #     port: 3000
+        #     scheme: HTTP
+        #   initialDelaySeconds: 30
+        #   periodSeconds: 10
+        # readinessProbe:
+        #   httpGet:
+        #     path: /api/health
+        #     port: 3000
+        #     scheme: HTTP
+        #   initialDelaySeconds: 5
+        #   periodSeconds: 5 

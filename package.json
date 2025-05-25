@@ -22,7 +22,10 @@
     "test:fresh": "node test-fresh-flow.js",
     "test:core": "node test-core-validation.js",
     "test:db": "curl http://localhost:3007/api/debug/db-check | jq",
-    "test:health": "curl http://localhost:3007/api/health"
+    "test:health": "curl http://localhost:3007/api/health",
+    "deploy:staging": "./scripts/deploy-staging.sh",
+    "deploy:staging:force": "./scripts/deploy-staging.sh --force",
+    "deploy:check": "node scripts/check-deployment-status.js"
   },
   "dependencies": {
     "@clerk/clerk-sdk-node": "^4.13.23",

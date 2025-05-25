@@ -1,38 +1,72 @@
-# Use Node.js 18 Alpine as base image
-FROM node:18-alpine
+# Multi-stage build for Node.js microservice with npm workspaces
+# Stage 1: Build dependencies and TypeScript
+FROM node:18-alpine AS builder
 
 # Set working directory
 WORKDIR /app
 
-# Install dependencies for building native modules
-RUN apk add --no-cache python3 make g++
-
-# Copy package files
+# Copy workspace root package.json and package-lock.json
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Copy all workspace package.json files for dependency resolution
+COPY shared/package*.json ./shared/
+COPY services/integrations/package*.json ./services/integrations/
+COPY services/billing/package*.json ./services/billing/
+COPY services/notifications/package*.json ./services/notifications/
+COPY services/notification-stream-service/package*.json ./services/notification-stream-service/
 
-# Copy source code
-COPY . .
+# Install all workspace dependencies
+RUN npm install
 
-# Build TypeScript
-RUN npm run build
+# Copy shared library source and build it
+COPY shared/ ./shared/
+RUN npm run build:shared
 
-# Create non-root user
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S billing -u 1001
+# Copy billing service source
+COPY services/billing/ ./services/billing/
 
-# Change ownership of the app directory
-RUN chown -R billing:nodejs /app
-USER billing
+# Build the billing service
+RUN npm run build:billing
 
-# Expose port
-EXPOSE 3006
+# Stage 2: Create production image
+FROM node:18-alpine AS production
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3006/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
+# Set working directory
+WORKDIR /app
 
-# Start the application
-CMD ["npm", "start"] 
+# Set environment variables
+ENV NODE_ENV=production
+
+# Copy workspace package files for production install
+COPY package*.json ./
+COPY shared/package*.json ./shared/
+COPY services/billing/package*.json ./services/billing/
+
+# Install only production dependencies
+RUN npm install --only=production
+
+# Copy built shared library
+COPY --from=builder /app/shared/dist ./shared/dist
+
+# Copy built service code
+COPY --from=builder /app/services/billing/dist ./services/billing/dist
+
+# Add custom labels
+LABEL maintainer="Social Proof Team"
+LABEL service="billing-service"
+LABEL version="1.0.0"
+
+# Add healthcheck
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD wget --quiet --tries=1 --spider http://localhost:${PORT:-3003}/health || exit 1
+
+# Create a non-root user and switch to it
+RUN addgroup --system --gid 1001 nodejs \
+    && adduser --system --uid 1001 --ingroup nodejs nodeuser
+USER nodeuser
+
+# Expose service port
+EXPOSE ${PORT:-3003}
+
+# Start the service
+CMD ["node", "services/billing/dist/index.js"]

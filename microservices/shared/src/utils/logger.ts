@@ -2,6 +2,7 @@ import winston from "winston";
 import "winston-daily-rotate-file";
 import { Request } from "express";
 import { trace, context, SpanStatusCode } from "@opentelemetry/api";
+import crypto from "crypto";
 
 // Define custom log levels
 const levels = {
@@ -143,3 +144,71 @@ export const logger = createLogger({
   consoleOutput: process.env.NODE_ENV !== "production",
   fileOutput: process.env.NODE_ENV === "production",
 });
+
+/**
+ * Create a logger with context information (for backward compatibility)
+ * @param context - Context information to add to logs
+ * @returns Logger with context
+ */
+export function getContextLogger(context: { [key: string]: any }): winston.Logger {
+  const serviceName = context.service || process.env.SERVICE_NAME || "default";
+  
+  // Create a basic winston logger for context
+  const baseLogger = winston.createLogger({
+    level: process.env.LOG_LEVEL || "info",
+    levels,
+    format: winston.format.combine(
+      winston.format.colorize({ all: true }),
+      winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss:ms" }),
+      winston.format.printf(
+        (info) => `${info.timestamp} ${info.level}: [${serviceName}] ${info.message}`
+      )
+    ),
+    transports: [
+      new winston.transports.Console()
+    ],
+    defaultMeta: { service: serviceName, ...context },
+  });
+  
+  return baseLogger;
+}
+
+/**
+ * Request logger middleware for Express (for backward compatibility)
+ * @param req - Express request
+ * @param res - Express response
+ * @param next - Express next function
+ */
+export const requestLogger = (req: Request, res: any, next: Function) => {
+  // Generate unique request ID if not already set
+  const requestId = req.headers["x-request-id"] || crypto.randomUUID();
+
+  // Set request ID on response headers
+  res.setHeader("x-request-id", requestId);
+
+  // Log the request
+  logger.http(`${req.method} ${req.url}`, {
+    requestId,
+    method: req.method,
+    url: req.url,
+    ip: req.ip,
+    userAgent: req.headers["user-agent"],
+  });
+
+  // Track response time
+  const start = Date.now();
+
+  // Log once response is finished
+  res.on("finish", () => {
+    const duration = Date.now() - start;
+    logger.http(`${req.method} ${req.url} ${res.statusCode} - ${duration}ms`, {
+      requestId,
+      method: req.method,
+      url: req.url,
+      statusCode: res.statusCode,
+      duration,
+    });
+  });
+
+  next();
+};

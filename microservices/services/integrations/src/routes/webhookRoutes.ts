@@ -1,8 +1,8 @@
-import express from "express";
+import { Router } from "express";
 import bodyParser from "body-parser";
-import { WebhookController } from "../controllers/webhookController";
+import { WebhookController } from "../controllers/webhookController.js";
 
-const router = express.Router();
+const router = Router();
 
 // Configure body parser with raw body saver for HMAC verification
 const jsonParser = bodyParser.json({

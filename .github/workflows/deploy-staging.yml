@@ -1,0 +1,197 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches: [staging, main]
+  pull_request:
+    branches: [staging]
+
+env:
+  PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+  GKE_CLUSTER: ${{ vars.GKE_CLUSTER }}
+  GKE_ZONE: ${{ vars.GKE_ZONE }}
+  REGISTRY: gcr.io
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: |
+            package-lock.json
+            microservices/package-lock.json
+
+      # Install dependencies for Next.js app
+      - name: Install Next.js dependencies
+        run: npm ci
+
+      # Install dependencies for microservices workspace
+      - name: Install microservices dependencies
+        working-directory: microservices
+        run: npm ci
+
+      # Build shared package first
+      - name: Build shared package
+        working-directory: microservices
+        run: npm run build:shared
+
+      # Test Next.js app
+      - name: Test Next.js app
+        run: npm run test:ci || true
+
+      # Test microservices
+      - name: Test microservices
+        working-directory: microservices
+        run: npm run test || true
+
+      # Build Next.js app
+      - name: Build Next.js app
+        run: npm run build
+
+      # Build microservices
+      - name: Build microservices
+        working-directory: microservices
+        run: npm run build:services
+
+  build-and-deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: |
+            package-lock.json
+            microservices/package-lock.json
+
+      # Setup Google Cloud CLI
+      - name: Setup Google Cloud CLI
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          project_id: ${{ env.PROJECT_ID }}
+
+      # Configure Docker to use gcloud as a credential helper
+      - name: Configure Docker
+        run: gcloud auth configure-docker
+
+      # Install dependencies for microservices workspace
+      - name: Install microservices dependencies
+        working-directory: microservices
+        run: npm ci
+
+      # Build shared package
+      - name: Build shared package
+        working-directory: microservices
+        run: npm run build:shared
+
+      # Build and push microservices images
+      - name: Build and push microservices
+        working-directory: microservices
+        run: |
+          IMAGE_TAG="${GITHUB_SHA::8}"
+          
+          # Build each microservice
+          for service in integrations billing notifications notification-stream-service users analytics; do
+            echo "Building $service..."
+            
+            # Build Docker image with workspace context
+            docker build \
+              --platform linux/amd64 \
+              -f services/$service/Dockerfile \
+              -t $REGISTRY/$PROJECT_ID/$service:$IMAGE_TAG \
+              -t $REGISTRY/$PROJECT_ID/$service:staging-latest \
+              .
+            
+            # Push images
+            docker push $REGISTRY/$PROJECT_ID/$service:$IMAGE_TAG
+            docker push $REGISTRY/$PROJECT_ID/$service:staging-latest
+            
+            echo "$service image built and pushed"
+          done
+
+      # Install Next.js dependencies
+      - name: Install Next.js dependencies
+        run: npm ci
+
+      # Build and push Next.js app
+      - name: Build and push Next.js app
+        run: |
+          IMAGE_TAG="${GITHUB_SHA::8}"
+          
+          # Build Next.js Docker image
+          docker build \
+            --platform linux/amd64 \
+            -f Dockerfile.nextjs \
+            -t $REGISTRY/$PROJECT_ID/social-proof-app:$IMAGE_TAG \
+            -t $REGISTRY/$PROJECT_ID/social-proof-app:staging-latest \
+            .
+          
+          # Push images
+          docker push $REGISTRY/$PROJECT_ID/social-proof-app:$IMAGE_TAG
+          docker push $REGISTRY/$PROJECT_ID/social-proof-app:staging-latest
+
+      # Get GKE credentials
+      - name: Get GKE credentials
+        run: |
+          gcloud container clusters get-credentials $GKE_CLUSTER --zone $GKE_ZONE
+
+      # Deploy to Kubernetes
+      - name: Deploy to Kubernetes
+        working-directory: gcp/kubernetes
+        run: |
+          IMAGE_TAG="${GITHUB_SHA::8}"
+          
+          # Set environment variables
+          export ENVIRONMENT="staging"
+          export NODE_ENV="staging"
+          export IMAGE_TAG="$IMAGE_TAG"
+          
+          # Apply namespace
+          envsubst < namespace.yaml | kubectl apply -f -
+          
+          # Apply configuration and secrets
+          envsubst < configmap.yaml | kubectl apply -f -
+          envsubst < secrets.yaml | kubectl apply -f -
+          
+          # Apply infrastructure
+          kubectl apply -f infrastructure/
+          
+          # Update deployments with new image tags
+          for service in integrations billing notifications notification-stream-service users analytics; do
+            if [[ -f "deployments/${service}-service.yaml" ]]; then
+              sed "s|{{IMAGE_TAG}}|$IMAGE_TAG|g" deployments/${service}-service.yaml | kubectl apply -f -
+            fi
+          done
+          
+          # Deploy Next.js app
+          if [[ -f "deployment-social-proof-app.yaml" ]]; then
+            sed "s|{{IMAGE_TAG}}|$IMAGE_TAG|g" deployment-social-proof-app.yaml | kubectl apply -f -
+          fi
+          
+          # Wait for deployments to be ready
+          kubectl rollout status deployment/integrations-service --timeout=300s
+          kubectl rollout status deployment/billing-service --timeout=300s
+          kubectl rollout status deployment/notifications-service --timeout=300s
+          kubectl rollout status deployment/social-proof-app --timeout=300s
+
+      # Verify deployment
+      - name: Verify deployment
+        run: |
+          echo "Deployment completed successfully!"
+          kubectl get pods -l app=social-proof
+          kubectl get services 

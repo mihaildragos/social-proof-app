@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { ShopifyService, SHOPIFY_WEBHOOK_TOPICS } from "../services/shopifyService.js";
-import { logger } from "../../../../shared/src/utils/logger.js";
+import { logger } from "@social-proof/shared";
 
 /**
  * Controller for handling webhooks from various integrations

@@ -1,6 +1,4 @@
-import { getContextLogger } from "../../shared/utils/logger";
-import { KafkaConsumer } from "../../shared/kafka/consumer";
-import { RedisPublisher } from "../../shared/redis/publisher";
+import { getContextLogger, KafkaConsumer, RedisPublisher } from "@social-proof/shared";
 import { OrderEventHandler } from "./handlers/order-event-handler";
 import { NotificationService } from "./services/notification-service";
 

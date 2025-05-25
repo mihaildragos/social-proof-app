@@ -11,9 +11,12 @@ const isProtectedRoute = createRouteMatcher([
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
-  // Force HTTPS redirect in non-development environments
+  // Allow HTTP for health checks (Kubernetes probes)
+  const isHealthCheck = req.nextUrl.pathname === '/api/health';
+  
+  // Force HTTPS redirect in non-development environments (except for health checks)
   const nodeEnv = process.env.NODE_ENV;
-  if (nodeEnv !== 'development') {
+  if (nodeEnv !== 'development' && !isHealthCheck) {
     const proto = req.headers.get('x-forwarded-proto');
     const host = req.headers.get('host');
     
@@ -35,6 +38,7 @@ export default clerkMiddleware(async (auth, req) => {
 export const config = {
   matcher: [
     // Skip Next.js internals and all static files, unless found in search params
-    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)|api/webhooks).*)",
+    // Also skip health endpoint and webhooks
+    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)|api/webhooks|api/health).*)",
   ],
 };

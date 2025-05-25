@@ -3,6 +3,17 @@ export * from "./utils/logger";
 export * from "./utils/errors";
 export * from "./utils/tracing";
 
+// Export Redis classes
+export * from "./redis/publisher";
+export * from "./redis/subscriber";
+
+// Export Kafka classes
+export * from "./kafka/consumer";
+export * from "./kafka/producer";
+
+// Export middleware
+export * from "./middleware/health-check";
+
 // Export main initialization function
 import { initializeTracing } from "./utils/tracing";
 import { setupGlobalErrorHandlers } from "./utils/errors";
