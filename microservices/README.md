@@ -1,24 +1,65 @@
 # Social Proof Microservices
 
-This directory contains all the microservices for the Social Proof application, containerized with Docker.
+This directory contains all the microservices for the Social Proof application, containerized with Docker and deployed with HTTPS subdomain routing.
 
 ## Services Architecture
 
-The application consists of the following services:
+The application consists of the following services, each accessible via HTTPS with dedicated subdomains:
 
-- **Integrations Service**: Handles third-party platform integrations (Shopify, WooCommerce, etc.)
-- **Notification Stream Service**: Manages real-time notification delivery via SSE
-- **Notifications Service**: Core service for notification generation and management
-- **Users Service**: Handles user authentication and management
-- **Analytics Service**: Processes and stores analytics data
-- **Billing Service**: Manages subscription and payment processing
+### Core Microservices
 
-## Infrastructure Services
+- **Users Service** (`users-staging.pulsesocialproof.com`): Handles user authentication and management
+- **Notifications Service** (`notifications-staging.pulsesocialproof.com`): Core service for notification generation and management
+- **Analytics Service** (`analytics-staging.pulsesocialproof.com`): Processes and stores analytics data
+- **Billing Service** (`billing-staging.pulsesocialproof.com`): Manages subscription and payment processing
+- **Integrations Service** (`integrations-staging.pulsesocialproof.com`): Handles third-party platform integrations (Shopify, WooCommerce, etc.)
+
+### Infrastructure Services
 
 - **Redis**: Used for caching and pub/sub messaging
 - **Kafka**: Event streaming platform for service communication
 - **PostgreSQL**: Primary database for structured data
 - **ClickHouse**: Analytics database for high-performance queries
+
+## HTTPS and SSL Configuration
+
+All microservices are deployed with enterprise-grade HTTPS configuration:
+
+### ✅ Automatic SSL Certificates
+- **Let's Encrypt Integration**: Free SSL certificates automatically generated for all subdomains
+- **Auto-Renewal**: Certificates automatically renew before expiration (90-day cycle)
+- **Multi-Domain Support**: Single certificate covers all microservice subdomains
+
+### ✅ Security Features
+- **HTTP to HTTPS Redirect**: All HTTP requests automatically redirected to HTTPS (308 Permanent Redirect)
+- **Security Headers**: HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy
+- **Rate Limiting**: Protection against abuse and DDoS attacks (100 requests/minute per IP)
+- **TLS 1.2+**: Modern encryption with strong cipher suites
+
+### ✅ Microservice Endpoints
+
+| Service | HTTPS Endpoint | Purpose |
+|---------|---------------|---------|
+| Users | `https://users-staging.pulsesocialproof.com` | User management and authentication |
+| Notifications | `https://notifications-staging.pulsesocialproof.com` | Real-time notification delivery |
+| Analytics | `https://analytics-staging.pulsesocialproof.com` | Data processing and insights |
+| Billing | `https://billing-staging.pulsesocialproof.com` | Payment processing and subscriptions |
+| Integrations | `https://integrations-staging.pulsesocialproof.com` | Third-party platform connections |
+
+### Testing HTTPS Endpoints
+
+```bash
+# Test all microservice endpoints
+curl -I https://users-staging.pulsesocialproof.com/health
+curl -I https://notifications-staging.pulsesocialproof.com/health
+curl -I https://analytics-staging.pulsesocialproof.com/health
+curl -I https://billing-staging.pulsesocialproof.com/health
+curl -I https://integrations-staging.pulsesocialproof.com/health
+
+# Verify HTTP to HTTPS redirect
+curl -I http://users-staging.pulsesocialproof.com/
+# Should return: HTTP/1.1 308 Permanent Redirect
+```
 
 ## Running with Docker
 
@@ -90,6 +131,45 @@ To stop and remove all data (volumes):
 docker-compose down -v
 ```
 
+## Kubernetes Deployment
+
+The microservices are deployed to Google Kubernetes Engine (GKE) with the following features:
+
+### Deployment Architecture
+
+```
+Internet → nginx-ingress-controller → Kubernetes Services
+    ↓
+HTTP (Port 80) → 308 Permanent Redirect → HTTPS (Port 443)
+    ↓
+Let's Encrypt SSL Certificates → Microservice Pods
+```
+
+### Kubernetes Resources
+
+Each microservice includes:
+- **Deployment**: Container orchestration and scaling
+- **Service**: Internal load balancing and service discovery
+- **Ingress**: HTTPS routing and SSL termination
+- **ConfigMap**: Environment-specific configuration
+- **Secret**: Sensitive data management
+
+### Health Checks
+
+All microservices implement health check endpoints:
+
+```bash
+# Kubernetes health checks
+kubectl get pods -n social-proof-system
+
+# Individual service health
+curl https://users-staging.pulsesocialproof.com/health
+curl https://notifications-staging.pulsesocialproof.com/health
+curl https://analytics-staging.pulsesocialproof.com/health
+curl https://billing-staging.pulsesocialproof.com/health
+curl https://integrations-staging.pulsesocialproof.com/health
+```
+
 ## Development
 
 For local development without Docker:
@@ -124,16 +204,23 @@ STRIPE_WEBHOOK_SECRET=your_webhook_secret
 
 # Security
 NODE_ENV=production
+JWT_SECRET=your_jwt_secret_key_minimum_32_characters_long
+
+# SSL/HTTPS (automatically configured in Kubernetes)
+FORCE_HTTPS=true
+TRUST_PROXY=true
 ```
 
 ## Tech Stack
 
-- Node.js & TypeScript
-- Express for API endpoints
-- Kafka for event streaming
-- Redis for pub/sub
-- PostgreSQL for persistent storage
-- Docker and Docker Compose for containerization
+- **Runtime**: Node.js & TypeScript
+- **Framework**: Express for API endpoints
+- **Messaging**: Kafka for event streaming, Redis for pub/sub
+- **Database**: PostgreSQL for persistent storage, ClickHouse for analytics
+- **Containerization**: Docker and Docker Compose
+- **Orchestration**: Kubernetes (GKE)
+- **SSL/HTTPS**: nginx-ingress-controller with cert-manager
+- **Monitoring**: Health checks and logging
 
 ## Prerequisites
 
@@ -142,6 +229,7 @@ NODE_ENV=production
 - PostgreSQL 14+
 - Kafka
 - Redis
+- kubectl and gcloud CLI (for Kubernetes deployment)
 
 ## Getting Started
 
@@ -214,93 +302,130 @@ npm run dev:notifications
 npm run dev:frontend
 ```
 
-## Testing
+## Production Deployment
+
+For production deployment with HTTPS and SSL certificates:
+
+### Automatic Deployment
+
+Push to the `develop` branch to trigger automatic deployment:
 
 ```bash
-# Run all tests
-npm test
-
-# Run tests with coverage
-npm run test:coverage
-
-# Run tests for a specific service
-npm test -- --testPathPattern=services/integrations
+git push origin develop
 ```
 
-## API Documentation
+This will:
+1. Build Docker images for all microservices
+2. Deploy to GKE cluster
+3. Configure nginx-ingress-controller
+4. Generate SSL certificates via Let's Encrypt
+5. Set up HTTP to HTTPS redirects
 
-### Integrations Service
+### Manual Deployment
 
-- `POST /webhooks/shopify/orders/create`: Endpoint for Shopify order creation webhook
+For manual deployment, see the detailed guides:
 
-### Frontend Service
+- [GCP Deployment Guide](../gcp/GCP_DEPLOYMENT_GUIDE.md)
+- [HTTPS Redirect Setup](../gcp/kubernetes/HTTPS_REDIRECT_README.md)
 
-- `GET /api/notifications/sse`: SSE endpoint for real-time notifications
-
-## Shopify Integration
-
-The Shopify integration uses webhooks to receive order data and display real-time notifications. See the [Shopify Integration Guide](./docs/shopify-integration-architecture.md) for details.
-
-## Testing with a Development Store
-
-See the [Development Store Setup Guide](./docs/shopify-development-store-setup.md) for instructions on setting up a Shopify development store for testing.
-
-## Deployment
-
-The application can be deployed to Kubernetes using the provided manifests:
+### Monitoring Production
 
 ```bash
-# Deploy to staging
-kubectl apply -f infrastructure/kubernetes/staging
+# Check all microservice pods
+kubectl get pods -n social-proof-system
 
-# Deploy to production
-kubectl apply -f infrastructure/kubernetes/production
+# Check SSL certificates
+kubectl get certificates -n social-proof-system
+
+# Check ingress status
+kubectl get ingress -n social-proof-system
+
+# Test HTTPS endpoints
+for service in users notifications analytics billing integrations; do
+  echo "Testing $service..."
+  curl -I https://$service-staging.pulsesocialproof.com/health
+done
 ```
 
-## CI/CD Pipeline
+## Security
 
-The repository includes GitHub Actions workflows for CI/CD:
+### Enterprise-Grade Security Features
 
-- `ci.yml`: Runs tests, builds Docker images, and deploys to staging
+- **HTTPS Everywhere**: All traffic encrypted with TLS 1.2+
+- **Automatic SSL Certificates**: Let's Encrypt integration with auto-renewal
+- **Security Headers**: HSTS, X-Frame-Options, CSP, and more
+- **Rate Limiting**: Protection against abuse and DDoS attacks
+- **JWT Authentication**: Secure inter-service communication
+- **Network Policies**: Kubernetes-level network segmentation
+
+### SSL Certificate Management
+
+- **Certificate Authority**: Let's Encrypt (free, trusted)
+- **Validation Method**: HTTP-01 challenge
+- **Renewal**: Automatic (30 days before expiration)
+- **Coverage**: All microservice subdomains
+- **Monitoring**: Automated certificate health checks
 
 ## Troubleshooting
 
-### TypeScript Errors
+### Common Issues
 
-If you encounter TypeScript errors related to missing modules or type declarations, make sure you've installed all dependencies and try running:
-
+#### Service Not Responding
 ```bash
-npm install --save-dev @types/express @types/cors @types/node @types/uuid @types/pg @types/jest @types/supertest
+# Check pod status
+kubectl get pods -n social-proof-system
+
+# Check service logs
+kubectl logs -f deployment/[service-name] -n social-proof-system
+
+# Check ingress configuration
+kubectl describe ingress social-proof-nginx-ingress -n social-proof-system
 ```
 
-### Express Application Error
-
-If you see an error like `This expression is not callable. Type 'typeof import("express")' has no call signatures`, it's related to TypeScript module resolution. The custom type declarations in `types/express.d.ts` should fix this.
-
-### SSE Implementation Issues
-
-The Server-Sent Events (SSE) implementation requires the following to work correctly:
-
-1. Custom type declarations for Response.write and Response.flushHeaders
-2. Proper Redis PubSub channel naming convention
-3. Connection cleanup on client disconnect
-
-## License
-
-MIT
-
-## Docker Support
-
-All microservices can be run in Docker containers for easier development and deployment. For detailed instructions on using Docker with this project, see the [Docker documentation](DOCKER_MVP_SETUP.md).
-
-To quickly build and run all services in Docker:
-
+#### SSL Certificate Issues
 ```bash
-# Make the script executable (if not already)
-chmod +x build-and-run.sh
+# Check certificate status
+kubectl get certificates -n social-proof-system
 
-# Run the script
-./build-and-run.sh
+# Check cert-manager logs
+kubectl logs -n cert-manager deployment/cert-manager
+
+# Force certificate regeneration
+kubectl delete certificate social-proof-nginx-tls -n social-proof-system
 ```
 
-This will build and start containers for all microservices.
+#### DNS Issues
+```bash
+# Check nginx-ingress external IP
+kubectl get svc -n ingress-nginx ingress-nginx-controller
+
+# Test DNS resolution
+nslookup users-staging.pulsesocialproof.com
+
+# Clear DNS cache (macOS)
+sudo dscacheutil -flushcache
+```
+
+For detailed troubleshooting, see [HTTPS Redirect README](../gcp/kubernetes/HTTPS_REDIRECT_README.md#troubleshooting).
+
+## Documentation
+
+- [GCP Deployment Guide](../gcp/GCP_DEPLOYMENT_GUIDE.md) - Complete deployment instructions
+- [HTTPS Redirect Setup](../gcp/kubernetes/HTTPS_REDIRECT_README.md) - SSL/HTTPS configuration
+- [Individual Service READMEs](./services/) - Service-specific documentation
+
+## Support
+
+For microservice-specific issues:
+
+1. Check service health endpoints
+2. Review Kubernetes pod logs
+3. Verify SSL certificate status
+4. Check nginx-ingress configuration
+5. Open an issue in this repository
+
+---
+
+**Last Updated**: May 25, 2025  
+**Microservices**: 5 services with HTTPS endpoints  
+**SSL Status**: ✅ Active with auto-renewal

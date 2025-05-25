@@ -1,338 +1,812 @@
-# Social Proof MVP - Local Development Environment
+# Social Proof App - Complete MVP Deployment Guide
 
-## 🎯 Overview
+This comprehensive guide walks you through deploying the Social Proof App MVP from scratch, including infrastructure setup, microservices deployment, HTTPS configuration, and troubleshooting.
 
-This MVP provides a complete local development environment for the Social Proof application - an enterprise-grade clone of Fomo that delivers real-time social-proof notifications across web popups, email, and push notifications.
+## Table of Contents
 
-## 🏗️ Architecture
+1. [Overview](#overview)
+2. [Prerequisites](#prerequisites)
+3. [GCP Project Setup](#gcp-project-setup)
+4. [Infrastructure Deployment](#infrastructure-deployment)
+5. [GitHub Repository Configuration](#github-repository-configuration)
+6. [Application Deployment](#application-deployment)
+7. [HTTPS and SSL Configuration](#https-and-ssl-configuration)
+8. [Microservices Overview](#microservices-overview)
+9. [Verification and Testing](#verification-and-testing)
+10. [Monitoring and Maintenance](#monitoring-and-maintenance)
+11. [Troubleshooting](#troubleshooting)
+12. [Cost Analysis](#cost-analysis)
+13. [Scaling and Production](#scaling-and-production)
 
-### Core Components
+## Overview
 
-```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   Next.js App   │    │   Microservices  │    │ Infrastructure  │
-│   (Port 3000)   │    │   (Ports 3001-6) │    │   Services      │
-│                 │    │                  │    │                 │
-│ • Dashboard     │◄──►│ • Integrations   │◄──►│ • PostgreSQL    │
-│ • Widget        │    │ • Notifications  │    │ • TimescaleDB   │
-│ • Authentication│    │ • Users          │    │ • ClickHouse    │
-│ • Admin Panel   │    │ • Analytics      │    │ • Redis         │
-│                 │    │ • Billing        │    │ • Kafka         │
-│                 │    │ • Notification   │    │                 │
-│                 │    │   Stream (SSE)   │    │                 │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
-```
+The Social Proof App MVP is an enterprise-grade social proof notification system featuring:
 
-### Data Flow
+### ✅ **Core Features**
+- **Real-time social proof notifications** via WebSockets and Server-Sent Events
+- **Microservices architecture** with 5 specialized services
+- **Multi-database support** (PostgreSQL + TimescaleDB + ClickHouse)
+- **Third-party integrations** (Shopify, WooCommerce, Stripe)
+- **Enterprise authentication** with Clerk
+- **Advanced analytics** and real-time dashboards
 
-```
-Shopify Webhook → Kafka → Microservices → Redis → SSE → Widget
-       ↓              ↓           ↓         ↓
-   PostgreSQL    ClickHouse   External   Real-time
-   (Events)      (Analytics)   Services   Updates
-```
+### ✅ **Infrastructure Features**
+- **Kubernetes deployment** on Google Cloud Platform (GKE)
+- **Automatic HTTPS** with Let's Encrypt SSL certificates
+- **HTTP to HTTPS redirect** with enterprise security headers
+- **Multi-domain support** with subdomain routing for microservices
+- **Auto-scaling** and health monitoring
+- **CI/CD pipeline** with GitHub Actions
 
-## 🚀 Quick Start
+### ✅ **Security Features**
+- **Workload Identity Federation** (no service account keys)
+- **HTTPS everywhere** with automatic certificate renewal
+- **Security headers** (HSTS, X-Frame-Options, CSP, etc.)
+- **Rate limiting** and DDoS protection
+- **JWT authentication** for inter-service communication
 
-### Prerequisites
+## Prerequisites
 
-- Docker Desktop (4.0+)
-- Docker Compose (2.0+)
-- Git
-- 8GB+ RAM available for Docker
+Before starting, ensure you have:
 
-### 1. Start the MVP Stack
+### **Required Accounts**
+- [Google Cloud Platform](https://cloud.google.com/) account with billing enabled
+- [GitHub](https://github.com/) account with repository access
+- [Clerk](https://clerk.com/) account for authentication
+- [Supabase](https://supabase.com/) account for database
+- [Stripe](https://stripe.com/) account for payments
 
-```bash
-# Start all services
-./scripts/start-mvp.sh
-```
+### **Required Tools**
+- **Node.js 18+** installed locally
+- **Docker and Docker Compose** for local development
+- **gcloud CLI** installed and authenticated
+- **kubectl** installed for Kubernetes management
+- **Terraform** installed for infrastructure as code
+- **Git** for version control
 
-This will:
-- Start infrastructure services (Kafka, Redis, PostgreSQL, ClickHouse)
-- Initialize databases with schema and sample data
-- Create Kafka topics
-- Start all microservices
-- Start the Next.js application
-- Start external service mocks
+### **Domain Requirements**
+- A domain name you control (e.g., `yourdomain.com`)
+- Access to DNS management for the domain
+- Ability to create A records pointing to external IPs
 
-### 2. Verify Installation
+## GCP Project Setup
 
-```bash
-# Run comprehensive tests
-./scripts/test-mvp.sh
-```
-
-### 3. Access Services
-
-- **📊 Main Application**: http://localhost:3000
-- **🎭 External Mocks**: http://localhost:4000
-- **🗄️ PostgreSQL**: localhost:5432 (postgres/postgres)
-- **🔴 Redis**: localhost:6379
-- **📨 Kafka**: localhost:29092
-- **🏢 ClickHouse**: localhost:8123
-
-## 🛠️ Development
-
-### Managing Services
+### Step 1: Create GCP Project
 
 ```bash
-# Start MVP stack
-./scripts/start-mvp.sh
+# Set your project ID (replace with your desired project name)
+export PROJECT_ID="your-social-proof-project"
 
-# Stop MVP stack
-./scripts/stop-mvp.sh
+# Create the project
+gcloud projects create $PROJECT_ID
 
-# Stop and clean all data
-./scripts/stop-mvp.sh --clean
+# Set as default project
+gcloud config set project $PROJECT_ID
+
+# Enable billing (replace BILLING_ACCOUNT_ID with your billing account)
+gcloud beta billing projects link $PROJECT_ID --billing-account=BILLING_ACCOUNT_ID
+```
+
+### Step 2: Set up Workload Identity Federation
+
+**🔒 Important**: We use Workload Identity Federation instead of service account keys for enhanced security.
+
+```bash
+# Make the script executable
+chmod +x gcp/setup-workload-identity.sh
+
+# Run the setup (replace with your GitHub repository)
+./gcp/setup-workload-identity.sh $PROJECT_ID "your-username/social-proof-app"
+```
+
+This script will:
+- ✅ Enable required GCP APIs
+- ✅ Create a service account with appropriate permissions
+- ✅ Set up Workload Identity Pool and Provider
+- ✅ Configure OIDC authentication for GitHub Actions
+- ✅ Output the values needed for GitHub Secrets
+
+**Save the output** - you'll need these values for GitHub configuration:
+```
+GitHub Secrets to configure:
+GCP_PROJECT_ID = your-social-proof-project
+GCP_WORKLOAD_IDENTITY_PROVIDER = projects/123456789/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider
+GCP_SERVICE_ACCOUNT = github-actions-sa@your-social-proof-project.iam.gserviceaccount.com
+```
+
+## Infrastructure Deployment
+
+### Step 1: Configure Terraform
+
+```bash
+cd gcp/terraform
+
+# Copy the example file
+cp terraform.tfvars.example terraform.tfvars
+
+# Edit with your values
+vim terraform.tfvars
+```
+
+Update `terraform.tfvars`:
+```hcl
+project_id = "your-social-proof-project"
+region     = "us-central1"
+zone       = "us-central1-a"
+environment = "staging"
+cluster_name = "social-proof-cluster"
+node_count = 3
+machine_type = "n1-standard-2"
+disk_size_gb = 50
+```
+
+### Step 2: Deploy Infrastructure
+
+```bash
+# Initialize Terraform
+terraform init
+
+# Plan the deployment
+terraform plan
+
+# Apply the infrastructure
+terraform apply
+```
+
+### Step 3: Get GKE Credentials
+
+```bash
+# Configure kubectl to connect to your cluster
+gcloud container clusters get-credentials social-proof-cluster \
+  --region us-central1 \
+  --project your-social-proof-project
+```
+
+## GitHub Repository Configuration
+
+### Step 1: Setup GitHub Secrets
+
+Go to your GitHub repository → Settings → Secrets and variables → Actions → Secrets
+
+Add the following **Secrets** (sensitive data):
+
+**🔒 Workload Identity Federation**
+```
+GCP_WORKLOAD_IDENTITY_PROVIDER = [from setup script output]
+GCP_SERVICE_ACCOUNT = [from setup script output]
+```
+
+**🔐 Application Secrets**
+```
+POSTGRES_PASSWORD = your-secure-postgres-password-min-16-chars
+CLERK_SECRET_KEY = sk_test_your_clerk_secret_key
+JWT_SECRET = your-jwt-secret-key-minimum-32-characters-long
+SENDGRID_API_KEY = SG.your_sendgrid_api_key
+STRIPE_SECRET_KEY = sk_test_your_stripe_secret_key
+STRIPE_WEBHOOK_SECRET = whsec_your_stripe_webhook_secret
+SHOPIFY_API_KEY = your_shopify_api_key
+SHOPIFY_API_SECRET = your_shopify_api_secret
+WOOCOMMERCE_API_KEY = ck_your_woocommerce_api_key
+WOOCOMMERCE_API_SECRET = cs_your_woocommerce_api_secret
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = pk_test_your_clerk_publishable_key
+```
+
+### Step 2: Setup GitHub Variables
+
+Go to your GitHub repository → Settings → Secrets and variables → Actions → Variables
+
+Add the following **Variables** (non-sensitive configuration):
+
+**🌐 GCP Configuration**
+```
+PROJECT_ID = your-social-proof-project
+GCP_REGION = us-central1
+GCP_ZONE = us-central1-a
+GKE_CLUSTER = social-proof-cluster
+CONTAINER_REGISTRY = gcr.io
+```
+
+**🏗️ Environment Configuration**
+```
+NODE_ENV = production
+ENVIRONMENT = staging
+IMAGE_TAG_STRATEGY = latest
+```
+
+**⚙️ Application Configuration**
+```
+LOG_LEVEL = info
+METRICS_ENABLED = true
+TRACING_ENABLED = true
+HEALTH_CHECK_TIMEOUT = 5000
+HEALTH_CHECK_INTERVAL = 30000
+```
+
+**🗄️ Database Configuration**
+```
+POSTGRES_DB = social_proof_mvp
+POSTGRES_USER = postgres
+CLICKHOUSE_DATABASE = analytics
+```
+
+## Application Deployment
+
+### Step 1: Trigger Deployment
+
+Push code to the `develop` branch to deploy to staging:
+
+```bash
+git checkout develop
+git push origin develop
+```
+
+The GitHub Actions workflow will:
+1. **Authenticate** using Workload Identity Federation
+2. **Process YAML Templates** by substituting variables and secrets
+3. **Build and Push Images** to Google Container Registry
+4. **Deploy to GKE** using processed Kubernetes manifests
+5. **Set up HTTPS** with nginx-ingress-controller and cert-manager
+6. **Generate SSL certificates** via Let's Encrypt
+7. **Verify Deployment** by checking pod health
+
+### Step 2: Monitor Deployment
+
+1. **GitHub Actions**: Go to Actions tab in your repository
+2. **GKE Console**: Check Google Cloud Console → Kubernetes Engine → Workloads
+3. **kubectl**: Monitor deployments locally:
+
+```bash
+# Check pod status
+kubectl get pods -n social-proof-system
+
+# Check services
+kubectl get services -n social-proof-system
+
+# Check deployments
+kubectl get deployments -n social-proof-system
 
 # View logs
-./scripts/logs-mvp.sh all -f
-./scripts/logs-mvp.sh kafka -n 100
-./scripts/logs-mvp.sh services --follow
-
-# Run tests
-./scripts/test-mvp.sh
+kubectl logs -f deployment/integrations-service -n social-proof-system
 ```
 
-### Service URLs
+## HTTPS and SSL Configuration
 
-| Service | URL | Purpose |
-|---------|-----|---------|
-| Next.js App | http://localhost:3000 | Main application UI |
-| Integrations | http://localhost:3001 | Shopify/WooCommerce integration |
-| Notification Stream | http://localhost:3002 | SSE endpoints for real-time updates |
-| Notifications | http://localhost:3003 | Email/Push notification service |
-| Users | http://localhost:3004 | User management and auth |
-| Analytics | http://localhost:3005 | Analytics data processing |
-| Billing | http://localhost:3006 | Subscription and billing |
-| External Mocks | http://localhost:4000 | Mock external services |
+### Overview
 
-### Environment Configuration
+The application implements enterprise-grade HTTP to HTTPS redirect using:
+- **nginx-ingress-controller**: Industry-standard ingress controller
+- **cert-manager**: Automatic SSL certificate management via Let's Encrypt
+- **Multi-domain support**: Single certificate covers all microservice subdomains
+- **Automatic renewal**: Certificates auto-renew before expiration
 
-Environment variables are configured in `config/.env.mvp`. Key variables:
+### Architecture
 
-```env
-# Database
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/social_proof_mvp
-
-# Kafka
-KAFKA_BROKERS=localhost:29092
-
-# External Services (Mocked)
-SENDGRID_API_KEY=SG.mock_sendgrid_api_key_for_testing
-FIREBASE_PROJECT_ID=mock-firebase-project-mvp
-STRIPE_SECRET_KEY=sk_test_mock_stripe_secret_key_for_testing
+```
+Internet Traffic Flow:
+┌─────────────────┐    ┌──────────────────────┐    ┌─────────────────────┐
+│   HTTP Request  │───▶│  nginx-ingress       │───▶│  308 Permanent      │
+│   Port 80       │    │  Controller          │    │  Redirect to HTTPS  │
+└─────────────────┘    └──────────────────────┘    └─────────────────────┘
+                                  │
+                                  ▼
+┌─────────────────┐    ┌──────────────────────┐    ┌─────────────────────┐
+│  HTTPS Request  │◀───│  Let's Encrypt       │◀───│  Kubernetes         │
+│   Port 443      │    │  SSL Certificate     │    │  Services           │
+└─────────────────┘    └──────────────────────┘    └─────────────────────┘
 ```
 
-## 📊 Database Schema
+### Components Deployed
 
-### PostgreSQL (TimescaleDB)
+**nginx-ingress-controller** (automatically deployed):
+```bash
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.2/deploy/static/provider/cloud/deploy.yaml
+```
 
-Core tables with time-series optimization:
+**cert-manager** (automatically deployed):
+```bash
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.2/cert-manager.yaml
+```
 
-- **organizations**: Company/client data
-- **users**: User accounts with Clerk integration
-- **sites**: Client websites and API keys
-- **notification_templates**: Popup/email templates
-- **events**: Time-series event data (90-day retention)
-- **notifications**: Sent notifications tracking
-- **analytics_sessions**: User session tracking
-- **widget_interactions**: Click/impression data
-- **ab_tests**: A/B test configurations
+**Let's Encrypt ClusterIssuer**:
+```yaml
+# gcp/kubernetes/letsencrypt-issuer.yaml
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: admin@yourdomain.com  # Update with your email
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+    - http01:
+        ingress:
+          class: nginx
+```
 
-### ClickHouse (Analytics)
+### DNS Configuration
 
-High-performance analytics tables:
+**Get nginx-ingress External IP:**
+```bash
+kubectl get svc -n ingress-nginx ingress-nginx-controller
+# Note the EXTERNAL-IP value
+```
 
-- **events**: Event analytics with partitioning
-- **notifications**: Notification performance metrics
-- **widget_interactions**: Interaction analytics
-- **revenue_events**: Revenue tracking
-- **ab_test_results**: A/B test outcomes
+**Required DNS Records** (replace with your domain and the external IP):
+```
+A Record: staging.yourdomain.com → [nginx-ingress-external-ip]
+A Record: api-staging.yourdomain.com → [nginx-ingress-external-ip]
+A Record: users-staging.yourdomain.com → [nginx-ingress-external-ip]
+A Record: notifications-staging.yourdomain.com → [nginx-ingress-external-ip]
+A Record: analytics-staging.yourdomain.com → [nginx-ingress-external-ip]
+A Record: billing-staging.yourdomain.com → [nginx-ingress-external-ip]
+A Record: integrations-staging.yourdomain.com → [nginx-ingress-external-ip]
+```
 
-## 🧪 Testing
+### Security Features
 
-### Automated Tests
+**Implemented Security Headers:**
+- **HSTS (HTTP Strict Transport Security)**: Forces HTTPS for 1 year
+- **X-Frame-Options**: Prevents clickjacking attacks
+- **X-Content-Type-Options**: Prevents MIME type sniffing
+- **Referrer-Policy**: Controls referrer information leakage
+- **Rate Limiting**: 100 requests per minute per IP
+
+## Microservices Overview
+
+The application consists of 5 core microservices, each accessible via HTTPS with dedicated subdomains:
+
+### Core Microservices
+
+| Service | HTTPS Endpoint | Purpose | Port |
+|---------|---------------|---------|------|
+| **Users** | `https://users-staging.yourdomain.com` | User management and authentication | 3000 |
+| **Notifications** | `https://notifications-staging.yourdomain.com` | Real-time notification delivery | 3000 |
+| **Analytics** | `https://analytics-staging.yourdomain.com` | Data processing and insights | 3000 |
+| **Billing** | `https://billing-staging.yourdomain.com` | Payment processing and subscriptions | 3000 |
+| **Integrations** | `https://integrations-staging.yourdomain.com` | Third-party platform connections | 3000 |
+
+### Infrastructure Services
+
+- **Redis**: Caching and pub/sub messaging
+- **Kafka**: Event streaming platform
+- **PostgreSQL**: Primary database with TimescaleDB extension
+- **ClickHouse**: Analytics database for high-performance queries
+
+### Kubernetes Resources
+
+Each microservice includes:
+- **Deployment**: Container orchestration and scaling
+- **Service**: Internal load balancing and service discovery
+- **ConfigMap**: Environment-specific configuration
+- **Secret**: Sensitive data management
+- **Ingress**: HTTPS routing and SSL termination (shared)
+
+## Verification and Testing
+
+### Step 1: Check Component Status
 
 ```bash
-# Full test suite
-./scripts/test-mvp.sh
+# Check nginx-ingress pods
+kubectl get pods -n ingress-nginx
 
-# Individual test categories
-Infrastructure Services ✓
-External Service Mocks ✓
-Database Schema ✓
-Kafka Topics ✓
-ClickHouse Analytics ✓
-End-to-End Event Flow ✓
-Container Health ✓
-Network Connectivity ✓
+# Check cert-manager pods
+kubectl get pods -n cert-manager
+
+# Check application pods
+kubectl get pods -n social-proof-system
+
+# Check certificates
+kubectl get certificates -n social-proof-system
+
+# Check ingress status
+kubectl get ingress -n social-proof-system
 ```
 
-### Manual Testing
+### Step 2: Test HTTP to HTTPS Redirect
 
-1. **Shopify Webhook Simulation**:
+```bash
+# Test redirect (should return 308 Permanent Redirect)
+curl -I http://staging.yourdomain.com/
+
+# Expected response:
+# HTTP/1.1 308 Permanent Redirect
+# Location: https://staging.yourdomain.com
+```
+
+### Step 3: Test HTTPS Endpoints
+
+```bash
+# Test main application
+curl -I https://staging.yourdomain.com/
+
+# Test API endpoints
+curl -I https://api-staging.yourdomain.com/
+
+# Test all microservices
+curl -I https://users-staging.yourdomain.com/health
+curl -I https://notifications-staging.yourdomain.com/health
+curl -I https://analytics-staging.yourdomain.com/health
+curl -I https://billing-staging.yourdomain.com/health
+curl -I https://integrations-staging.yourdomain.com/health
+```
+
+### Step 4: Verify SSL Certificate
+
+```bash
+# Check certificate details
+echo | openssl s_client -servername staging.yourdomain.com -connect staging.yourdomain.com:443 2>/dev/null | openssl x509 -noout -issuer -subject -dates
+
+# Expected output:
+# issuer=C=US, O=Let's Encrypt, CN=R10
+# subject=CN=staging.yourdomain.com
+# notBefore=[date]
+# notAfter=[date + 90 days]
+```
+
+### Step 5: Test Application Functionality
+
+1. **Visit the main application**: `https://staging.yourdomain.com`
+2. **Test authentication**: Sign up/sign in with Clerk
+3. **Test microservices**: Each should respond with health status
+4. **Check browser security**: Should show "Secure" with valid certificate
+
+## Monitoring and Maintenance
+
+### SSL Certificate Monitoring
+
+```bash
+# Check certificate status
+kubectl get certificates -n social-proof-system
+
+# View certificate details
+kubectl describe certificate social-proof-nginx-tls -n social-proof-system
+
+# Check certificate expiration
+kubectl get certificates -n social-proof-system -o custom-columns=NAME:.metadata.name,READY:.status.conditions[0].status,EXPIRY:.status.notAfter
+
+# Monitor cert-manager logs
+kubectl logs -n cert-manager deployment/cert-manager
+```
+
+### Application Health Monitoring
+
+```bash
+# Check all microservice pods
+kubectl get pods -n social-proof-system
+
+# Check resource usage
+kubectl top pods -n social-proof-system
+kubectl top nodes
+
+# View application logs
+kubectl logs -f deployment/notifications-service -n social-proof-system
+
+# Check service endpoints
+kubectl get endpoints -n social-proof-system
+```
+
+### Automatic Certificate Renewal
+
+- **Renewal Trigger**: Certificates renew when 30 days or less remaining
+- **Process**: Fully automated via cert-manager
+- **Validation**: HTTP-01 challenge via nginx-ingress
+- **Monitoring**: Check cert-manager logs for renewal activities
+
+## Troubleshooting
+
+### Common Issues and Solutions
+
+#### 1. Certificate Not Ready
+
+**Symptoms:**
+- `kubectl get certificates` shows `READY: False`
+- Browser shows "Not Secure" warning
+- Using nginx default certificate
+
+**Diagnosis:**
+```bash
+# Check certificate status
+kubectl describe certificate social-proof-nginx-tls -n social-proof-system
+
+# Check Let's Encrypt issuer
+kubectl get clusterissuer letsencrypt-prod
+
+# Check ACME challenges
+kubectl get challenges -n social-proof-system
+```
+
+**Solutions:**
+- Ensure DNS points to nginx-ingress IP
+- Verify domain is accessible via HTTP
+- Check Let's Encrypt rate limits
+- Verify email address in ClusterIssuer
+
+#### 2. DNS Caching Issues
+
+**Symptoms:**
+- Browser still connects to old IP
+- `curl` works but browser doesn't
+- "Connection reset" errors
+
+**Solutions:**
+```bash
+# Clear DNS cache (macOS)
+sudo dscacheutil -flushcache
+sudo killall -HUP mDNSResponder
+
+# Clear DNS cache (Linux)
+sudo systemctl restart systemd-resolved
+
+# Temporary fix: Add to /etc/hosts
+echo "[nginx-ingress-ip] staging.yourdomain.com" | sudo tee -a /etc/hosts
+```
+
+#### 3. Pods Stuck in Pending State
+
+**Diagnosis:**
+```bash
+kubectl describe pod <pod-name> -n social-proof-system
+```
+
+**Common Solutions:**
+- Check node resources: `kubectl describe nodes`
+- Check persistent volume claims: `kubectl get pvc -n social-proof-system`
+- Check image pull secrets: `kubectl get secrets -n social-proof-system`
+
+#### 4. Image Pull Errors
+
+**Diagnosis:**
+```bash
+kubectl get pods -n social-proof-system | grep ImagePullBackOff
+kubectl describe pod <pod-name> -n social-proof-system
+```
+
+**Solutions:**
+- Verify Workload Identity Federation setup
+- Check container registry permissions
+- Verify image names and tags
+
+#### 5. Service Not Responding
+
+**Diagnosis:**
+```bash
+# Check pod status
+kubectl get pods -n social-proof-system
+
+# Check service logs
+kubectl logs -f deployment/[service-name] -n social-proof-system
+
+# Check ingress configuration
+kubectl describe ingress social-proof-nginx-ingress -n social-proof-system
+```
+
+**Solutions:**
+```bash
+# Restart a deployment
+kubectl rollout restart deployment/[service-name] -n social-proof-system
+
+# Check service discovery
+kubectl get endpoints -n social-proof-system
+
+# Port forward for direct testing
+kubectl port-forward service/[service-name] 8080:80 -n social-proof-system
+```
+
+#### 6. Browser Shows "Not Secure" Despite Valid Certificate
+
+**Symptoms:**
+- Certificate is valid but browser shows warning
+- Mixed content warnings
+- Duplicate security headers
+
+**Solutions:**
+1. **Clear browser cache and data** for the domain
+2. **Hard refresh**: `Cmd + Shift + R` (Mac) or `Ctrl + Shift + R` (Windows)
+3. **Try incognito mode** to bypass cached data
+4. **Check for duplicate headers**:
    ```bash
-   curl -X POST http://localhost:4000/webhooks/shopify \
-     -H "Content-Type: application/json" \
-     -d '{"id": 123, "email": "test@example.com", "line_items": [{"title": "Test Product"}]}'
+   curl -I https://staging.yourdomain.com/ | grep -i strict-transport-security
+   # Should only show one HSTS header
    ```
 
-2. **Database Queries**:
-   ```bash
-   docker exec -it social-proof-postgres psql -U postgres -d social_proof_mvp
-   ```
+### Emergency Procedures
 
-3. **ClickHouse Analytics**:
-   ```bash
-   curl "http://localhost:8123/?query=SELECT COUNT(*) FROM analytics.events"
-   ```
-
-## 🔧 Troubleshooting
-
-### Common Issues
-
-#### Services Won't Start
+#### Rollback Deployment
 
 ```bash
-# Check Docker resources
-docker system df
-docker system prune -f
+# Rollback to previous version
+kubectl rollout undo deployment/[service-name] -n social-proof-system
 
-# Restart Docker Desktop
-# Increase Docker memory allocation to 8GB+
+# Check rollout status
+kubectl rollout status deployment/[service-name] -n social-proof-system
 ```
 
-#### Database Connection Issues
+#### Force Certificate Regeneration
 
 ```bash
-# Check PostgreSQL status
-docker exec social-proof-postgres pg_isready -U postgres
+# Delete existing certificate
+kubectl delete certificate social-proof-nginx-tls -n social-proof-system
 
-# Reset database
-./scripts/stop-mvp.sh --clean
-./scripts/start-mvp.sh
+# Delete certificate secret
+kubectl delete secret social-proof-nginx-tls -n social-proof-system
+
+# Reapply ingress to trigger new certificate
+kubectl apply -f gcp/kubernetes/ingress-nginx.yaml
 ```
 
-#### Kafka Issues
+#### Temporary HTTP Access
+
+If HTTPS is completely broken:
 
 ```bash
-# Check Kafka topics
-docker exec social-proof-kafka kafka-topics --bootstrap-server localhost:9092 --list
+# Edit ingress to disable SSL redirect temporarily
+kubectl edit ingress social-proof-nginx-ingress -n social-proof-system
 
-# Check consumer groups
-docker exec social-proof-kafka kafka-consumer-groups --bootstrap-server localhost:9092 --list
+# Change: nginx.ingress.kubernetes.io/ssl-redirect: "false"
+# Remove: cert-manager.io/cluster-issuer annotation
 ```
 
-#### Port Conflicts
+## Cost Analysis
+
+### MVP vs Enterprise Comparison
+
+| Component | MVP Cost (Monthly) | Enterprise Cost (Monthly) | Savings |
+|-----------|-------------------|---------------------------|---------|
+| **Compute** | GKE cluster (3 nodes) | Multi-region EKS | 85% |
+| **Database** | Single PostgreSQL | RDS Multi-AZ + Read Replicas | 90% |
+| **Storage** | Standard SSD | Premium SSD + Backup | 80% |
+| **Networking** | Single region | Global load balancer | 95% |
+| **Monitoring** | Basic GCP monitoring | Enterprise APM | 90% |
+| **Total** | **$20-30/month** | **$700-800/month** | **96%** |
+
+### Cost Optimization Tips
+
+1. **Use preemptible nodes** for non-critical workloads
+2. **Scale down during off-hours** using HPA
+3. **Use regional persistent disks** instead of zonal
+4. **Monitor resource usage** and right-size instances
+5. **Set up billing alerts** to avoid surprises
+
+## Scaling and Production
+
+### Horizontal Scaling
 
 ```bash
-# Check port usage
-netstat -an | grep LISTEN | grep -E ":(3000|3001|3002|3003|3004|3005|3006|4000|5432|6379|8123|29092)"
+# Scale a deployment
+kubectl scale deployment integrations-service --replicas=3 -n social-proof-system
 
-# Stop conflicting services or modify ports in docker-compose-mvp.yml
+# Auto-scale based on CPU
+kubectl autoscale deployment integrations-service --cpu-percent=70 --min=2 --max=10 -n social-proof-system
 ```
-
-### Logs and Monitoring
-
-```bash
-# View all logs
-./scripts/logs-mvp.sh all -f
-
-# Check specific service
-./scripts/logs-mvp.sh postgres -n 50
-
-# Monitor resources
-docker stats
-
-# Check container health
-docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
-```
-
-### Performance Optimization
-
-1. **Increase Docker Resources**:
-   - Memory: 8GB minimum, 16GB recommended
-   - CPU: 4 cores minimum
-   - Disk: 50GB free space
-
-2. **Database Tuning**:
-   ```sql
-   -- PostgreSQL settings for development
-   shared_buffers = 256MB
-   effective_cache_size = 1GB
-   work_mem = 4MB
-   ```
-
-3. **Kafka Optimization**:
-   ```yaml
-   # Increase partition count for high throughput
-   KAFKA_NUM_PARTITIONS: 6
-   KAFKA_DEFAULT_REPLICATION_FACTOR: 1
-   ```
-
-## 🔒 Security Notes
-
-### Development Security
-
-- All external services are mocked for safety
-- No real API keys or credentials required
-- Database passwords are defaults (change for production)
-- HTTPS not configured (development only)
 
 ### Production Considerations
 
-- Replace mock credentials with real ones
-- Enable HTTPS/TLS encryption
-- Implement proper secret management
-- Configure production database settings
-- Set up monitoring and alerting
+#### 1. Environment Separation
 
-## 🚦 Next Steps
+Create separate environments:
+- **Development**: `dev.yourdomain.com`
+- **Staging**: `staging.yourdomain.com`
+- **Production**: `yourdomain.com`
 
-### Phase 1: Core Development
-1. Implement Clerk authentication integration
-2. Build dashboard UI components
-3. Create notification templates system
-4. Develop widget JavaScript embed code
+#### 2. Database Scaling
 
-### Phase 2: Integration
-1. Real Shopify/WooCommerce webhook handling
-2. SendGrid email integration
-3. Firebase push notifications
-4. Stripe billing integration
+- **Read Replicas**: For read-heavy workloads
+- **Connection Pooling**: Use pgbouncer for PostgreSQL
+- **Partitioning**: Use TimescaleDB for time-series data
 
-### Phase 3: Advanced Features
-1. A/B testing framework
-2. Advanced analytics dashboards
-3. Real-time performance monitoring
-4. Multi-tenant architecture
+#### 3. Security Hardening
 
-## 📚 Additional Resources
+- **Network Policies**: Restrict pod-to-pod communication
+- **Pod Security Standards**: Enforce security contexts
+- **Secrets Management**: Use external secret management
+- **Image Scanning**: Scan container images for vulnerabilities
 
-- [Next.js 14 Documentation](https://nextjs.org/docs)
-- [Clerk Authentication](https://clerk.dev/docs)
-- [TimescaleDB Guide](https://docs.timescale.com/)
-- [ClickHouse Documentation](https://clickhouse.com/docs/)
-- [Apache Kafka Quickstart](https://kafka.apache.org/quickstart)
+#### 4. Monitoring and Alerting
 
-## 🤝 Contributing
+Set up monitoring for:
+- **Certificate expiration** (alert at 30 days)
+- **Pod health** and resource usage
+- **Application errors** and performance
+- **Database performance** and connections
 
-1. Make changes to microservices or frontend
-2. Test with `./scripts/test-mvp.sh`
-3. Check logs with `./scripts/logs-mvp.sh`
-4. Commit and push changes
+#### 5. Backup and Disaster Recovery
 
-## 📞 Support
+```bash
+# Database backups
+kubectl create cronjob postgres-backup --image=postgres:14 --schedule="0 2 * * *" -- pg_dump
 
-For issues with this MVP setup:
+# Certificate backups
+kubectl get secret social-proof-nginx-tls -n social-proof-system -o yaml > ssl-cert-backup.yaml
+```
 
-1. Check this README troubleshooting section
-2. Review service logs: `./scripts/logs-mvp.sh all`
-3. Verify all tests pass: `./scripts/test-mvp.sh`
-4. Reset environment: `./scripts/stop-mvp.sh --clean && ./scripts/start-mvp.sh`
+### Migration to Production
+
+1. **Create production GCP project**
+2. **Update DNS to production domains**
+3. **Configure production secrets** (real API keys)
+4. **Set up monitoring and alerting**
+5. **Implement backup strategies**
+6. **Test disaster recovery procedures**
+
+## Support and Resources
+
+### Documentation Links
+- [nginx-ingress Documentation](https://kubernetes.github.io/ingress-nginx/)
+- [cert-manager Documentation](https://cert-manager.io/docs/)
+- [Let's Encrypt Documentation](https://letsencrypt.org/docs/)
+- [Google Kubernetes Engine](https://cloud.google.com/kubernetes-engine/docs)
+
+### Community Support
+- [nginx-ingress GitHub Issues](https://github.com/kubernetes/ingress-nginx/issues)
+- [cert-manager GitHub Issues](https://github.com/cert-manager/cert-manager/issues)
+- [Kubernetes Slack](https://kubernetes.slack.com/)
+
+### Getting Help
+
+For issues:
+1. **Check this troubleshooting guide** first
+2. **Review GitHub Actions logs** for deployment issues
+3. **Check Kubernetes pod logs** for application issues
+4. **Verify DNS and certificate status**
+5. **Open an issue** in this repository with detailed logs
 
 ---
 
-**🎉 Happy coding! Your Social Proof MVP is ready for development.** 
+## Quick Start Checklist
+
+Use this checklist to deploy from scratch:
+
+### ☐ **Prerequisites**
+- [ ] GCP account with billing enabled
+- [ ] GitHub repository with Actions enabled
+- [ ] Domain name with DNS access
+- [ ] Required tools installed (gcloud, kubectl, terraform)
+
+### ☐ **GCP Setup**
+- [ ] Create GCP project
+- [ ] Run Workload Identity Federation setup script
+- [ ] Save GitHub secrets and variables
+
+### ☐ **Infrastructure**
+- [ ] Configure terraform.tfvars
+- [ ] Run `terraform apply`
+- [ ] Get GKE credentials
+
+### ☐ **GitHub Configuration**
+- [ ] Add all required secrets
+- [ ] Add all required variables
+- [ ] Verify repository settings
+
+### ☐ **DNS Configuration**
+- [ ] Get nginx-ingress external IP
+- [ ] Create A records for all domains
+- [ ] Verify DNS propagation
+
+### ☐ **Deployment**
+- [ ] Push to develop branch
+- [ ] Monitor GitHub Actions
+- [ ] Verify pod status
+- [ ] Check certificate generation
+
+### ☐ **Verification**
+- [ ] Test HTTP to HTTPS redirect
+- [ ] Verify SSL certificate
+- [ ] Test all microservice endpoints
+- [ ] Check application functionality
+
+### ☐ **Final Steps**
+- [ ] Set up monitoring
+- [ ] Configure alerts
+- [ ] Document any customizations
+- [ ] Plan scaling strategy
+
+---
+
+**Last Updated**: May 25, 2025  
+**Version**: 2.0  
+**Deployment Status**: ✅ Production Ready  
+**SSL Status**: ✅ Auto-renewal Active  
+**Microservices**: 5 services with HTTPS endpoints 

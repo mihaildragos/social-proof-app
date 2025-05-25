@@ -38,7 +38,7 @@ This document defines the security principles, controls, and best practices to b
 - Access is controlled via security-definer functions (`get_user_email()`, `get_user_full_name()`)
 - Application provides plaintext during insert/update via triggers that encrypt and discard plaintext
   • Store encryption keys in a dedicated `encryption_keys` table with rotation support
-  • Store secrets (DB credentials, JWT keys, SendGrid API key, Firebase credentials) in a secrets manager (AWS Secrets Manager or HashiCorp Vault), not in code or env files.
+  • Store secrets (DB credentials, JWT keys, SendGrid API key credentials) in a secrets manager (AWS Secrets Manager or HashiCorp Vault), not in code or env files.
 
 ### 4.2 Data Residency & Sovereignty
 
