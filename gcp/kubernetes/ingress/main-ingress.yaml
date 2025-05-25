@@ -1,0 +1,150 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: main-ingress
+  namespace: social-proof-system
+  labels:
+    app: social-proof-app
+    environment: staging
+  annotations:
+    # GCP-specific annotations
+    kubernetes.io/ingress.class: "gce"
+    kubernetes.io/ingress.global-static-ip-name: "social-proof-ip"
+    networking.gke.io/managed-certificates: "social-proof-ssl-cert"
+    kubernetes.io/ingress.allow-http: "false"
+
+    # Load balancer configuration
+    cloud.google.com/load-balancer-type: "External"
+    cloud.google.com/backend-config: '{"default": "social-proof-backend-config"}'
+
+    # Security headers
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/ssl-protocols: "TLSv1.2 TLSv1.3"
+    nginx.ingress.kubernetes.io/ssl-ciphers: "ECDHE-RSA-AES128-GCM-SHA256,ECDHE-RSA-AES256-GCM-SHA384"
+
+    # CORS configuration
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization"
+
+    # Rate limiting
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+spec:
+  tls:
+    - hosts:
+        - api.social-proof-app.com
+        - stream.social-proof-app.com
+        - integrations.social-proof-app.com
+      secretName: social-proof-tls-secret
+  rules:
+    # API Gateway - Main entry point
+    - host: api.social-proof-app.com
+      http:
+        paths:
+          - path: /api/v1/integrations
+            pathType: Prefix
+            backend:
+              service:
+                name: integrations-service
+                port:
+                  number: 80
+          - path: /api/v1/notifications
+            pathType: Prefix
+            backend:
+              service:
+                name: notifications-service
+                port:
+                  number: 3003
+          - path: /api/v1/users
+            pathType: Prefix
+            backend:
+              service:
+                name: users-service
+                port:
+                  number: 3004
+          - path: /api/v1/analytics
+            pathType: Prefix
+            backend:
+              service:
+                name: analytics-service
+                port:
+                  number: 3005
+          - path: /api/v1/billing
+            pathType: Prefix
+            backend:
+              service:
+                name: billing-service
+                port:
+                  number: 3006
+
+    # Real-time stream endpoint
+    - host: stream.social-proof-app.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: notification-stream-service
+                port:
+                  number: 80
+
+    # Integrations endpoint (for webhooks)
+    - host: integrations.social-proof-app.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: integrations-service
+                port:
+                  number: 80
+
+---
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: social-proof-ssl-cert
+  namespace: social-proof-system
+  labels:
+    app: social-proof-app
+    environment: staging
+spec:
+  domains:
+    - api.social-proof-app.com
+    - stream.social-proof-app.com
+    - integrations.social-proof-app.com
+
+---
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: social-proof-backend-config
+  namespace: social-proof-system
+  labels:
+    app: social-proof-app
+    environment: staging
+spec:
+  healthCheck:
+    checkIntervalSec: 10
+    timeoutSec: 5
+    healthyThreshold: 1
+    unhealthyThreshold: 3
+    type: HTTP
+    requestPath: /health
+    port: 3001
+
+  sessionAffinity:
+    affinityType: "CLIENT_IP"
+    affinityCookieTtlSec: 3600
+
+  timeoutSec: 30
+  connectionDraining:
+    drainingTimeoutSec: 60
+
+  logging:
+    enable: true
+    sampleRate: 1.0

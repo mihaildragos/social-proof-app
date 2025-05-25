@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-stream-service
+  namespace: social-proof-system
+  labels:
+    app: notification-stream-service
+    tier: backend
+    environment: ${{ vars.ENVIRONMENT }}
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: notification-stream-service
+  template:
+    metadata:
+      labels:
+        app: notification-stream-service
+        tier: backend
+        environment: ${{ vars.ENVIRONMENT }}
+    spec:
+      imagePullSecrets:
+        - name: gcr-json-key
+      containers:
+        - name: notification-stream-service
+          image: ${{ vars.CONTAINER_REGISTRY }}/${{ vars.PROJECT_ID }}/notification-stream:${{ vars.IMAGE_TAG_STRATEGY }}
+          ports:
+            - containerPort: 3002
+              protocol: TCP
+          env:
+            - name: PORT
+              value: "3002"
+          envFrom:
+            - configMapRef:
+                name: social-proof-config
+            - secretRef:
+                name: social-proof-secrets
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3002
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 3002
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          volumeMounts:
+            - name: tmp-volume
+              mountPath: /tmp
+      volumes:
+        - name: tmp-volume
+          emptyDir: {}
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 2

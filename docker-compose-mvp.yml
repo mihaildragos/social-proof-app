@@ -133,7 +133,6 @@ services:
       REDIS_URL: redis://redis:6379
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/social_proof_mvp
       SENDGRID_API_KEY: mock_sendgrid_key
-      FIREBASE_PROJECT_ID: mock_firebase_project
     ports:
       - "3003:3003"
     depends_on:

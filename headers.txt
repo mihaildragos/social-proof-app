@@ -1,0 +1,17 @@
+HTTP/2 200 
+date: Sun, 25 May 2025 18:08:32 GMT
+content-type: text/html; charset=utf-8
+content-length: 9197
+x-clerk-auth-reason: dev-browser-missing
+x-clerk-auth-status: signed-out
+x-middleware-rewrite: /
+vary: RSC, Next-Router-State-Tree, Next-Router-Prefetch, Accept-Encoding
+x-nextjs-cache: HIT
+cache-control: s-maxage=31536000, stale-while-revalidate
+etag: "ts3lpk2y06736"
+strict-transport-security: max-age=15724800; includeSubDomains
+strict-transport-security: max-age=31536000; includeSubDomains
+x-frame-options: DENY
+x-content-type-options: nosniff
+referrer-policy: strict-origin-when-cross-origin
+

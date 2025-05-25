@@ -7,6 +7,19 @@ import { NextResponse } from "next/server";
 const isProtectedRoute = createRouteMatcher(["/protected", "/test-control-panel(.*)"]);
 
 export default clerkMiddleware(async (auth, req) => {
+  // Force HTTPS redirect in non-development environments
+  const nodeEnv = process.env.NODE_ENV;
+  if (nodeEnv !== 'development') {
+    const proto = req.headers.get('x-forwarded-proto');
+    const host = req.headers.get('host');
+    
+    // If the request is HTTP, redirect to HTTPS
+    if (proto === 'http' || (!proto && req.url.startsWith('http://'))) {
+      const httpsUrl = `https://${host}${req.nextUrl.pathname}${req.nextUrl.search}`;
+      return NextResponse.redirect(httpsUrl, 301);
+    }
+  }
+
   if (isProtectedRoute(req)) {
     // Protect the test control panel and other protected routes
     await auth.protect();

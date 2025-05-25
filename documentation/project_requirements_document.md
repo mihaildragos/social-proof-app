@@ -2,7 +2,7 @@
 
 ## 1. Project Overview
 
-We are building a **Fomo-style Social-Proof Notification Platform**—a multi-tenant SaaS that helps online merchants boost trust and conversions by showing real-time “John from Berlin just bought…” messages on their websites. Merchants manage sites, design and schedule pop-ups, emails, and push campaigns from one modern dashboard, while the system handles live data ingestion, targeting, A/B testing and analytics behind the scenes.
+We are building a **Fomo-style Social-Proof Notification Platform**—a multi-tenant SaaS that helps online merchants boost trust and conversions by showing real-time "John from Berlin just bought…" messages on their websites. Merchants manage sites, design and schedule pop-ups, emails, and push campaigns from one modern dashboard, while the system handles live data ingestion, targeting, A/B testing and analytics behind the scenes.
 
 This platform is being built to give businesses an easy, unified way to display social proof across channels without managing multiple tools. Key success criteria include:
 
@@ -52,7 +52,7 @@ This platform is being built to give businesses an easy, unified way to display 
 
 ## 3. User Flow
 
-A new merchant visits the platform’s website, clicks **Sign Up** (or uses SSO), and creates an organization. They add their first site by entering its URL and verifying ownership via DNS TXT or an automated CNAME flow. The dashboard then shows their site in a dropdown and displays a generated embed snippet they can copy into their site’s `<head>`.
+A new merchant visits the platform's website, clicks **Sign Up** (or uses SSO), and creates an organization. They add their first site by entering its URL and verifying ownership via DNS TXT or an automated CNAME flow. The dashboard then shows their site in a dropdown and displays a generated embed snippet they can copy into their site's `<head>`.
 
 Next, the merchant clicks **Create Notification**, picks a template or uploads a custom CSS/theme file, sets targeting rules (geolocation, UTM, behavior), and defines A/B variants. They choose delivery channels—pop-up, email, push—and schedule or enable AI-optimized send-times. After publishing, they monitor live impressions, clicks, and conversions in the analytics tab, export reports on demand (CSV/PDF) or schedule them by email. When ready, they invite teammates (designer, analyst) via email, who join by invitation only and get appropriate role-based access.
 
@@ -107,11 +107,11 @@ Next, the merchant clicks **Create Notification**, picks a template or uploads a
   • TanStack Router (cross-tab cache)
 - **Backend & Infrastructure**\
   • Supabase (Postgres OLTP), TimescaleDB & ClickHouse (OLAP)\
-  • Redis Streams & Apache Kafka (MSK) for event ingestion\
-  • Microservices on EKS pods / AWS Lambda\
+  • Redis Streams & Apache Kafka for event ingestion\
+  • Microservices on GKE clusters\
   • API Gateway (Kong/Gloo + mTLS)\
   • Clerk Auth (RBAC, SSO, SCIM) + JWT cookies\
-  • AWS SageMaker for ML inference (send-time prediction)\
+  • GCP AI Platform for ML inference (send-time prediction)\
   • Cloudflare/Vercel Edge + Redis + Service Worker caching
 - **Integrations & Third-Party**\
   • SendGrid (email)\
@@ -119,7 +119,7 @@ Next, the merchant clicks **Create Notification**, picks a template or uploads a
   • Shopify, WooCommerce, Zapier connectors\
   • Generic REST/GraphQL webhook endpoint
 - **DevOps & Observability**\
-  • Terraform (IaC for EKS, MSK, RDS, ElastiCache, Cloudflare)\
+  • Terraform (IaC for GKE, Kafka, Postgres, Redis, Cloudflare)\
   • GitHub Actions + Argo Rollouts (blue/green, canary)\
   • OpenTelemetry → Jaeger (tracing)\
   • Prometheus/Grafana (metrics)\
@@ -157,7 +157,7 @@ Next, the merchant clicks **Create Notification**, picks a template or uploads a
 - **Merchant custom domains** can be set via UI or manual DNS instructions
 - **Third-party API rate limits** (SendGrid, Firebase) must be respected
 - **Kafka & Redis Streams** availability in target regions
-- **AI send-time optimization** depends on SageMaker endpoint availability
+- **AI send-time optimization** depends on GCP AI Platform endpoint availability
 
 ## 8. Known Issues & Potential Pitfalls
 

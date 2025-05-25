@@ -1,0 +1,16 @@
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: social-proof-ssl-cert
+  namespace: social-proof-system
+spec:
+  domains:
+    - staging.pulsesocialproof.com
+    - api-staging.pulsesocialproof.com
+    - users-staging.pulsesocialproof.com
+    - notifications-staging.pulsesocialproof.com
+    - analytics-staging.pulsesocialproof.com
+    - billing-staging.pulsesocialproof.com
+    - integrations-staging.pulsesocialproof.com
+    # You can add more domains here if needed
+    # - www.staging.socialproof-mvp.com 

@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: social-proof-config
+  namespace: social-proof-system
+  labels:
+    app: social-proof-app
+    environment: staging
+data:
+  # Environment
+  NODE_ENV: "staging"
+
+  # Database Configuration
+  DATABASE_URL: "postgresql://postgres:j3Kz76/GqJg8+O+JzFIdnkegVOtWpKpw9Tvg6DjaHRU=@postgres:5432/social_proof_mvp"
+
+  # Redis Configuration
+  REDIS_URL: "redis://redis:6379"
+
+  # Kafka Configuration
+  KAFKA_BROKERS: "kafka:9092"
+
+  # ClickHouse Configuration
+  CLICKHOUSE_URL: "http://clickhouse:8123"
+  CLICKHOUSE_DATABASE: "analytics"
+
+  # Service URLs
+  INTEGRATIONS_SERVICE_URL: "http://integrations-service:3001"
+  NOTIFICATION_STREAM_SERVICE_URL: "http://notification-stream-service:3002"
+  NOTIFICATIONS_SERVICE_URL: "http://notifications-service:3003"
+  USERS_SERVICE_URL: "http://users-service:3004"
+  ANALYTICS_SERVICE_URL: "http://analytics-service:3005"
+  BILLING_SERVICE_URL: "http://billing-service:3006"
+
+  # Application Configuration
+  LOG_LEVEL: "info"
+  METRICS_ENABLED: "true"
+  TRACING_ENABLED: "true"
+
+  # Health Check Configuration
+  HEALTH_CHECK_TIMEOUT: "5000"
+  HEALTH_CHECK_INTERVAL: "30000"
