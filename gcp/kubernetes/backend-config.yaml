@@ -1,0 +1,50 @@
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: social-proof-backend-config
+  namespace: social-proof-system
+spec:
+  securityPolicy:
+    name: "cloud-armor-policy"
+  cdn:
+    enabled: true
+    cachePolicy:
+      includeHost: true
+      includeProtocol: true
+      includeQueryString: false
+  connectionDraining:
+    drainingTimeoutSec: 60
+  logging:
+    enable: true
+    sampleRate: 1.0
+  customRequestHeaders:
+    headers:
+      - "X-Forwarded-Proto: https"
+      - "X-Forwarded-Port: 443"
+  customResponseHeaders:
+    headers:
+      - "Strict-Transport-Security: max-age=31536000; includeSubDomains"
+      - "X-Frame-Options: DENY"
+      - "X-Content-Type-Options: nosniff"
+      - "Referrer-Policy: strict-origin-when-cross-origin"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: social-proof-app-service-https
+  namespace: social-proof-system
+  annotations:
+    cloud.google.com/backend-config: '{"default": "social-proof-backend-config"}'
+  labels:
+    app: social-proof-app
+    tier: frontend
+    environment: staging
+spec:
+  type: NodePort
+  ports:
+    - port: 80
+      targetPort: 3000
+      protocol: TCP
+      name: http
+  selector:
+    app: social-proof-app
