@@ -6,9 +6,9 @@ metadata:
   labels:
     app: integrations-service
     tier: backend
-    environment: ${{ vars.ENVIRONMENT }}
+    environment: staging
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: integrations-service
@@ -17,19 +17,19 @@ spec:
       labels:
         app: integrations-service
         tier: backend
-        environment: ${{ vars.ENVIRONMENT }}
+        environment: staging
     spec:
-      imagePullSecrets:
-        - name: gcr-json-key
       containers:
         - name: integrations-service
-          image: ${{ vars.CONTAINER_REGISTRY }}/${{ vars.PROJECT_ID }}/integrations:${{ vars.IMAGE_TAG_STRATEGY }}
+          image: europe-west1-docker.pkg.dev/social-proof-app-gcp/social-proof-app/integrations-service:staging
           ports:
-            - containerPort: 3001
+            - containerPort: 3000
               protocol: TCP
           env:
             - name: PORT
-              value: "3001"
+              value: "3000"
+            - name: SERVICE_NAME
+              value: "integrations-service"
           envFrom:
             - configMapRef:
                 name: social-proof-config
@@ -37,15 +37,15 @@ spec:
                 name: social-proof-secrets
           resources:
             requests:
-              memory: "256Mi"
-              cpu: "250m"
+              memory: "128Mi"
+              cpu: "100m"
             limits:
-              memory: "512Mi"
-              cpu: "500m"
+              memory: "256Mi"
+              cpu: "200m"
           livenessProbe:
             httpGet:
               path: /health
-              port: 3001
+              port: 3000
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
@@ -53,7 +53,7 @@ spec:
           readinessProbe:
             httpGet:
               path: /ready
-              port: 3001
+              port: 3000
             initialDelaySeconds: 5
             periodSeconds: 5
             timeoutSeconds: 3

@@ -8,7 +8,7 @@ metadata:
     environment: staging
 data:
   # Environment
-  NODE_ENV: "production"
+  NODE_ENV: "staging"
 
   # Database Configuration
   DATABASE_URL: "postgresql://postgres:j3Kz76/GqJg8+O+JzFIdnkegVOtWpKpw9Tvg6DjaHRU=@postgres:5432/social_proof_mvp"

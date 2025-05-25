@@ -223,9 +223,290 @@ spec:
 ✅ **Better Security**: Secrets are never exposed in the repository or logs
 ✅ **Easier Maintenance**: No manual base64 encoding/decoding needed
 
-## 5. Deploy the Application
+## 5. HTTP to HTTPS Redirect Setup
 
-### 5.1 Trigger Deployment
+### 5.1 Overview
+
+The application implements enterprise-grade HTTP to HTTPS redirect using:
+- **nginx-ingress-controller**: Industry-standard ingress controller for reliable redirects
+- **cert-manager**: Automatic SSL certificate management via Let's Encrypt
+- **Automatic certificate renewal**: Certificates auto-renew before expiration
+- **Multi-domain support**: All microservice subdomains included
+
+### 5.2 Architecture
+
+```
+Internet → nginx-ingress-controller → Kubernetes Services
+    ↓
+HTTP (Port 80) → 308 Permanent Redirect → HTTPS (Port 443)
+    ↓
+Let's Encrypt SSL Certificates (Auto-generated & Renewed)
+```
+
+### 5.3 Components Deployed
+
+**nginx-ingress-controller:**
+```bash
+# Automatically deployed via:
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.2/deploy/static/provider/cloud/deploy.yaml
+```
+
+**cert-manager:**
+```bash
+# Automatically deployed via:
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.2/cert-manager.yaml
+```
+
+**Let's Encrypt ClusterIssuer:**
+```yaml
+# gcp/kubernetes/letsencrypt-issuer.yaml
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: admin@pulsesocialproof.com
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+    - http01:
+        ingress:
+          class: nginx
+```
+
+**Main Ingress Configuration:**
+```yaml
+# gcp/kubernetes/ingress-nginx.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: social-proof-nginx-ingress
+  namespace: social-proof-system
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/server-snippet: |
+      add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+      add_header X-Frame-Options "DENY" always;
+      add_header X-Content-Type-Options "nosniff" always;
+      add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - staging.pulsesocialproof.com
+    - api-staging.pulsesocialproof.com
+    - users-staging.pulsesocialproof.com
+    - notifications-staging.pulsesocialproof.com
+    - analytics-staging.pulsesocialproof.com
+    - billing-staging.pulsesocialproof.com
+    - integrations-staging.pulsesocialproof.com
+    secretName: social-proof-nginx-tls
+```
+
+### 5.4 DNS Configuration
+
+**Required DNS Records:**
+```
+A Record: staging.pulsesocialproof.com → [nginx-ingress-external-ip]
+A Record: api-staging.pulsesocialproof.com → [nginx-ingress-external-ip]
+A Record: users-staging.pulsesocialproof.com → [nginx-ingress-external-ip]
+A Record: notifications-staging.pulsesocialproof.com → [nginx-ingress-external-ip]
+A Record: analytics-staging.pulsesocialproof.com → [nginx-ingress-external-ip]
+A Record: billing-staging.pulsesocialproof.com → [nginx-ingress-external-ip]
+A Record: integrations-staging.pulsesocialproof.com → [nginx-ingress-external-ip]
+```
+
+**Get nginx-ingress External IP:**
+```bash
+kubectl get svc -n ingress-nginx ingress-nginx-controller
+# Note the EXTERNAL-IP value for DNS configuration
+```
+
+### 5.5 SSL Certificate Status
+
+**Check Certificate Status:**
+```bash
+# Check if certificates are ready
+kubectl get certificates -n social-proof-system
+
+# View certificate details
+kubectl describe certificate social-proof-nginx-tls -n social-proof-system
+
+# Check ACME challenges (during initial setup)
+kubectl get challenges -n social-proof-system
+```
+
+**Expected Output:**
+```
+NAME                     READY   SECRET                   AGE
+social-proof-nginx-tls   True    social-proof-nginx-tls   5m
+```
+
+### 5.6 Testing HTTP to HTTPS Redirect
+
+**Test Redirect Functionality:**
+```bash
+# Test HTTP redirect (should return 308 Permanent Redirect)
+curl -I http://staging.pulsesocialproof.com/
+
+# Expected response:
+# HTTP/1.1 308 Permanent Redirect
+# Location: https://staging.pulsesocialproof.com
+# Strict-Transport-Security: max-age=31536000; includeSubDomains
+
+# Test HTTPS endpoint (should return 200 OK)
+curl -I https://staging.pulsesocialproof.com/
+
+# Expected response:
+# HTTP/2 200
+# [application headers...]
+```
+
+**Test All Microservice Endpoints:**
+```bash
+# Main application
+curl -I https://staging.pulsesocialproof.com/
+
+# API endpoints
+curl -I https://api-staging.pulsesocialproof.com/
+
+# Microservices
+curl -I https://users-staging.pulsesocialproof.com/
+curl -I https://notifications-staging.pulsesocialproof.com/
+curl -I https://analytics-staging.pulsesocialproof.com/
+curl -I https://billing-staging.pulsesocialproof.com/
+curl -I https://integrations-staging.pulsesocialproof.com/
+```
+
+### 5.7 Security Features
+
+**Implemented Security Headers:**
+- **HSTS (HTTP Strict Transport Security)**: Forces HTTPS for 1 year
+- **X-Frame-Options**: Prevents clickjacking attacks
+- **X-Content-Type-Options**: Prevents MIME type sniffing
+- **Referrer-Policy**: Controls referrer information leakage
+
+**SSL Certificate Features:**
+- **Automatic Generation**: Certificates generated automatically via Let's Encrypt
+- **Multi-Domain Support**: Single certificate covers all subdomains
+- **Auto-Renewal**: Certificates renew automatically before expiration
+- **HTTP-01 Challenge**: Domain validation via HTTP challenge
+
+### 5.8 Troubleshooting HTTPS Setup
+
+**Common Issues and Solutions:**
+
+**1. Certificate Not Ready:**
+```bash
+# Check certificate status
+kubectl describe certificate social-proof-nginx-tls -n social-proof-system
+
+# Check Let's Encrypt issuer
+kubectl get clusterissuer letsencrypt-prod
+
+# Common fix: Ensure DNS points to nginx-ingress IP
+kubectl get svc -n ingress-nginx ingress-nginx-controller
+```
+
+**2. DNS Caching Issues:**
+```bash
+# Clear local DNS cache (macOS)
+sudo dscacheutil -flushcache
+sudo killall -HUP mDNSResponder
+
+# Temporary fix: Add to /etc/hosts
+echo "[nginx-ingress-ip] staging.pulsesocialproof.com" | sudo tee -a /etc/hosts
+```
+
+**3. Certificate Validation Failures:**
+```bash
+# Check ACME challenges
+kubectl get challenges -n social-proof-system
+
+# Check challenge details
+kubectl describe challenge [challenge-name] -n social-proof-system
+
+# Ensure HTTP-01 challenge path is accessible
+curl http://staging.pulsesocialproof.com/.well-known/acme-challenge/test
+```
+
+**4. nginx-ingress Not Responding:**
+```bash
+# Check nginx-ingress pods
+kubectl get pods -n ingress-nginx
+
+# Check nginx-ingress logs
+kubectl logs -n ingress-nginx deployment/ingress-nginx-controller
+
+# Restart nginx-ingress if needed
+kubectl rollout restart deployment/ingress-nginx-controller -n ingress-nginx
+```
+
+### 5.9 Monitoring and Maintenance
+
+**Certificate Monitoring:**
+```bash
+# Check certificate expiration
+kubectl get certificates -n social-proof-system -o custom-columns=NAME:.metadata.name,READY:.status.conditions[0].status,EXPIRY:.status.notAfter
+
+# Monitor cert-manager logs
+kubectl logs -n cert-manager deployment/cert-manager
+```
+
+**nginx-ingress Monitoring:**
+```bash
+# Check ingress status
+kubectl get ingress -n social-proof-system
+
+# Monitor nginx-ingress metrics (if enabled)
+kubectl port-forward -n ingress-nginx service/ingress-nginx-controller-metrics 10254:10254
+curl http://localhost:10254/metrics
+```
+
+**Automatic Renewal:**
+- Certificates automatically renew when they have 30 days or less remaining
+- No manual intervention required
+- Monitor cert-manager logs for renewal activities
+
+### 5.10 Production Considerations
+
+**For Production Deployment:**
+
+1. **Use Production Let's Encrypt Server:**
+   ```yaml
+   # Already configured in letsencrypt-issuer.yaml
+   server: https://acme-v02.api.letsencrypt.org/directory
+   ```
+
+2. **Configure Rate Limiting:**
+   ```yaml
+   # Already configured in ingress-nginx.yaml
+   nginx.ingress.kubernetes.io/rate-limit: "100"
+   nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+   ```
+
+3. **Monitor Certificate Health:**
+   - Set up alerts for certificate expiration
+   - Monitor cert-manager logs
+   - Test renewal process in staging
+
+4. **Backup Certificates:**
+   ```bash
+   # Backup certificate secrets
+   kubectl get secret social-proof-nginx-tls -n social-proof-system -o yaml > ssl-cert-backup.yaml
+   ```
+
+5. **DNS Considerations:**
+   - Use a reliable DNS provider
+   - Consider using CNAME records for easier IP changes
+   - Set appropriate TTL values (300-3600 seconds)
+
+## 6. Deployment Process
+
+### 6.1 Trigger Deployment
 
 Push code to the `develop` branch to deploy to staging:
 ```bash
@@ -239,7 +520,7 @@ git checkout main
 git push origin main
 ```
 
-### 5.2 GitHub Actions Workflow Process
+### 6.2 GitHub Actions Workflow Process
 
 The deployment workflow will:
 
@@ -249,7 +530,7 @@ The deployment workflow will:
 4. **Deploy to GKE** using the processed Kubernetes manifests
 5. **Verify Deployment** by checking pod health
 
-### 5.3 Monitor Deployment
+### 6.3 Monitor Deployment
 
 1. **GitHub Actions**: Go to Actions tab in your repository to monitor the CI/CD pipeline
 2. **GKE Console**: Check Google Cloud Console → Kubernetes Engine → Workloads
@@ -269,9 +550,9 @@ kubectl get deployments -n social-proof-system
 kubectl logs -f deployment/integrations-service -n social-proof-system
 ```
 
-## 6. Access the Application
+## 7. Access the Application
 
-### 6.1 Get External IP Addresses
+### 7.1 Get External IP Addresses
 
 ```bash
 # Get external IPs for LoadBalancer services
@@ -282,7 +563,7 @@ Wait for `EXTERNAL-IP` to be assigned to:
 - `integrations-service` (port 80)
 - `notification-stream-service` (port 80)
 
-### 6.2 Test the Services
+### 7.2 Test the Services
 
 ```bash
 # Test integrations service
@@ -292,9 +573,9 @@ curl http://EXTERNAL_IP/health
 curl http://EXTERNAL_IP/health
 ```
 
-## 7. Configuration Management
+## 8. Configuration Management
 
-### 7.1 Adding New Secrets
+### 8.1 Adding New Secrets
 
 To add a new secret:
 
@@ -306,7 +587,7 @@ To add a new secret:
    ```
 3. **Deploy**: Push changes to trigger deployment
 
-### 7.2 Adding New Variables
+### 8.2 Adding New Variables
 
 To add a new variable:
 
@@ -318,7 +599,7 @@ To add a new variable:
    ```
 3. **Deploy**: Push changes to trigger deployment
 
-### 7.3 Environment-Specific Configuration
+### 8.3 Environment-Specific Configuration
 
 For different environments (staging/production):
 
@@ -326,13 +607,13 @@ For different environments (staging/production):
 2. **Branch-based deployment**: Different branches can use different variable values
 3. **Conditional logic**: GitHub Actions can use different values based on branch
 
-## 8. Post-Deployment Configuration
+## 9. Post-Deployment Configuration
 
-### 8.1 Update DNS Records
+### 9.1 Update DNS Records
 
 Point your domain names to the external IP addresses of your LoadBalancer services.
 
-### 8.2 Configure SSL/TLS
+### 9.2 Configure SSL/TLS
 
 Set up Google Cloud Load Balancer with SSL certificates:
 
@@ -344,7 +625,7 @@ gcloud compute addresses create social-proof-ip --global
 gcloud compute addresses describe social-proof-ip --global
 ```
 
-### 8.3 Database Initialization
+### 9.3 Database Initialization
 
 ```bash
 # Port forward to access PostgreSQL
@@ -355,9 +636,9 @@ cd microservices
 npm run migrate:up
 ```
 
-## 9. Security Features
+## 10. Security Features
 
-### 9.1 Workload Identity Federation Benefits
+### 10.1 Workload Identity Federation Benefits
 
 ✅ **No long-lived service account keys** stored in GitHub
 ✅ **Short-lived tokens** that automatically rotate
@@ -365,7 +646,7 @@ npm run migrate:up
 ✅ **Improved auditing** - all access is logged
 ✅ **Repository-specific** - tokens only work from your specific repository
 
-### 9.2 Secret Management Best Practices
+### 10.2 Secret Management Best Practices
 
 ✅ **GitHub Secrets for sensitive data** - API keys, passwords, certificates
 ✅ **GitHub Variables for configuration** - environment names, URLs, flags
@@ -373,7 +654,7 @@ npm run migrate:up
 ✅ **No secrets in repository** - All sensitive data stored securely in GitHub
 ✅ **Audit trail** - GitHub logs all secret access
 
-### 9.3 Verify Security Setup
+### 10.3 Verify Security Setup
 
 ```bash
 # Check Workload Identity Pool
@@ -386,9 +667,9 @@ gcloud projects get-iam-policy $PROJECT_ID --filter="bindings.members:serviceAcc
 gcloud logging read 'resource.type="iam_service_account" AND protoPayload.serviceName="iam.googleapis.com"' --limit=10 --format=json
 ```
 
-## 10. Monitoring and Maintenance
+## 11. Monitoring and Maintenance
 
-### 10.1 Check Application Health
+### 11.1 Check Application Health
 
 ```bash
 # Check all pods are running
@@ -399,7 +680,7 @@ kubectl top pods -n social-proof-system
 kubectl top nodes
 ```
 
-### 10.2 View Logs
+### 11.2 View Logs
 
 ```bash
 # View application logs
@@ -410,7 +691,7 @@ kubectl logs -f deployment/postgres -n social-proof-system
 kubectl logs -f deployment/redis -n social-proof-system
 ```
 
-### 10.3 Scale Services
+### 11.3 Scale Services
 
 ```bash
 # Scale a deployment
@@ -420,9 +701,9 @@ kubectl scale deployment integrations-service --replicas=3 -n social-proof-syste
 kubectl autoscale deployment integrations-service --cpu-percent=70 --min=2 --max=10 -n social-proof-system
 ```
 
-## 11. Troubleshooting
+## 12. Troubleshooting
 
-### 11.1 Common Issues
+### 12.1 Common Issues
 
 **GitHub Actions template processing errors:**
 ```bash
@@ -474,7 +755,7 @@ kubectl get secret social-proof-secrets -n social-proof-system -o yaml
 kubectl get secret social-proof-secrets -n social-proof-system -o jsonpath='{.data.POSTGRES_PASSWORD}' | base64 -d
 ```
 
-### 11.2 Restart Services
+### 12.2 Restart Services
 
 ```bash
 # Restart a deployment
@@ -484,7 +765,7 @@ kubectl rollout restart deployment/integrations-service -n social-proof-system
 kubectl rollout status deployment/integrations-service -n social-proof-system
 ```
 
-### 11.3 Access Pod Shell
+### 12.3 Access Pod Shell
 
 ```bash
 # Execute commands in a pod
@@ -494,22 +775,22 @@ kubectl exec -it deployment/integrations-service -n social-proof-system -- /bin/
 kubectl exec deployment/integrations-service -n social-proof-system -- env
 ```
 
-## 12. Cleanup
+## 13. Cleanup
 
-### 12.1 Delete Kubernetes Resources
+### 13.1 Delete Kubernetes Resources
 
 ```bash
 kubectl delete namespace social-proof-system
 ```
 
-### 12.2 Delete GCP Infrastructure
+### 13.2 Delete GCP Infrastructure
 
 ```bash
 cd gcp/terraform
 terraform destroy
 ```
 
-### 12.3 Delete Workload Identity Federation
+### 13.3 Delete Workload Identity Federation
 
 ```bash
 # Delete the provider
@@ -524,30 +805,30 @@ gcloud iam workload-identity-pools delete github-actions-pool --location=global
 gcloud iam service-accounts delete github-actions-sa@$PROJECT_ID.iam.gserviceaccount.com
 ```
 
-### 12.4 Delete GCP Project
+### 13.4 Delete GCP Project
 
 ```bash
 gcloud projects delete your-social-proof-project
 ```
 
-## 13. Migration from Service Account Keys
+## 14. Migration from Service Account Keys
 
 If you're migrating from the old service account key method:
 
-### 13.1 Remove Old Secrets
+### 14.1 Remove Old Secrets
 1. Go to GitHub repository → Settings → Secrets and variables → Actions → Secrets
 2. **Delete** the old `GCP_SA_KEY` secret
 3. **Add** the new Workload Identity Federation secrets
 
-### 13.2 Benefits of Migration
+### 14.2 Benefits of Migration
 - 🔒 **Enhanced Security**: No long-lived credentials
 - 🔄 **Automatic Rotation**: Tokens refresh automatically
 - 📊 **Better Auditing**: Complete access logs
 - 🚫 **Zero Key Management**: No manual key rotation needed
 
-## 14. Advanced Configuration
+## 15. Advanced Configuration
 
-### 14.1 Environment-Specific Overrides
+### 15.1 Environment-Specific Overrides
 
 For production deployment with different values:
 
@@ -555,7 +836,7 @@ For production deployment with different values:
 2. **Use GitHub Environments**: Create separate environments with different variable values
 3. **Conditional workflows**: Use different variables based on branch/environment
 
-### 14.2 Secret Rotation
+### 15.2 Secret Rotation
 
 To rotate secrets:
 
@@ -566,7 +847,7 @@ To rotate secrets:
    kubectl rollout restart deployment/integrations-service -n social-proof-system
    ```
 
-### 14.3 Multi-Environment Setup
+### 15.3 Multi-Environment Setup
 
 For multiple environments (dev, staging, prod):
 

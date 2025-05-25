@@ -1,0 +1,62 @@
+# Template for adding microservices to the ingress
+# Uncomment and modify these sections in ingress-ssl.yaml when deploying microservices
+
+# Users Microservice
+# - host: users-staging.pulsesocialproof.com
+#   http:
+#     paths:
+#     - path: /*
+#       pathType: ImplementationSpecific
+#       backend:
+#         service:
+#           name: users-service
+#           port:
+#             number: 80
+
+# Notifications Microservice  
+# - host: notifications-staging.pulsesocialproof.com
+#   http:
+#     paths:
+#     - path: /*
+#       pathType: ImplementationSpecific
+#       backend:
+#         service:
+#           name: notifications-service
+#           port:
+#             number: 80
+
+# Analytics Microservice
+# - host: analytics-staging.pulsesocialproof.com
+#   http:
+#     paths:
+#     - path: /*
+#       pathType: ImplementationSpecific
+#       backend:
+#         service:
+#           name: analytics-service
+#           port:
+#             number: 80
+
+# Billing Microservice
+# - host: billing-staging.pulsesocialproof.com
+#   http:
+#     paths:
+#     - path: /*
+#       pathType: ImplementationSpecific
+#       backend:
+#         service:
+#           name: billing-service
+#           port:
+#             number: 80
+
+# Integrations Microservice
+# - host: integrations-staging.pulsesocialproof.com
+#   http:
+#     paths:
+#     - path: /*
+#       pathType: ImplementationSpecific
+#       backend:
+#         service:
+#           name: integrations-service
+#           port:
+#             number: 80 
