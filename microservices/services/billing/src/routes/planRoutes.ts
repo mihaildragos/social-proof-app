@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import { PlanRepository } from "../repositories/PlanRepository";
 import { logger } from "../utils/logger";
-import { NotFoundError } from "../middleware/errorHandler";
+import { NotFoundError, BadRequestError } from "../middleware/errorHandler";
 import { ApiResponse } from "../types";
 
 const router = Router();
@@ -35,6 +35,10 @@ router.get("/:id", async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
+    if (!id) {
+      throw new BadRequestError("Plan ID is required");
+    }
+
     const planDetails = await planRepo.getPlanWithDetails(id);
 
     if (!planDetails.plan) {
@@ -60,6 +64,10 @@ router.get("/:id", async (req: Request, res: Response) => {
 router.get("/:id/features", async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+
+    if (!id) {
+      throw new BadRequestError("Plan ID is required");
+    }
 
     // Verify plan exists
     const plan = await planRepo.getById(id);
@@ -88,6 +96,10 @@ router.get("/:id/features", async (req: Request, res: Response) => {
 router.get("/:id/limits", async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+
+    if (!id) {
+      throw new BadRequestError("Plan ID is required");
+    }
 
     // Verify plan exists
     const plan = await planRepo.getById(id);

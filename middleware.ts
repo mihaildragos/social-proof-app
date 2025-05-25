@@ -4,7 +4,11 @@ import { NextResponse } from "next/server";
 /**
  * Clerk middleware for authentication
  */
-const isProtectedRoute = createRouteMatcher(["/protected", "/test-control-panel(.*)"]);
+const isProtectedRoute = createRouteMatcher([
+  "/dashboard(.*)",
+  "/protected(.*)", 
+  "/test-control-panel(.*)"
+]);
 
 export default clerkMiddleware(async (auth, req) => {
   // Force HTTPS redirect in non-development environments
@@ -21,7 +25,7 @@ export default clerkMiddleware(async (auth, req) => {
   }
 
   if (isProtectedRoute(req)) {
-    // Protect the test control panel and other protected routes
+    // Protect the dashboard, test control panel and other protected routes
     await auth.protect();
   }
 

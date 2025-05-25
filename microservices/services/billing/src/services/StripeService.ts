@@ -23,23 +23,35 @@ export class StripeService {
    */
   async createOrGetCustomer(organizationId: string, email?: string): Promise<Stripe.Customer> {
     try {
-      // First, try to find existing customer by metadata
-      const existingCustomers = await this.stripe.customers.list({
-        metadata: { organization_id: organizationId },
-        limit: 1,
-      });
+      // First, try to find existing customer by email if provided
+      let existingCustomers;
+      if (email) {
+        existingCustomers = await this.stripe.customers.list({
+          email: email,
+          limit: 1,
+        });
+      } else {
+        // Search by organization_id in metadata is not directly supported
+        // We'll create a new customer if no email is provided
+        existingCustomers = { data: [] };
+      }
 
       if (existingCustomers.data.length > 0) {
         return existingCustomers.data[0]!;
       }
 
       // Create new customer
-      const customer = await this.stripe.customers.create({
-        email,
+      const customerData: Stripe.CustomerCreateParams = {
         metadata: {
           organization_id: organizationId,
         },
-      });
+      };
+
+      if (email) {
+        customerData.email = email;
+      }
+
+      const customer = await this.stripe.customers.create(customerData);
 
       logger.info("Created Stripe customer", { 
         customerId: customer.id, 
@@ -51,6 +63,13 @@ export class StripeService {
       logger.error("Failed to create/get Stripe customer", { error, organizationId });
       throw new InternalServerError("Failed to create customer");
     }
+  }
+
+  /**
+   * Create customer (alias for backward compatibility)
+   */
+  async createCustomer(params: { organizationId: string; email?: string }): Promise<Stripe.Customer> {
+    return this.createOrGetCustomer(params.organizationId, params.email);
   }
 
   /**

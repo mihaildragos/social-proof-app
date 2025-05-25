@@ -50,6 +50,26 @@ export function getDatabase(): Pool {
 }
 
 /**
+ * Test database connection
+ */
+export async function testConnection(): Promise<boolean> {
+  try {
+    const db = getDatabase();
+    const client = await db.connect();
+    try {
+      await client.query("SELECT 1");
+      logger.info("Database connection test successful");
+      return true;
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    logger.error("Database connection test failed", { error });
+    return false;
+  }
+}
+
+/**
  * Execute a query with automatic connection handling
  */
 export async function query<T = any>(text: string, params?: any[]): Promise<T[]> {
