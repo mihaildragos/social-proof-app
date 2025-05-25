@@ -18,10 +18,10 @@ if [ ! -f "nginx/ssl/fullchain.pem" ] || [ ! -f "nginx/ssl/privkey.pem" ]; then
         -subj "/CN=localhost" -addext "subjectAltName=DNS:localhost,IP:127.0.0.1"
 fi
 
-# Create .env.production file if it doesn't exist
-if [ ! -f ".env.production" ]; then
-    echo "Creating .env.production file..."
-    cat > .env.production << EOF
+# Create .env.staging file if it doesn't exist
+if [ ! -f ".env.staging" ]; then
+    echo "Creating .env.staging file..."
+    cat > .env.staging << EOF
 # Database
 DATABASE_URL=postgres://postgres:securepassword@postgres:5432/social_proof
 
@@ -29,7 +29,7 @@ DATABASE_URL=postgres://postgres:securepassword@postgres:5432/social_proof
 REDIS_URL=redis://redis:6379
 
 # Application
-NODE_ENV=production
+NODE_ENV=staging
 
 # API Gateway
 API_GATEWAY_PORT=8000

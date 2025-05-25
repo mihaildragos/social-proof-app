@@ -1,27 +1,26 @@
-# Social Proof MVP - Local Development Environment
+# Social Proof App - Complete MVP Deployment Guide
 
-## 🎯 Overview
+This comprehensive guide walks you through deploying the Social Proof App MVP from scratch, including infrastructure setup, microservices deployment, HTTPS configuration, and troubleshooting.
 
-This MVP provides a complete local development environment for the Social Proof application - an enterprise-grade clone of Fomo that delivers real-time social-proof notifications across web popups, email, and push notifications.
+## Table of Contents
 
-## 🏗️ Architecture
+1. [Overview](#overview)
+2. [Prerequisites](#prerequisites)
+3. [GCP Project Setup](#gcp-project-setup)
+4. [Infrastructure Deployment](#infrastructure-deployment)
+5. [GitHub Repository Configuration](#github-repository-configuration)
+6. [Application Deployment](#application-deployment)
+7. [HTTPS and SSL Configuration](#https-and-ssl-configuration)
+8. [Microservices Overview](#microservices-overview)
+9. [Verification and Testing](#verification-and-testing)
+10. [Monitoring and Maintenance](#monitoring-and-maintenance)
+11. [Troubleshooting](#troubleshooting)
+12. [Cost Analysis](#cost-analysis)
+13. [Scaling and Production](#scaling-and-production)
 
-### Core Components
+## Overview
 
-```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   Next.js App   │    │   Microservices  │    │ Infrastructure  │
-│   (Port 3000)   │    │   (Ports 3001-6) │    │   Services      │
-│                 │    │                  │    │                 │
-│ • Dashboard     │◄──►│ • Integrations   │◄──►│ • PostgreSQL    │
-│ • Widget        │    │ • Notifications  │    │ • TimescaleDB   │
-│ • Authentication│    │ • Users          │    │ • ClickHouse    │
-│ • Admin Panel   │    │ • Analytics      │    │ • Redis         │
-│                 │    │ • Billing        │    │ • Kafka         │
-│                 │    │ • Notification   │    │                 │
-│                 │    │   Stream (SSE)   │    │                 │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
-```
+The Social Proof App MVP is an enterprise-grade social proof notification system featuring:
 
 ### ✅ __Core Features__
 
@@ -49,7 +48,7 @@ This MVP provides a complete local development environment for the Social Proof 
 * __Rate limiting__ and DDoS protection
 * __JWT authentication__ for inter-service communication
 
-### Prerequisites
+## Prerequisites
 
 * Docker Desktop (4.0+)
 * Docker Compose (2.0+)
@@ -109,8 +108,11 @@ This will:
 __🔒 Important__: We use Workload Identity Federation instead of service account keys for enhanced security.
 
 ```bash
-# Run comprehensive tests
-./scripts/test-mvp.sh
+# Make the script executable
+chmod +x gcp/setup-workload-identity.sh
+
+# Run the setup (replace with your GitHub repository)
+./gcp/setup-workload-identity.sh $PROJECT_ID "your-username/social-proof-app"
 ```
 
 This script will:
@@ -130,16 +132,15 @@ GCP_WORKLOAD_IDENTITY_PROVIDER = projects/123456789/locations/global/workloadIde
 GCP_SERVICE_ACCOUNT = github-actions-sa@social-proof-app-gcp.iam.gserviceaccount.com
 ```
 
-## 🛠️ Development
+## Infrastructure Deployment
 
-### Managing Services
+### Step 1: Configure Terraform
 
 ```bash
-# Start MVP stack
-./scripts/start-mvp.sh
+cd gcp/terraform
 
-# Stop MVP stack
-./scripts/stop-mvp.sh
+# Copy the example file
+cp terraform.tfvars.example terraform.tfvars
 
 # Edit with your values
 vim terraform.tfvars
@@ -291,15 +292,10 @@ kubectl get services -n social-proof-system
 kubectl get deployments -n social-proof-system
 
 # View logs
-./scripts/logs-mvp.sh all -f
-./scripts/logs-mvp.sh kafka -n 100
-./scripts/logs-mvp.sh services --follow
-
-# Run tests
-./scripts/test-mvp.sh
+kubectl logs -f deployment/integrations-service -n social-proof-system
 ```
 
-### Service URLs
+## HTTPS and SSL Configuration
 
 | Service             | URL                     | Purpose                             |
 | ------------------- | ----------------------- | ----------------------------------- |
@@ -319,22 +315,23 @@ The application implements enterprise-grade HTTP to HTTPS redirect using:
 * __Multi-domain support__: Single certificate covers all microservice subdomains
 * __Automatic renewal__: Certificates auto-renew before expiration
 
-Environment variables are configured in `config/.env.mvp`. Key variables:
+### Architecture
 
-```env
-# Database
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/social_proof_mvp
-
-# Kafka
-KAFKA_BROKERS=localhost:29092
-
-# External Services (Mocked)
-SENDGRID_API_KEY=SG.mock_sendgrid_api_key_for_testing
-FIREBASE_PROJECT_ID=mock-firebase-project-mvp
-STRIPE_SECRET_KEY=sk_test_mock_stripe_secret_key_for_testing
+```sh
+Internet Traffic Flow:
+┌─────────────────┐    ┌──────────────────────┐    ┌─────────────────────┐
+│   HTTP Request  │───▶│  nginx-ingress       │───▶│  308 Permanent      │
+│   Port 80       │    │  Controller          │    │  Redirect to HTTPS  │
+└─────────────────┘    └──────────────────────┘    └─────────────────────┘
+                                  │
+                                  ▼
+┌─────────────────┐    ┌──────────────────────┐    ┌─────────────────────┐
+│  HTTPS Request  │◀───│  Let's Encrypt       │◀───│  Kubernetes         │
+│   Port 443      │    │  SSL Certificate     │    │  Services           │
+└─────────────────┘    └──────────────────────┘    └─────────────────────┘
 ```
 
-## 📊 Database Schema
+### Components Deployed
 
 __nginx-ingress-controller__ (automatically deployed):
 
@@ -368,7 +365,7 @@ spec:
           class: nginx
 ```
 
-### ClickHouse (Analytics)
+### DNS Configuration
 
 __Get nginx-ingress External IP:__
 
@@ -379,7 +376,7 @@ kubectl get svc -n ingress-nginx ingress-nginx-controller
 
 __Required DNS Records__ (replace with your domain and the external IP):
 
-```
+```sh
 A Record: staging.pulsesocialproof.com → [nginx-ingress-external-ip]
 A Record: api-staging.pulsesocialproof.com → [nginx-ingress-external-ip]
 A Record: users-staging.pulsesocialproof.com → [nginx-ingress-external-ip]
@@ -389,7 +386,7 @@ A Record: billing-staging.pulsesocialproof.com → [nginx-ingress-external-ip]
 A Record: integrations-staging.pulsesocialproof.com → [nginx-ingress-external-ip]
 ```
 
-## 🧪 Testing
+### Security Features
 
 __Implemented Security Headers:__
 
@@ -435,21 +432,23 @@ Each microservice includes:
 ### Step 1: Check Component Status
 
 ```bash
-# Full test suite
-./scripts/test-mvp.sh
+# Check nginx-ingress pods
+kubectl get pods -n ingress-nginx
 
-# Individual test categories
-Infrastructure Services ✓
-External Service Mocks ✓
-Database Schema ✓
-Kafka Topics ✓
-ClickHouse Analytics ✓
-End-to-End Event Flow ✓
-Container Health ✓
-Network Connectivity ✓
+# Check cert-manager pods
+kubectl get pods -n cert-manager
+
+# Check application pods
+kubectl get pods -n social-proof-system
+
+# Check certificates
+kubectl get certificates -n social-proof-system
+
+# Check ingress status
+kubectl get ingress -n social-proof-system
 ```
 
-### Manual Testing
+### Step 2: Test HTTP to HTTPS Redirect
 
 ```bash
 # Test redirect (should return 308 Permanent Redirect)
@@ -692,33 +691,36 @@ __Solutions:__
 #### Services Won't Start
 
 ```bash
-# Check Docker resources
-docker system df
-docker system prune -f
+# Rollback to previous version
+kubectl rollout undo deployment/[service-name] -n social-proof-system
 
-# Restart Docker Desktop
-# Increase Docker memory allocation to 8GB+
+# Check rollout status
+kubectl rollout status deployment/[service-name] -n social-proof-system
 ```
 
-#### Database Connection Issues
+#### Force Certificate Regeneration
 
 ```bash
-# Check PostgreSQL status
-docker exec social-proof-postgres pg_isready -U postgres
+# Delete existing certificate
+kubectl delete certificate social-proof-nginx-tls -n social-proof-system
 
-# Reset database
-./scripts/stop-mvp.sh --clean
-./scripts/start-mvp.sh
+# Delete certificate secret
+kubectl delete secret social-proof-nginx-tls -n social-proof-system
+
+# Reapply ingress to trigger new certificate
+kubectl apply -f gcp/kubernetes/ingress-nginx.yaml
 ```
 
-#### Kafka Issues
+#### Temporary HTTP Access
+
+If HTTPS is completely broken:
 
 ```bash
-# Check Kafka topics
-docker exec social-proof-kafka kafka-topics --bootstrap-server localhost:9092 --list
+# Edit ingress to disable SSL redirect temporarily
+kubectl edit ingress social-proof-nginx-ingress -n social-proof-system
 
-# Check consumer groups
-docker exec social-proof-kafka kafka-consumer-groups --bootstrap-server localhost:9092 --list
+# Change: nginx.ingress.kubernetes.io/ssl-redirect: "false"
+# Remove: cert-manager.io/cluster-issuer annotation
 ```
 
 ## Cost Analysis
@@ -747,10 +749,11 @@ docker exec social-proof-kafka kafka-consumer-groups --bootstrap-server localhos
 ### Horizontal Scaling
 
 ```bash
-# Check port usage
-netstat -an | grep LISTEN | grep -E ":(3000|3001|3002|3003|3004|3005|3006|4000|5432|6379|8123|29092)"
+# Scale a deployment
+kubectl scale deployment integrations-service --replicas=3 -n social-proof-system
 
-# Stop conflicting services or modify ports in docker-compose-mvp.yml
+# Auto-scale based on CPU
+kubectl autoscale deployment integrations-service --cpu-percent=70 --min=2 --max=10 -n social-proof-system
 ```
 
 ### Logs and Monitoring
@@ -777,6 +780,7 @@ docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
    * Disk: 50GB free space
 
 2. __Database Tuning__:
+
    ```sql
    -- PostgreSQL settings for development
    shared_buffers = 256MB
@@ -785,6 +789,7 @@ docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
    ```
 
 3. __Kafka Optimization__:
+
    ```yaml
    # Increase partition count for high throughput
    KAFKA_NUM_PARTITIONS: 6
@@ -837,11 +842,7 @@ Create separate environments:
 * __Secrets Management__: Use external secret management
 * __Image Scanning__: Scan container images for vulnerabilities
 
-- [Next.js 14 Documentation](https://nextjs.org/docs)
-- [Clerk Authentication](https://clerk.dev/docs)
-- [TimescaleDB Guide](https://docs.timescale.com/)
-- [ClickHouse Documentation](https://clickhouse.com/docs/)
-- [Apache Kafka Quickstart](https://kafka.apache.org/quickstart)
+#### 4. Monitoring and Alerting
 
 Set up monitoring for:
 
@@ -850,14 +851,15 @@ Set up monitoring for:
 * __Application errors__ and performance
 * __Database performance__ and connections
 
-1. Make changes to microservices or frontend
-2. Test with `./scripts/test-mvp.sh`
-3. Check logs with `./scripts/logs-mvp.sh`
-4. Commit and push changes
+#### 5. Backup and Disaster Recovery
 
-## 📞 Support
+```bash
+# Database backups
+kubectl create cronjob postgres-backup --image=postgres:14 --schedule="0 2 * * *" -- pg_dump
 
-For issues with this MVP setup:
+# Certificate backups
+kubectl get secret social-proof-nginx-tls -n social-proof-system -o yaml > ssl-cert-backup.yaml
+```
 
 ### Migration to Production
 

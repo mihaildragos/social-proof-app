@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { Redis } from "ioredis";
 import { createClerkSupabaseClientSsr } from "@/utils/supabase/server";
 import { SiteStatus } from "@/types/sites";
-import MockRedis from "@/lib/mock-redis";
+import MockRedis from "@/app/lib/mock-redis";
 
 // Create Redis client instance
 const getRedisClient = () => {
