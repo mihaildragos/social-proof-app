@@ -50,3 +50,4 @@ next-env.d.ts
 
 
 documentation/old_shopify_app/*
+gcp/kubernetes/secrets-local.yaml
