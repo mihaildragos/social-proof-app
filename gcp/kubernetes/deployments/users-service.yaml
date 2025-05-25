@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: users-service
+  namespace: social-proof-system
+  labels:
+    app: users-service
+    tier: backend
+    environment: staging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: users-service
+  template:
+    metadata:
+      labels:
+        app: users-service
+        tier: backend
+        environment: staging
+    spec:
+      containers:
+        - name: users-service
+          image: europe-west1-docker.pkg.dev/social-proof-app-gcp/social-proof-app/users-service:staging
+          ports:
+            - containerPort: 3000
+              protocol: TCP
+          env:
+            - name: PORT
+              value: "3000"
+            - name: SERVICE_NAME
+              value: "users-service"
+          envFrom:
+            - configMapRef:
+                name: social-proof-config
+            - secretRef:
+                name: social-proof-secrets
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "200m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          volumeMounts:
+            - name: tmp-volume
+              mountPath: /tmp
+      volumes:
+        - name: tmp-volume
+          emptyDir: {}
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1

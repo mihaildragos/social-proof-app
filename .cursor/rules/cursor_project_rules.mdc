@@ -187,10 +187,10 @@ alwaysApply: true
     *   Validate prompt inputs to avoid injection.
     *   Handle rate-limit errors gracefully.
 
-*   AWS SageMaker
+*   GCP AI Platform
 
-    *   Use multi-model endpoints for cost efficiency.
-    *   Monitor invocation latency and errors.
+    *   Use Vertex AI endpoints for model deployment.
+    *   Monitor prediction latency and errors.
     *   Auto-scale endpoints based on traffic patterns.
 
 *   Kong API Gateway

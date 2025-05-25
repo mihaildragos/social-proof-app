@@ -57,7 +57,6 @@ __Frontend Application__:
 __External Service Mocks (Port 4000)__:
 
 * ✅ SendGrid email API mock
-* ✅ Firebase push notification mock
 * ✅ Stripe payment processing mock
 * ✅ Clerk webhook mock
 * ✅ Shopify webhook mock

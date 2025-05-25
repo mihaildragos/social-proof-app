@@ -1,10 +1,28 @@
-# Social Proof App - MVP Deployment
+# MVP Deployment Guide
 
-This repository contains the implementation of a simplified, cost-effective deployment for the Social Proof App MVP serving fewer than 100 users.
+This guide explains how to deploy the Social Proof App MVP locally and in production.
 
 ## Overview
 
-The Social Proof App is a real-time social proof notification platform built with a microservices architecture. This MVP deployment simplifies the infrastructure to a single-server model to reduce costs while maintaining all core functionality.
+The MVP is designed for rapid deployment and testing with fewer than 100 users. It provides all the core functionality of the social proof notification system while maintaining simplicity and cost-effectiveness.
+
+## Architecture
+
+This deployment uses containerized microservices on Google Cloud Platform (GCP) with a simplified single-region approach:
+
+**Components:**
+- 6 Node.js microservices (containerized)
+- PostgreSQL with TimescaleDB extension
+- Redis for caching
+- Apache Kafka for event streaming
+- ClickHouse for analytics
+- Next.js frontend application
+
+**Benefits:**
+- 96% cost reduction compared to enterprise setup
+- All functionality preserved
+- Container-based for easy scaling
+- Cloud-native deployment ready
 
 ## Cost-Effective Infrastructure
 
@@ -40,20 +58,6 @@ See [COST_COMPARISON.md](./COST_COMPARISON.md) for detailed cost analysis.
    ```
 
 Detailed instructions are available in [SINGLE_SERVER_DEPLOYMENT.md](./SINGLE_SERVER_DEPLOYMENT.md).
-
-## Architecture
-
-This deployment maintains the microservices structure but runs all services on a single server:
-
-- **Nginx**: Reverse proxy with SSL termination
-- **PostgreSQL**: Database for persistent storage
-- **Redis**: Used for caching, pub/sub, and event streaming
-- **Microservices**: All services run as Docker containers
-  - API Gateway
-  - Users Service
-  - Notifications Service
-  - Frontend Service
-  - Integrations Service
 
 ## Features
 

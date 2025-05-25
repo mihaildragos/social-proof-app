@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: social-proof-system
+  labels:
+    name: social-proof-system
+    environment: staging
+    project: social-proof-app
+  annotations:
+    description: "Namespace for Social Proof App microservices"

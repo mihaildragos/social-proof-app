@@ -1,8 +1,8 @@
 FROM node:20-alpine AS base
 
 # Set environment variables
-ENV NODE_ENV=production \
-    PORT=3001
+ENV NODE_ENV=staging \
+    PORT=3004
 
 # Install dependencies only when needed
 FROM base AS deps
@@ -43,8 +43,6 @@ COPY --from=deps --chown=node:node /app/node_modules ./node_modules
 COPY --from=builder --chown=node:node /app/dist ./dist
 # Copy necessary files
 COPY --chown=node:node package.json ./
-# Remove .env.example copy as it may not exist
-COPY --chown=node:node /.env.example ./
 
 # Expose port
 EXPOSE $PORT
