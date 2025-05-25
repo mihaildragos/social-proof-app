@@ -1,0 +1,119 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: social-proof-nginx-ingress
+  namespace: social-proof-system
+  annotations:
+    # Force SSL redirect - this works reliably with nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    # Use cert-manager to generate certificates automatically
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    # Security headers (excluding HSTS to avoid duplicates)
+    nginx.ingress.kubernetes.io/server-snippet: |
+      add_header X-Frame-Options "DENY" always;
+      add_header X-Content-Type-Options "nosniff" always;
+      add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    # Rate limiting for security
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+  labels:
+    app: social-proof-app
+    environment: staging
+spec:
+  # Use the proper ingress class name
+  ingressClassName: nginx
+  # Let cert-manager automatically generate certificates
+  tls:
+    - hosts:
+        - staging.pulsesocialproof.com
+        - api-staging.pulsesocialproof.com
+        - users-staging.pulsesocialproof.com
+        - notifications-staging.pulsesocialproof.com
+        - analytics-staging.pulsesocialproof.com
+        - billing-staging.pulsesocialproof.com
+        - integrations-staging.pulsesocialproof.com
+      secretName: social-proof-nginx-tls
+  rules:
+    # Main NextJS application
+    - host: staging.pulsesocialproof.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: social-proof-app-service
+                port:
+                  number: 80
+
+    # API routes (NextJS API routes)
+    - host: api-staging.pulsesocialproof.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: social-proof-app-service
+                port:
+                  number: 80
+
+    # Users Microservice
+    - host: users-staging.pulsesocialproof.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: users-service
+                port:
+                  number: 80
+
+    # Notifications Microservice
+    - host: notifications-staging.pulsesocialproof.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: notifications-service
+                port:
+                  number: 80
+
+    # Analytics Microservice
+    - host: analytics-staging.pulsesocialproof.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: analytics-service
+                port:
+                  number: 80
+
+    # Billing Microservice
+    - host: billing-staging.pulsesocialproof.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: billing-service
+                port:
+                  number: 80
+
+    # Integrations Microservice
+    - host: integrations-staging.pulsesocialproof.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: integrations-service
+                port:
+                  number: 80

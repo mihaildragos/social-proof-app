@@ -1,0 +1,161 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: social-proof-system
+data:
+  nginx.conf: |
+    user nginx;
+    worker_processes auto;
+    error_log /var/log/nginx/error.log notice;
+    pid /var/run/nginx.pid;
+
+    events {
+        worker_connections 1024;
+    }
+
+    http {
+        include /etc/nginx/mime.types;
+        default_type application/octet-stream;
+        
+        log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+                        '$status $body_bytes_sent "$http_referer" '
+                        '"$http_user_agent" "$http_x_forwarded_for"';
+
+        access_log /var/log/nginx/access.log main;
+        sendfile on;
+        keepalive_timeout 65;
+
+        server {
+            listen 80;
+            server_name _;
+            root /usr/share/nginx/html;
+            index index.html;
+
+            location / {
+                try_files $uri $uri/ /index.html;
+            }
+
+            location /health {
+                access_log off;
+                return 200 "healthy\n";
+                add_header Content-Type text/plain;
+            }
+        }
+    }
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-html
+  namespace: social-proof-system
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Social Proof App - MVP Deployment</title>
+        <style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                margin: 0;
+                padding: 40px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .container {
+                text-align: center;
+                max-width: 800px;
+                background: rgba(255, 255, 255, 0.1);
+                padding: 60px;
+                border-radius: 20px;
+                backdrop-filter: blur(10px);
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            }
+            h1 {
+                font-size: 3rem;
+                margin-bottom: 20px;
+                background: linear-gradient(45deg, #fff, #e0e7ff);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }
+            .status {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 20px;
+                margin: 40px 0;
+            }
+            .status-item {
+                background: rgba(255, 255, 255, 0.2);
+                padding: 20px;
+                border-radius: 10px;
+                border: 1px solid rgba(255, 255, 255, 0.3);
+            }
+            .status-item h3 {
+                margin: 0 0 10px 0;
+                color: #4ade80;
+            }
+            .status-item p {
+                margin: 0;
+                font-size: 0.9rem;
+                opacity: 0.9;
+            }
+            .note {
+                background: rgba(59, 130, 246, 0.3);
+                border: 1px solid rgba(59, 130, 246, 0.5);
+                padding: 20px;
+                border-radius: 10px;
+                margin-top: 30px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>🚀 Social Proof App</h1>
+            <p style="font-size: 1.2rem; margin-bottom: 30px;">
+                MVP Successfully Deployed on Google Kubernetes Engine
+            </p>
+            
+            <div class="status">
+                <div class="status-item">
+                    <h3>✅ Infrastructure</h3>
+                    <p>GKE Cluster Running<br>PostgreSQL & Redis Ready</p>
+                </div>
+                <div class="status-item">
+                    <h3>✅ Security</h3>
+                    <p>Workload Identity Federation<br>Secrets Management</p>
+                </div>
+                <div class="status-item">
+                    <h3>✅ Frontend</h3>
+                    <p>LoadBalancer Deployed<br>External Access Enabled</p>
+                </div>
+                <div class="status-item">
+                    <h3>⏳ Microservices</h3>
+                    <p>Ready for Docker Images<br>CI/CD Pipeline Configured</p>
+                </div>
+            </div>
+
+            <div class="note">
+                <h3>🎓 Learning Achievement Unlocked!</h3>
+                <p>
+                    You've successfully deployed a production-ready Kubernetes application on Google Cloud Platform!
+                    This deployment includes secure authentication, database infrastructure, and internet-accessible frontend.
+                </p>
+            </div>
+
+            <p style="margin-top: 30px; opacity: 0.8;">
+                Environment: <strong>Staging</strong> | 
+                Cluster: <strong>social-proof-cluster</strong> | 
+                Region: <strong>europe-west1</strong>
+            </p>
+        </div>
+    </body>
+    </html> 
