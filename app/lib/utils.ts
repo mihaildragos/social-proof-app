@@ -8,13 +8,26 @@ export function cn(...inputs: ClassValue[]) {
 /**
  * Format currency amount with proper locale and currency symbol
  */
-export function formatCurrency(amount: number, currency: string = "USD"): string {
+export function formatCurrency(amount: number | string, currency: string = "USD"): string {
+  // Convert string to number if needed
+  const numericAmount = typeof amount === "string" ? parseFloat(amount) : amount;
+
+  // Handle invalid numbers
+  if (isNaN(numericAmount) || numericAmount == null) {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: currency.toUpperCase(),
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    }).format(0);
+  }
+
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: currency.toUpperCase(),
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
-  }).format(amount);
+  }).format(numericAmount);
 }
 
 /**
@@ -22,7 +35,7 @@ export function formatCurrency(amount: number, currency: string = "USD"): string
  */
 export function formatDate(date: string | Date): string {
   const dateObj = typeof date === "string" ? new Date(date) : date;
-  
+
   return new Intl.DateTimeFormat("en-US", {
     year: "numeric",
     month: "short",
@@ -35,7 +48,7 @@ export function formatDate(date: string | Date): string {
  */
 export function formatDateTime(date: string | Date): string {
   const dateObj = typeof date === "string" ? new Date(date) : date;
-  
+
   return new Intl.DateTimeFormat("en-US", {
     year: "numeric",
     month: "short",
@@ -57,6 +70,6 @@ export function formatRelativeTime(date: string | Date): string {
   if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
   if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
   if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)} days ago`;
-  
+
   return formatDate(dateObj);
 }

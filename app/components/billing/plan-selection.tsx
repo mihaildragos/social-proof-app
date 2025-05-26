@@ -94,7 +94,19 @@ interface PlanCardProps {
 }
 
 function PlanCard({ plan, billingCycle, isCurrentPlan, onSelect }: PlanCardProps) {
-  const price = billingCycle === "monthly" ? plan.plan.price_monthly : plan.plan.price_yearly;
+  // Convert string prices to numbers with safety checks
+  const priceMonthly = typeof plan.plan.price_monthly === 'string' 
+    ? parseFloat(plan.plan.price_monthly) 
+    : plan.plan.price_monthly;
+  const priceYearly = typeof plan.plan.price_yearly === 'string' 
+    ? parseFloat(plan.plan.price_yearly) 
+    : plan.plan.price_yearly;
+  
+  // Ensure we have valid numbers, fallback to 0 if not
+  const validPriceMonthly = isNaN(priceMonthly) || priceMonthly == null ? 0 : priceMonthly;
+  const validPriceYearly = isNaN(priceYearly) || priceYearly == null ? 0 : priceYearly;
+  
+  const price = billingCycle === "monthly" ? validPriceMonthly : validPriceYearly;
   const monthlyPrice = billingCycle === "yearly" ? price / 12 : price;
   const isPopular = plan.plan.name === "pro"; // Assuming "pro" is the popular plan
   const isEnterprise = plan.plan.name === "enterprise";

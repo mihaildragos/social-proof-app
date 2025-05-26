@@ -16,7 +16,7 @@ export class AppError extends Error {
   }
 }
 
-export const BadRequestError = (message: string, details?: any) => {
+export const BadRequestError = (message: string, details?: any, validationErrors?: { path: string; message: string; }[]) => {
   return new AppError(message, 400, details);
 };
 

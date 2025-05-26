@@ -15,6 +15,7 @@ export interface TestSite {
   integration_id: string;
   status: string;
   created_at: string;
+  updated_at: string;
 }
 
 export interface TestSiteCreationResult {
@@ -143,6 +144,7 @@ export async function createTestSiteWithIntegration(
       integration_id: integrationData.id,
       status: siteData.status,
       created_at: siteData.created_at,
+      updated_at: siteData.updated_at,
     };
 
     console.log(`🎉 Test site creation completed:`, testSite);
@@ -208,6 +210,7 @@ export async function getOrCreateTestSite(
         integration_id: integration.id,
         status: existingSite.status,
         created_at: existingSite.created_at,
+        updated_at: existingSite.updated_at,
       };
 
       console.log(`Found existing test site for user ${userId}: ${testSite.id}`);
@@ -328,10 +331,10 @@ export async function cleanupOldTestSites(userId: string, keepCount: number = 1)
 }
 
 /**
- * Validate test site configuration
+ * Validate that a test site exists and is properly configured
  * @param siteId - Site ID to validate
- * @param userId - User ID (for security)
- * @returns Validation result
+ * @param userId - User ID (for ownership verification)
+ * @returns Validation result with any issues found
  */
 export async function validateTestSite(
   siteId: string,
@@ -341,15 +344,18 @@ export async function validateTestSite(
   issues: string[];
   site?: TestSite;
 }> {
+  const issues: string[] = [];
+
   try {
     const supabase = await createClerkSupabaseClientSsr();
 
-    const { data: siteData, error } = await supabase
+    // Get site with integration
+    const { data: siteData, error: siteError } = await supabase
       .from("sites")
       .select(
         `
         *,
-        integrations(
+        integrations!inner(
           id,
           provider,
           status,
@@ -361,14 +367,10 @@ export async function validateTestSite(
       .eq("owner_id", userId)
       .single();
 
-    if (error || !siteData) {
-      return {
-        valid: false,
-        issues: ["Site not found or access denied"],
-      };
+    if (siteError || !siteData) {
+      issues.push("Site not found or access denied");
+      return { valid: false, issues };
     }
-
-    const issues: string[] = [];
 
     // Check if it's a test site
     if (!siteData.settings?.is_test_site) {
@@ -377,32 +379,35 @@ export async function validateTestSite(
 
     // Check site status
     if (siteData.status !== SiteStatus.VERIFIED) {
-      issues.push(`Site status is ${siteData.status}, should be verified`);
+      issues.push(`Site status is ${siteData.status}, expected ${SiteStatus.VERIFIED}`);
     }
 
-    // Check for Shopify integration
-    const shopifyIntegration = siteData.integrations?.find(
-      (int: any) => int.provider === "shopify" && int.status === "active"
-    );
-
-    if (!shopifyIntegration) {
-      issues.push("No active Shopify integration found");
-    } else if (!shopifyIntegration.settings?.shop_domain) {
-      issues.push("Shopify integration missing shop_domain configuration");
+    // Check integration
+    const integration = siteData.integrations?.[0];
+    if (!integration) {
+      issues.push("No integration found for site");
+    } else {
+      if (integration.provider !== "shopify") {
+        issues.push(`Integration provider is ${integration.provider}, expected shopify`);
+      }
+      if (integration.status !== "active") {
+        issues.push(`Integration status is ${integration.status}, expected active`);
+      }
+      if (!integration.settings?.is_test_integration) {
+        issues.push("Integration is not marked as a test integration");
+      }
     }
 
-    const testSite: TestSite | undefined =
-      shopifyIntegration ?
-        {
-          id: siteData.id,
-          name: siteData.name,
-          domain: siteData.domain,
-          shop_domain: shopifyIntegration.settings?.shop_domain || "unknown",
-          integration_id: shopifyIntegration.id,
-          status: siteData.status,
-          created_at: siteData.created_at,
-        }
-      : undefined;
+    const testSite: TestSite = {
+      id: siteData.id,
+      name: siteData.name,
+      domain: siteData.domain,
+      shop_domain: integration?.settings?.shop_domain || "",
+      integration_id: integration?.id || "",
+      status: siteData.status,
+      created_at: siteData.created_at,
+      updated_at: siteData.updated_at,
+    };
 
     return {
       valid: issues.length === 0,
@@ -410,10 +415,7 @@ export async function validateTestSite(
       site: testSite,
     };
   } catch (error: any) {
-    console.error("Error validating test site:", error);
-    return {
-      valid: false,
-      issues: [`Validation error: ${error.message}`],
-    };
+    issues.push(`Validation error: ${error.message}`);
+    return { valid: false, issues };
   }
 }
