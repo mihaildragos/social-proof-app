@@ -1,4 +1,5 @@
-import { KafkaConsumer } from "../../../shared/src/events/consumer";
+import type { IHeaders } from "kafkajs";
+import { KafkaConsumer } from "../../../shared/kafka/consumer";
 import { RedisPublisher } from "../../../shared/redis/publisher";
 import { OrderEventHandler } from "../handlers/order-event-handler";
 import { NotificationService } from "../services/notification-service";
@@ -47,9 +48,11 @@ describe("Kafka Consumer Integration", () => {
   it("should process order.created events correctly", async () => {
     // Create mock message
     const mockMessage = {
-      topic: "order-events",
+      timestamp: "0",
+      attributes: 0,
+      headers: {} as IHeaders,
       partition: 0,
-      offset: 0,
+      offset: "0",
       key: Buffer.from("test-store.myshopify.com"),
       value: Buffer.from(
         JSON.stringify({

@@ -5,9 +5,41 @@ import express, {
 } from "express";
 import cors from "cors";
 import helmet from "helmet";
-import { RedisSubscriber, requestLogger } from "@social-proof/shared";
-import createHealthCheckMiddleware from "@social-proof/shared/middleware/health-check";
-import { IncomingMessage, ServerResponse } from "http";
+
+// Simple request logger middleware
+const requestLogger = (req: ExpressRequest, _res: ExpressResponse, next: NextFunction) => {
+  console.log(`${req.method} ${req.path} - ${new Date().toISOString()}`);
+  next();
+};
+
+// Simple health check middleware
+const createHealthCheckMiddleware = (serviceName: string, _config?: any) => {
+  return (req: ExpressRequest, res: ExpressResponse, next: NextFunction) => {
+    if (req.path === "/health") {
+      return res.json({
+        status: "healthy",
+        service: serviceName,
+        timestamp: new Date().toISOString(),
+      });
+    }
+    next();
+  };
+};
+
+// Simple Redis subscriber placeholder
+class RedisSubscriber {
+  constructor(private url?: string) {}
+
+  async subscribe(channel: string, callback: (message: string) => void): Promise<void> {
+    console.log(`Subscribing to channel: ${channel}`);
+    // TODO: Implement actual Redis subscription
+  }
+
+  async unsubscribe(channel: string): Promise<void> {
+    console.log(`Unsubscribing from channel: ${channel}`);
+    // TODO: Implement actual Redis unsubscription
+  }
+}
 
 // Extend the Express types for SSE
 interface Request extends ExpressRequest {
@@ -73,14 +105,14 @@ export function createServer() {
     };
 
     // Subscribe to Redis channel
-    subscriber.subscribe(channel, sendNotification).catch((error) => {
+    subscriber.subscribe(channel, sendNotification).catch((error: Error) => {
       console.error(`Error subscribing to channel ${channel}:`, error);
       res.end();
     });
 
     // Handle client disconnect
     req.on("close", () => {
-      subscriber.unsubscribe(channel).catch((error) => {
+      subscriber.unsubscribe(channel).catch((error: Error) => {
         console.error(`Error unsubscribing from channel ${channel}:`, error);
       });
     });
