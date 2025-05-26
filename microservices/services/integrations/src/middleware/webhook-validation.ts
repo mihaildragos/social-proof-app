@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import crypto from "crypto";
+import { logger } from "@social-proof/shared";
 
 /**
  * Shopify webhook validation middleware
@@ -327,3 +328,118 @@ export const logWebhook = (req: Request, res: Response, next: NextFunction): voi
     next();
   }
 };
+
+/**
+ * Validate webhook signature for different providers
+ */
+export function validateWebhookSignature(provider: string) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const signature = req.headers['x-shopify-hmac-sha256'] || 
+                       req.headers['x-stripe-signature'] || 
+                       req.headers['x-woocommerce-signature'];
+      
+      if (!signature) {
+        logger.warn('Missing webhook signature', { provider, path: req.path });
+        return res.status(401).json({ error: 'Missing webhook signature' });
+      }
+
+      const body = JSON.stringify(req.body);
+      let isValid = false;
+
+      switch (provider) {
+        case 'shopify':
+          isValid = validateShopifySignature(signature as string, body);
+          break;
+        case 'stripe':
+          isValid = validateStripeSignature(signature as string, body);
+          break;
+        case 'woocommerce':
+          isValid = validateWooCommerceSignature(signature as string, body);
+          break;
+        default:
+          logger.warn('Unknown webhook provider', { provider });
+          return res.status(400).json({ error: 'Unknown webhook provider' });
+      }
+
+      if (!isValid) {
+        logger.warn('Invalid webhook signature', { provider, path: req.path });
+        return res.status(401).json({ error: 'Invalid webhook signature' });
+      }
+
+      next();
+    } catch (error) {
+      logger.error('Webhook validation error', { error, provider, path: req.path });
+      res.status(500).json({ error: 'Webhook validation failed' });
+    }
+  };
+}
+
+/**
+ * Validate Shopify webhook signature
+ */
+function validateShopifySignature(signature: string, body: string): boolean {
+  const secret = process.env.SHOPIFY_WEBHOOK_SECRET;
+  if (!secret) {
+    logger.error('Missing SHOPIFY_WEBHOOK_SECRET environment variable');
+    return false;
+  }
+
+  const generatedHash = crypto
+    .createHmac('sha256', secret)
+    .update(body, 'utf8')
+    .digest('base64');
+
+  return crypto.timingSafeEqual(Buffer.from(generatedHash), Buffer.from(signature));
+}
+
+/**
+ * Validate Stripe webhook signature
+ */
+function validateStripeSignature(signature: string, body: string): boolean {
+  const secret = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!secret) {
+    logger.error('Missing STRIPE_WEBHOOK_SECRET environment variable');
+    return false;
+  }
+
+  try {
+    // Stripe signature format: t=timestamp,v1=signature
+    const elements = signature.split(',');
+    const timestamp = elements.find(el => el.startsWith('t='))?.split('=')[1];
+    const sig = elements.find(el => el.startsWith('v1='))?.split('=')[1];
+
+    if (!timestamp || !sig) {
+      return false;
+    }
+
+    const payload = `${timestamp}.${body}`;
+    const expectedSig = crypto
+      .createHmac('sha256', secret)
+      .update(payload, 'utf8')
+      .digest('hex');
+
+    return crypto.timingSafeEqual(Buffer.from(expectedSig), Buffer.from(sig));
+  } catch (error) {
+    logger.error('Stripe signature validation error', { error });
+    return false;
+  }
+}
+
+/**
+ * Validate WooCommerce webhook signature
+ */
+function validateWooCommerceSignature(signature: string, body: string): boolean {
+  const secret = process.env.WOOCOMMERCE_WEBHOOK_SECRET;
+  if (!secret) {
+    logger.error('Missing WOOCOMMERCE_WEBHOOK_SECRET environment variable');
+    return false;
+  }
+
+  const generatedHash = crypto
+    .createHmac('sha256', secret)
+    .update(body, 'utf8')
+    .digest('base64');
+
+  return crypto.timingSafeEqual(Buffer.from(generatedHash), Buffer.from(signature));
+}

@@ -107,7 +107,7 @@ router.post('/shopify/orders-create', async (req: Request, res: Response) => {
             message: `${notificationEvent.customer.first_name} just purchased ${notificationEvent.product.name} from ${notificationEvent.location.city}`,
             data: notificationEvent,
           },
-          priority: 'normal',
+          priority: 2, // NORMAL priority
           channels: ['web']
         })
       });

@@ -27,6 +27,195 @@ export const SHOPIFY_WEBHOOK_TOPICS = {
  */
 export class ShopifyService {
   /**
+   * Generate OAuth authorization URL for Shopify
+   * @param shop Shop domain
+   * @param scopes Optional scopes array
+   * @returns Authorization URL
+   */
+  async generateAuthUrl(shop: string, scopes?: string[]): Promise<string> {
+    const defaultScopes = ['read_orders', 'read_products', 'write_script_tags'];
+    const requestedScopes = scopes || defaultScopes;
+    const scopeString = requestedScopes.join(',');
+    
+    const params = new URLSearchParams({
+      client_id: process.env.SHOPIFY_API_KEY || '',
+      scope: scopeString,
+      redirect_uri: `${process.env.API_BASE_URL}/api/integrations/shopify/callback`,
+      state: crypto.randomBytes(16).toString('hex'),
+    });
+
+    return `https://${shop}/admin/oauth/authorize?${params.toString()}`;
+  }
+
+  /**
+   * Validate Shopify connection and get shop info
+   * @param shop Shop domain
+   * @param accessToken Access token
+   * @returns Shop information
+   */
+  async validateConnection(shop: string, accessToken: string): Promise<any> {
+    try {
+      const response = await fetch(`${SHOPIFY_ADMIN_API_URL(shop)}/shop.json`, {
+        headers: {
+          'X-Shopify-Access-Token': accessToken,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Shopify API error: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json() as any;
+      return data.shop;
+    } catch (error) {
+      logger.error('Failed to validate Shopify connection', { shop, error });
+      throw error;
+    }
+  }
+
+  /**
+   * Setup webhooks for a Shopify store
+   * @param shop Shop domain
+   * @param accessToken Access token
+   */
+  async setupWebhooks(shop: string, accessToken: string): Promise<void> {
+    const webhookUrl = `${process.env.API_BASE_URL}/api/integrations/webhooks/shopify`;
+    const topics = [
+      SHOPIFY_WEBHOOK_TOPICS.ORDERS_CREATE,
+      SHOPIFY_WEBHOOK_TOPICS.ORDERS_UPDATED,
+      SHOPIFY_WEBHOOK_TOPICS.APP_UNINSTALLED,
+    ];
+
+    try {
+      for (const topic of topics) {
+        const response = await fetch(`${SHOPIFY_ADMIN_API_URL(shop)}/webhooks.json`, {
+          method: 'POST',
+          headers: {
+            'X-Shopify-Access-Token': accessToken,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            webhook: {
+              topic,
+              address: `${webhookUrl}/${topic.replace('/', '-')}`,
+              format: 'json',
+            },
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          logger.warn(`Failed to create webhook for ${topic}`, { shop, error: errorData });
+        } else {
+          logger.info(`Created webhook for ${topic}`, { shop });
+        }
+      }
+    } catch (error) {
+      logger.error('Failed to setup webhooks', { shop, error });
+      throw error;
+    }
+  }
+
+  /**
+   * Exchange OAuth code for access token
+   * @param shop Shop domain
+   * @param code OAuth code
+   * @returns Token data
+   */
+  async exchangeCodeForToken(shop: string, code: string): Promise<any> {
+    try {
+      const response = await fetch(`https://${shop}/admin/oauth/access_token`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          client_id: process.env.SHOPIFY_API_KEY,
+          client_secret: process.env.SHOPIFY_API_SECRET,
+          code,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Token exchange failed: ${response.status} ${response.statusText}`);
+      }
+
+      return await response.json() as any;
+    } catch (error) {
+      logger.error('Failed to exchange code for token', { shop, error });
+      throw error;
+    }
+  }
+
+  /**
+   * Get store information
+   * @param shop Shop domain
+   * @param accessToken Access token
+   * @returns Store information
+   */
+  async getStoreInfo(shop: string, accessToken: string): Promise<any> {
+    try {
+      const response = await fetch(`${SHOPIFY_ADMIN_API_URL(shop)}/shop.json`, {
+        headers: {
+          'X-Shopify-Access-Token': accessToken,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to get store info: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json() as any;
+      return data.shop;
+    } catch (error) {
+      logger.error('Failed to get store info', { shop, error });
+      throw error;
+    }
+  }
+
+  /**
+   * Sync store data
+   * @param shop Shop domain
+   * @param accessToken Access token
+   * @param userId User ID
+   */
+  async syncStoreData(shop: string, accessToken: string, userId: string): Promise<void> {
+    try {
+      // Get recent orders
+      const ordersResponse = await fetch(`${SHOPIFY_ADMIN_API_URL(shop)}/orders.json?limit=50&status=any`, {
+        headers: {
+          'X-Shopify-Access-Token': accessToken,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (ordersResponse.ok) {
+        const ordersData = await ordersResponse.json() as any;
+        logger.info(`Synced ${ordersData.orders?.length || 0} orders`, { shop, userId });
+      }
+
+      // Get products
+      const productsResponse = await fetch(`${SHOPIFY_ADMIN_API_URL(shop)}/products.json?limit=50`, {
+        headers: {
+          'X-Shopify-Access-Token': accessToken,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (productsResponse.ok) {
+        const productsData = await productsResponse.json() as any;
+        logger.info(`Synced ${productsData.products?.length || 0} products`, { shop, userId });
+      }
+
+      logger.info('Store data sync completed', { shop, userId });
+    } catch (error) {
+      logger.error('Failed to sync store data', { shop, userId, error });
+      throw error;
+    }
+  }
+  /**
    * Register webhooks with a Shopify store via API
    * @param shopifyStore Shopify store details
    * @param webhookUrl Base webhook URL
@@ -72,7 +261,7 @@ export class ShopifyService {
           throw new Error(`Shopify webhook registration failed: ${JSON.stringify(errorData)}`);
         }
 
-        const webhookData = await response.json();
+        const webhookData = await response.json() as any;
 
         // Save webhook in our database
         const savedWebhook = await ShopifyIntegration.registerWebhook(

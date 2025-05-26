@@ -49,8 +49,8 @@ router.post(
         provider: "shopify",
         providerAccountId: shopInfo.id.toString(),
         accessToken,
-        refreshToken: null,
-        expiresAt: null,
+        refreshToken: undefined,
+        expiresAt: undefined,
         scope: scopes?.join(","),
         metadata: {
           shop: shopInfo.domain,
