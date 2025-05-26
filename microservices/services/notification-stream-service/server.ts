@@ -5,6 +5,8 @@ import express, {
 } from "express";
 import cors from "cors";
 import helmet from "helmet";
+import webhookSimulationRoutes from "./src/routes/webhook-simulation";
+import notificationRoutes from "./src/routes/notifications";
 
 // Simple request logger middleware
 const requestLogger = (req: ExpressRequest, _res: ExpressResponse, next: NextFunction) => {
@@ -80,6 +82,12 @@ export function createServer() {
       },
     })
   );
+
+  // Register webhook simulation routes
+  app.use("/api/webhooks", webhookSimulationRoutes);
+
+  // Register notification routes
+  app.use("/api/notifications", notificationRoutes);
 
   // SSE endpoint for real-time notifications
   app.get("/api/notifications/sse", (req: Request, res: Response) => {

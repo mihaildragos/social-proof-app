@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 import { IntegrationService } from "../services/integration-service";
-import { ShopifyService } from "../services/shopify-service";
+import { ShopifyService } from "../services/shopifyService";
 import { authMiddleware } from "../middleware/auth";
 import { validateRequest } from "../middleware/validation";
 import { z } from "zod";
@@ -16,11 +16,6 @@ const connectShopifySchema = z.object({
   scopes: z.array(z.string()).optional(),
 });
 
-const shopifyWebhookSchema = z.object({
-  topic: z.string(),
-  shop_domain: z.string(),
-  payload: z.any(),
-});
 
 // Connect Shopify store
 router.post(

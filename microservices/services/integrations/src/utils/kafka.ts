@@ -1,5 +1,7 @@
 import { Kafka, Producer, ProducerRecord, CompressionTypes } from "kafkajs";
-import { logger } from "@social-proof/shared";
+import { getContextLogger } from "@social-proof/shared/utils/logger";
+
+const logger = getContextLogger({ service: "integrations-service" });
 
 /**
  * KafkaProducer class for handling Kafka integration
