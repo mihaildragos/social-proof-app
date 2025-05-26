@@ -5,6 +5,10 @@ import { RedisPublisher } from "./redis/publisher";
 import { NotificationService } from "./services/notificationService";
 import { config } from "./config";
 import templatesRouter from "./routes/templates";
+import sitesRouter from "./routes/sites";
+import campaignsRouter from "./routes/campaigns";
+import abTestsRouter from "./routes/ab-tests";
+import targetingRouter from "./routes/targeting";
 
 export class NotificationsApp {
   private logger: Logger;
@@ -60,7 +64,12 @@ export class NotificationsApp {
     });
 
     // API routes
-    this.app.use("/api/templates", templatesRouter);
+    this.app.use("/api/templates", templatesRouter); // Legacy endpoint
+    this.app.use("/api/notifications/templates", templatesRouter);
+    this.app.use("/api/notifications/sites", sitesRouter);
+    this.app.use("/api/notifications/campaigns", campaignsRouter);
+    this.app.use("/api/notifications/ab-tests", abTestsRouter);
+    this.app.use("/api/notifications/targeting", targetingRouter);
 
     // Error handling middleware
     this.app.use(
