@@ -26,6 +26,7 @@ import { SubscriptionOverview } from "../../components/billing/subscription-over
 import { PlanSelection } from "../../components/billing/plan-selection";
 import { useBilling } from "../../hooks/use-billing";
 import { useOrganization } from "@clerk/nextjs";
+import { formatCurrency } from "../../lib/utils";
 
 export default function BillingPage() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -89,11 +90,11 @@ export default function BillingPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              ${billing.subscription?.plan.price_monthly || 0}
+              {formatCurrency(billing.subscription?.plan.price_monthly || 0)}
             </div>
             <p className="text-xs text-muted-foreground">
               {billing.usage?.total_overage_amount ?
-                `+$${billing.usage.total_overage_amount} overage`
+                `+${formatCurrency(billing.usage.total_overage_amount)} overage`
               : "No overage"}
             </p>
           </CardContent>

@@ -283,21 +283,22 @@ ALTER TABLE plan_change_requests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE subscription_history ENABLE ROW LEVEL SECURITY;
 
 -- Create policies for data access (assuming organization_members table exists)
-CREATE POLICY billing_organization_access ON billing_organizations
-  FOR ALL USING (
-    id IN (
-      SELECT organization_id FROM organization_members 
-      WHERE user_id = current_user_id()
-    )
-  );
+-- TODO: Uncomment these policies once organization_members table is created
+-- CREATE POLICY billing_organization_access ON billing_organizations
+--   FOR ALL USING (
+--     id IN (
+--       SELECT organization_id FROM organization_members 
+--       WHERE user_id = current_user_id()
+--     )
+--   );
 
-CREATE POLICY subscription_access ON subscriptions
-  FOR ALL USING (
-    organization_id IN (
-      SELECT organization_id FROM organization_members 
-      WHERE user_id = current_user_id()
-    )
-  );
+-- CREATE POLICY subscription_access ON subscriptions
+--   FOR ALL USING (
+--     organization_id IN (
+--       SELECT organization_id FROM organization_members 
+--       WHERE user_id = current_user_id()
+--     )
+--   );
 
 -- Create function to get current user ID (to be implemented in application)
 CREATE OR REPLACE FUNCTION current_user_id() 

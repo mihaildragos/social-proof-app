@@ -1,0 +1,29 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Install dependencies for the entire workspace
+COPY package*.json ./
+COPY shared/package*.json ./shared/
+COPY services/*/package*.json ./services/*/
+
+# Install all dependencies
+RUN npm install
+
+# Copy shared package source
+COPY shared/ ./shared/
+
+# Build shared package
+RUN npm run build:shared
+
+# Copy service source
+COPY services/analytics/ ./services/analytics/
+
+# Expose port
+EXPOSE 3000
+
+# Add curl for health checks
+RUN apk add --no-cache curl
+
+# Start the service in development mode with nodemon
+CMD ["npm", "run", "dev:analytics"] 
