@@ -41,7 +41,16 @@
     "dev:shell:billing": "docker-compose -f docker-compose.dev.yml exec billing sh",
     "dev:shell:integrations": "docker-compose -f docker-compose.dev.yml exec integrations sh",
     "dev:shell:notifications": "docker-compose -f docker-compose.dev.yml exec notifications sh",
-    "dev:shell:postgres": "docker-compose -f docker-compose.dev.yml exec postgres psql -U postgres -d social_proof_mvp"
+    "dev:shell:postgres": "docker-compose -f docker-compose.dev.yml exec postgres psql -U postgres -d social_proof_mvp",
+    "migrate": "node scripts/run-all-migrations.js",
+    "migrate:dry-run": "node scripts/run-all-migrations.js --dry-run",
+    "migrate:help": "node scripts/run-all-migrations.js --help",
+    "migrate:billing": "node scripts/run-all-migrations.js --service=billing",
+    "migrate:integrations": "node scripts/run-all-migrations.js --service=integrations",
+    "migrate:analytics": "node scripts/run-all-migrations.js --service=analytics",
+    "migrate:notifications": "node scripts/run-all-migrations.js --service=notifications",
+    "migrate:users": "node scripts/run-all-migrations.js --service=users",
+    "migrate:supabase": "echo '⚠️  Supabase migrations must be applied manually. Run: npm run migrate:help'"
   },
   "dependencies": {
     "@clerk/clerk-sdk-node": "^4.13.23",

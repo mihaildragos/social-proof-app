@@ -248,7 +248,7 @@ file_size_limit = "50MiB"
 allowed_mime_types = ["image/png", "image/jpeg", "image/gif"]
 
 # Local configuration for the file system backend.
-[storage.local]
+# [storage.local]
 # Path that your bucket files will be stored at. Relative paths will be prefixed with the supabase
 # folder.
-path = "./storage"
+# path = "./storage"

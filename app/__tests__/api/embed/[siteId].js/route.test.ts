@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { GET } from "@/app/api/embed/[siteId].js/route";
+import { GET } from "@/app/api/embed/[siteId]/route";
 import { createRequest, parseResponse, resetAllMocks, createParams } from "../../../helpers";
 import { mockResponseData } from "../../../__mocks__/supabase";
 

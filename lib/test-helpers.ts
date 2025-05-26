@@ -47,7 +47,7 @@ export function generateTestShopDomain(userId: string): string {
 }
 
 /**
- * Create a test site with Shopify integration
+ * Create a test site with mock integration data
  * @param userId - User ID
  * @param userName - User's display name
  * @returns Test site creation result
@@ -64,13 +64,15 @@ export async function createTestSiteWithIntegration(
     const siteDomain = generateTestSiteDomain(userId);
     const shopDomain = generateTestShopDomain(userId);
     const siteName = `Test Site - ${userName || "User"}`;
+    const mockIntegrationId = `test-integration-${randomBytes(8).toString("hex")}`;
 
     console.log(`Generated domains:
       - Site Domain: ${siteDomain}
       - Shop Domain: ${shopDomain}
-      - Site Name: ${siteName}`);
+      - Site Name: ${siteName}
+      - Mock Integration ID: ${mockIntegrationId}`);
 
-    // Start a transaction by creating the site first
+    // Create the site with embedded integration data for testing
     console.log("Creating site in database...");
     const { data: siteData, error: siteError } = await supabase
       .from("sites")
@@ -85,6 +87,16 @@ export async function createTestSiteWithIntegration(
           created_by_test_panel: true,
           test_shop_domain: shopDomain,
           auto_verify: true,
+          // Store mock integration data in settings for testing
+          test_integration: {
+            id: mockIntegrationId,
+            provider: "shopify",
+            status: "active",
+            shop_domain: shopDomain,
+            webhook_url: `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3007"}/api/webhooks/shopify/orders/create`,
+            webhook_secret: process.env.SHOPIFY_WEBHOOK_SECRET || "mock_shopify_webhook_secret",
+            created_at: new Date().toISOString(),
+          },
         },
       })
       .select()
@@ -100,48 +112,12 @@ export async function createTestSiteWithIntegration(
 
     console.log(`✅ Site created successfully: ${siteData.id}`);
 
-    // Create Shopify integration for the site
-    console.log("Creating Shopify integration...");
-    const { data: integrationData, error: integrationError } = await supabase
-      .from("integrations")
-      .insert({
-        site_id: siteData.id,
-        provider: "shopify",
-        name: `Test Shopify Integration - ${userName || "User"}`,
-        status: "active",
-        settings: {
-          shop_domain: shopDomain,
-          is_test_integration: true,
-          created_by_test_panel: true,
-          auto_webhooks: true,
-        },
-        webhook_url: `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3007"}/api/webhooks/shopify/orders/create`,
-        webhook_secret: process.env.SHOPIFY_WEBHOOK_SECRET || "mock_shopify_webhook_secret",
-      })
-      .select()
-      .single();
-
-    if (integrationError || !integrationData) {
-      console.error("❌ Error creating test integration:", integrationError);
-
-      // Clean up the site if integration creation failed
-      console.log("Cleaning up site due to integration failure...");
-      await supabase.from("sites").delete().eq("id", siteData.id);
-
-      return {
-        success: false,
-        error: `Failed to create test integration: ${integrationError?.message || "Unknown error"}`,
-      };
-    }
-
-    console.log(`✅ Integration created successfully: ${integrationData.id}`);
-
     const testSite: TestSite = {
       id: siteData.id,
       name: siteData.name,
       domain: siteData.domain,
       shop_domain: shopDomain,
-      integration_id: integrationData.id,
+      integration_id: mockIntegrationId,
       status: siteData.status,
       created_at: siteData.created_at,
       updated_at: siteData.updated_at,
@@ -175,24 +151,13 @@ export async function getOrCreateTestSite(
   try {
     const supabase = await createClerkSupabaseClientSsr();
 
-    // First, try to find existing test site
+    // First, try to find existing test site (simplified query without joins)
     const { data: existingSites, error: searchError } = await supabase
       .from("sites")
-      .select(
-        `
-        *,
-        integrations!inner(
-          id,
-          provider,
-          status,
-          settings
-        )
-      `
-      )
+      .select("*")
       .eq("owner_id", userId)
       .eq("settings->is_test_site", true)
-      .eq("integrations.provider", "shopify")
-      .eq("integrations.status", "active")
+      .order("created_at", { ascending: false })
       .limit(1);
 
     if (searchError) {
@@ -200,14 +165,15 @@ export async function getOrCreateTestSite(
       // Continue to create new site if search fails
     } else if (existingSites && existingSites.length > 0) {
       const existingSite = existingSites[0];
-      const integration = existingSite.integrations[0];
+      const testIntegration = existingSite.settings?.test_integration;
 
+      if (testIntegration) {
       const testSite: TestSite = {
         id: existingSite.id,
         name: existingSite.name,
         domain: existingSite.domain,
-        shop_domain: integration.settings?.shop_domain || "unknown",
-        integration_id: integration.id,
+          shop_domain: testIntegration.shop_domain || "unknown",
+          integration_id: testIntegration.id || "unknown",
         status: existingSite.status,
         created_at: existingSite.created_at,
         updated_at: existingSite.updated_at,
@@ -219,6 +185,7 @@ export async function getOrCreateTestSite(
         success: true,
         site: testSite,
       };
+      }
     }
 
     // No existing site found, create new one
@@ -349,20 +316,10 @@ export async function validateTestSite(
   try {
     const supabase = await createClerkSupabaseClientSsr();
 
-    // Get site with integration
+    // Get site data (simplified query without joins)
     const { data: siteData, error: siteError } = await supabase
       .from("sites")
-      .select(
-        `
-        *,
-        integrations!inner(
-          id,
-          provider,
-          status,
-          settings
-        )
-      `
-      )
+      .select("*")
       .eq("id", siteId)
       .eq("owner_id", userId)
       .single();
@@ -382,19 +339,16 @@ export async function validateTestSite(
       issues.push(`Site status is ${siteData.status}, expected ${SiteStatus.VERIFIED}`);
     }
 
-    // Check integration
-    const integration = siteData.integrations?.[0];
-    if (!integration) {
-      issues.push("No integration found for site");
+    // Check test integration data
+    const testIntegration = siteData.settings?.test_integration;
+    if (!testIntegration) {
+      issues.push("No test integration data found for site");
     } else {
-      if (integration.provider !== "shopify") {
-        issues.push(`Integration provider is ${integration.provider}, expected shopify`);
+      if (testIntegration.provider !== "shopify") {
+        issues.push(`Integration provider is ${testIntegration.provider}, expected shopify`);
       }
-      if (integration.status !== "active") {
-        issues.push(`Integration status is ${integration.status}, expected active`);
-      }
-      if (!integration.settings?.is_test_integration) {
-        issues.push("Integration is not marked as a test integration");
+      if (testIntegration.status !== "active") {
+        issues.push(`Integration status is ${testIntegration.status}, expected active`);
       }
     }
 
@@ -402,8 +356,8 @@ export async function validateTestSite(
       id: siteData.id,
       name: siteData.name,
       domain: siteData.domain,
-      shop_domain: integration?.settings?.shop_domain || "",
-      integration_id: integration?.id || "",
+      shop_domain: testIntegration?.shop_domain || "",
+      integration_id: testIntegration?.id || "",
       status: siteData.status,
       created_at: siteData.created_at,
       updated_at: siteData.updated_at,
