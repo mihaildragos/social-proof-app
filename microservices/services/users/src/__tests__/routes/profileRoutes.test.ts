@@ -1,5 +1,5 @@
 import { describe, it, expect, jest, beforeEach } from "@jest/globals";
-import { userService } from "../../services/userService";
+import { userService } from "../../services/user-service";
 
 // Mock supabase globally
 const createMockQueryBuilder = (): any => ({
@@ -22,7 +22,7 @@ const createMockQueryBuilder = (): any => ({
 };
 
 // Mock the user service
-jest.mock("../../services/userService");
+jest.mock("../../services/user-service");
 const mockUserService = userService as jest.Mocked<typeof userService>;
 
 // Mock the logger

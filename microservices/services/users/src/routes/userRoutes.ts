@@ -3,8 +3,7 @@ import { z } from "zod";
 import { validateRequest } from "../middleware/validateRequest";
 import { requirePermission } from "../middleware/authMiddleware";
 import { BadRequestError, NotFoundError } from "../middleware/errorHandler";
-import { userService } from "../services/userService";
-import { logger } from "../utils/logger";
+import { userService } from "../services/user-service";
 
 const router = Router();
 

@@ -2,7 +2,7 @@ import { Router, Request, Response, NextFunction } from "express";
 import { z } from "zod";
 import { validateRequest } from "../middleware/validateRequest";
 import { BadRequestError } from "../middleware/errorHandler";
-import { userService } from "../services/userService";
+import { userService } from "../services/user-service";
 import { logger } from "../utils/logger";
 
 const router = Router();
