@@ -1,6 +1,6 @@
 import { createHash } from "crypto";
 import { UnauthorizedError, NotFoundError, BadRequestError } from "../middleware/errorHandler";
-import { supabase } from "../index";
+import { db } from "../utils/db";
 import { logger } from "../utils/logger";
 
 interface UserProfile {
