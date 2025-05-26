@@ -25,6 +25,8 @@ gcp/terraform/.terraform.lock.hcl
 
 # production
 /build
+**/build/
+**/dist/
 
 # misc
 .DS_Store
@@ -52,9 +54,5 @@ next-env.d.ts
 # cursor
 .cursor/mcp.json
 
-
-
 documentation/old_shopify_app/*
 gcp/kubernetes/secrets-local.yaml
-microservices/**/**/dist/*
-/microservices/services/integrations/dist
