@@ -216,7 +216,7 @@ router.delete("/:id/members/:userId", async (req: Request, res: Response, next: 
     // Allow self-removal or admin/owner removal
     const isSelfRemoval = req.user.id === memberId;
 
-    await organizationService.removeMember(organizationId, memberId, req.user.id, isSelfRemoval);
+    await organizationService.removeMember(organizationId, memberId, req.user.id);
 
     res.status(200).json({
       status: "success",

@@ -19,7 +19,9 @@ export interface ServiceUrls {
  */
 export function detectEnvironment(): 'docker' | 'localhost' | 'production' {
   // Check if we're in Docker container
-  if (process.env.NODE_ENV === 'development' && process.env.KAFKA_BROKERS?.includes('kafka:')) {
+  if (process.env.NODE_ENV === 'development' && 
+      (process.env.KAFKA_BROKERS?.includes('kafka:') || 
+       process.env.DATABASE_URL?.includes('postgres:'))) {
     return 'docker';
   }
   
@@ -54,15 +56,15 @@ export function getServiceUrls(forBrowser: boolean = false): ServiceUrls {
           externalMocks: 'http://localhost:4000',
         };
       } else {
-        // Server-side can use internal Docker service names
+        // Server-side can use internal Docker service names (Docker Compose service names)
         return {
-          integrations: 'http://integrations-service:3001',
-          notificationStream: 'http://notification-stream-service:3002',
-          notifications: 'http://notifications-service:3003',
-          users: 'http://users-service:3004',
-          analytics: 'http://analytics-service:3005',
-          billing: 'http://billing-service:3006',
-          externalMocks: 'http://external-mocks:4000',
+          integrations: 'http://integrations:3000',
+          notificationStream: 'http://notification-stream:3002',
+          notifications: 'http://notifications:3000',
+          users: 'http://users:3000',
+          analytics: 'http://analytics:3000',
+          billing: 'http://billing:3000',
+          externalMocks: 'http://localhost:4000',
         };
       }
       

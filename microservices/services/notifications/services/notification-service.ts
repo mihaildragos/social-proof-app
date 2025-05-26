@@ -1,4 +1,4 @@
-import { getContextLogger } from "../../../shared/utils/logger";
+import { getContextLogger } from "@social-proof/shared";
 
 const logger = getContextLogger({ service: "notification-service" });
 

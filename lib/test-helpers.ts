@@ -6,6 +6,7 @@
 import { createClerkSupabaseClientSsr } from "@/utils/supabase/server";
 import { randomBytes } from "crypto";
 import { SiteStatus } from "@/types/sites";
+import { getServiceUrl } from "@/lib/service-urls";
 
 export interface TestSite {
   id: string;
@@ -15,6 +16,7 @@ export interface TestSite {
   integration_id: string;
   status: string;
   created_at: string;
+  updated_at: string;
 }
 
 export interface TestSiteCreationResult {
@@ -46,7 +48,50 @@ export function generateTestShopDomain(userId: string): string {
 }
 
 /**
- * Create a test site with Shopify integration
+ * Create default notification template for a test site
+ * @param siteId - Site ID to create template for
+ * @param siteName - Site name
+ * @param siteDomain - Site domain
+ * @param ownerId - Owner user ID
+ */
+async function createDefaultNotificationTemplate(
+  siteId: string, 
+  siteName?: string, 
+  siteDomain?: string, 
+  ownerId?: string
+): Promise<void> {
+  try {
+    const notificationsServiceUrl = getServiceUrl("notifications");
+
+    // Call the notifications service to create default template
+    const response = await fetch(`${notificationsServiceUrl}/api/templates/create-default`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        site_id: siteId,
+        site_name: siteName,
+        site_domain: siteDomain,
+        owner_id: ownerId,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to create default template: ${response.status} - ${errorText}`);
+    }
+
+    const result = await response.json();
+    console.log(`Default template created with ID: ${result.template_id}`);
+  } catch (error: any) {
+    console.error(`Error creating default template for site ${siteId}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Create a test site with mock integration data
  * @param userId - User ID
  * @param userName - User's display name
  * @returns Test site creation result
@@ -63,13 +108,15 @@ export async function createTestSiteWithIntegration(
     const siteDomain = generateTestSiteDomain(userId);
     const shopDomain = generateTestShopDomain(userId);
     const siteName = `Test Site - ${userName || "User"}`;
+    const mockIntegrationId = `test-integration-${randomBytes(8).toString("hex")}`;
 
     console.log(`Generated domains:
       - Site Domain: ${siteDomain}
       - Shop Domain: ${shopDomain}
-      - Site Name: ${siteName}`);
+      - Site Name: ${siteName}
+      - Mock Integration ID: ${mockIntegrationId}`);
 
-    // Start a transaction by creating the site first
+    // Create the site with embedded integration data for testing
     console.log("Creating site in database...");
     const { data: siteData, error: siteError } = await supabase
       .from("sites")
@@ -84,6 +131,16 @@ export async function createTestSiteWithIntegration(
           created_by_test_panel: true,
           test_shop_domain: shopDomain,
           auto_verify: true,
+          // Store mock integration data in settings for testing
+          test_integration: {
+            id: mockIntegrationId,
+            provider: "shopify",
+            status: "active",
+            shop_domain: shopDomain,
+            webhook_url: `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3007"}/api/webhooks/shopify/orders/create`,
+            webhook_secret: process.env.SHOPIFY_WEBHOOK_SECRET || "mock_shopify_webhook_secret",
+            created_at: new Date().toISOString(),
+          },
         },
       })
       .select()
@@ -99,50 +156,29 @@ export async function createTestSiteWithIntegration(
 
     console.log(`✅ Site created successfully: ${siteData.id}`);
 
-    // Create Shopify integration for the site
-    console.log("Creating Shopify integration...");
-    const { data: integrationData, error: integrationError } = await supabase
-      .from("integrations")
-      .insert({
-        site_id: siteData.id,
-        provider: "shopify",
-        name: `Test Shopify Integration - ${userName || "User"}`,
-        status: "active",
-        settings: {
-          shop_domain: shopDomain,
-          is_test_integration: true,
-          created_by_test_panel: true,
-          auto_webhooks: true,
-        },
-        webhook_url: `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3007"}/api/webhooks/shopify/orders/create`,
-        webhook_secret: process.env.SHOPIFY_WEBHOOK_SECRET || "mock_shopify_webhook_secret",
-      })
-      .select()
-      .single();
-
-    if (integrationError || !integrationData) {
-      console.error("❌ Error creating test integration:", integrationError);
-
-      // Clean up the site if integration creation failed
-      console.log("Cleaning up site due to integration failure...");
-      await supabase.from("sites").delete().eq("id", siteData.id);
-
-      return {
-        success: false,
-        error: `Failed to create test integration: ${integrationError?.message || "Unknown error"}`,
-      };
+    // Create default notification template for the test site
+    try {
+      await createDefaultNotificationTemplate(
+        siteData.id, 
+        siteData.name, 
+        siteData.domain, 
+        userId
+      );
+      console.log(`✅ Default notification template created for site: ${siteData.id}`);
+    } catch (templateError) {
+      console.warn(`⚠️ Failed to create default template for site ${siteData.id}:`, templateError);
+      // Don't fail the entire site creation if template creation fails
     }
-
-    console.log(`✅ Integration created successfully: ${integrationData.id}`);
 
     const testSite: TestSite = {
       id: siteData.id,
       name: siteData.name,
       domain: siteData.domain,
       shop_domain: shopDomain,
-      integration_id: integrationData.id,
+      integration_id: mockIntegrationId,
       status: siteData.status,
       created_at: siteData.created_at,
+      updated_at: siteData.updated_at,
     };
 
     console.log(`🎉 Test site creation completed:`, testSite);
@@ -173,24 +209,13 @@ export async function getOrCreateTestSite(
   try {
     const supabase = await createClerkSupabaseClientSsr();
 
-    // First, try to find existing test site
+    // First, try to find existing test site (simplified query without joins)
     const { data: existingSites, error: searchError } = await supabase
       .from("sites")
-      .select(
-        `
-        *,
-        integrations!inner(
-          id,
-          provider,
-          status,
-          settings
-        )
-      `
-      )
+      .select("*")
       .eq("owner_id", userId)
       .eq("settings->is_test_site", true)
-      .eq("integrations.provider", "shopify")
-      .eq("integrations.status", "active")
+      .order("created_at", { ascending: false })
       .limit(1);
 
     if (searchError) {
@@ -198,24 +223,27 @@ export async function getOrCreateTestSite(
       // Continue to create new site if search fails
     } else if (existingSites && existingSites.length > 0) {
       const existingSite = existingSites[0];
-      const integration = existingSite.integrations[0];
+      const testIntegration = existingSite.settings?.test_integration;
 
-      const testSite: TestSite = {
-        id: existingSite.id,
-        name: existingSite.name,
-        domain: existingSite.domain,
-        shop_domain: integration.settings?.shop_domain || "unknown",
-        integration_id: integration.id,
-        status: existingSite.status,
-        created_at: existingSite.created_at,
-      };
+      if (testIntegration) {
+        const testSite: TestSite = {
+          id: existingSite.id,
+          name: existingSite.name,
+          domain: existingSite.domain,
+          shop_domain: testIntegration.shop_domain || "unknown",
+          integration_id: testIntegration.id || "unknown",
+          status: existingSite.status,
+          created_at: existingSite.created_at,
+          updated_at: existingSite.updated_at,
+        };
 
-      console.log(`Found existing test site for user ${userId}: ${testSite.id}`);
+        console.log(`Found existing test site for user ${userId}: ${testSite.id}`);
 
-      return {
-        success: true,
-        site: testSite,
-      };
+        return {
+          success: true,
+          site: testSite,
+        };
+      }
     }
 
     // No existing site found, create new one
@@ -328,10 +356,10 @@ export async function cleanupOldTestSites(userId: string, keepCount: number = 1)
 }
 
 /**
- * Validate test site configuration
+ * Validate that a test site exists and is properly configured
  * @param siteId - Site ID to validate
- * @param userId - User ID (for security)
- * @returns Validation result
+ * @param userId - User ID (for ownership verification)
+ * @returns Validation result with any issues found
  */
 export async function validateTestSite(
   siteId: string,
@@ -341,34 +369,23 @@ export async function validateTestSite(
   issues: string[];
   site?: TestSite;
 }> {
+  const issues: string[] = [];
+
   try {
     const supabase = await createClerkSupabaseClientSsr();
 
-    const { data: siteData, error } = await supabase
+    // Get site data (simplified query without joins)
+    const { data: siteData, error: siteError } = await supabase
       .from("sites")
-      .select(
-        `
-        *,
-        integrations(
-          id,
-          provider,
-          status,
-          settings
-        )
-      `
-      )
+      .select("*")
       .eq("id", siteId)
       .eq("owner_id", userId)
       .single();
 
-    if (error || !siteData) {
-      return {
-        valid: false,
-        issues: ["Site not found or access denied"],
-      };
+    if (siteError || !siteData) {
+      issues.push("Site not found or access denied");
+      return { valid: false, issues };
     }
-
-    const issues: string[] = [];
 
     // Check if it's a test site
     if (!siteData.settings?.is_test_site) {
@@ -377,32 +394,32 @@ export async function validateTestSite(
 
     // Check site status
     if (siteData.status !== SiteStatus.VERIFIED) {
-      issues.push(`Site status is ${siteData.status}, should be verified`);
+      issues.push(`Site status is ${siteData.status}, expected ${SiteStatus.VERIFIED}`);
     }
 
-    // Check for Shopify integration
-    const shopifyIntegration = siteData.integrations?.find(
-      (int: any) => int.provider === "shopify" && int.status === "active"
-    );
-
-    if (!shopifyIntegration) {
-      issues.push("No active Shopify integration found");
-    } else if (!shopifyIntegration.settings?.shop_domain) {
-      issues.push("Shopify integration missing shop_domain configuration");
+    // Check test integration data
+    const testIntegration = siteData.settings?.test_integration;
+    if (!testIntegration) {
+      issues.push("No test integration data found for site");
+    } else {
+      if (testIntegration.provider !== "shopify") {
+        issues.push(`Integration provider is ${testIntegration.provider}, expected shopify`);
+      }
+      if (testIntegration.status !== "active") {
+        issues.push(`Integration status is ${testIntegration.status}, expected active`);
+      }
     }
 
-    const testSite: TestSite | undefined =
-      shopifyIntegration ?
-        {
-          id: siteData.id,
-          name: siteData.name,
-          domain: siteData.domain,
-          shop_domain: shopifyIntegration.settings?.shop_domain || "unknown",
-          integration_id: shopifyIntegration.id,
-          status: siteData.status,
-          created_at: siteData.created_at,
-        }
-      : undefined;
+    const testSite: TestSite = {
+      id: siteData.id,
+      name: siteData.name,
+      domain: siteData.domain,
+      shop_domain: testIntegration?.shop_domain || "",
+      integration_id: testIntegration?.id || "",
+      status: siteData.status,
+      created_at: siteData.created_at,
+      updated_at: siteData.updated_at,
+    };
 
     return {
       valid: issues.length === 0,
@@ -410,10 +427,7 @@ export async function validateTestSite(
       site: testSite,
     };
   } catch (error: any) {
-    console.error("Error validating test site:", error);
-    return {
-      valid: false,
-      issues: [`Validation error: ${error.message}`],
-    };
+    issues.push(`Validation error: ${error.message}`);
+    return { valid: false, issues };
   }
 }

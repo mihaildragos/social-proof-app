@@ -1,5 +1,5 @@
 import { spawn } from "child_process";
-import { getContextLogger } from "../shared/utils/logger";
+import { getContextLogger } from "@social-proof/shared";
 
 const logger = getContextLogger({ service: "services-main" });
 

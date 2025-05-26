@@ -6,7 +6,11 @@
 import dotenv from "dotenv";
 
 // Load environment variables from .env file
-dotenv.config();
+// In Docker, environment variables are already set, so this is optional
+// Only load .env file if we're not in a Docker container
+if (!process.env.DOCKER_ENV) {
+  dotenv.config();
+}
 
 interface KafkaConfig {
   brokers: string[];
@@ -86,7 +90,7 @@ export const config: Config = {
   logLevel: getEnv("LOG_LEVEL", "info"),
 
   kafka: {
-    brokers: getArrayEnv("KAFKA_BROKERS", ["localhost:9092"]),
+    brokers: getArrayEnv("KAFKA_BROKERS", ["kafka:9092"]),
     groupId: getEnv("KAFKA_GROUP_ID", "notifications-service"),
     topics: getArrayEnv("KAFKA_TOPICS", ["events.orders", "events.customers"]),
     sasl:

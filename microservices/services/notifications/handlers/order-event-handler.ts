@@ -1,6 +1,5 @@
-import { RedisPublisher } from "../../../shared/redis/publisher";
+import { RedisPublisher, getContextLogger } from "@social-proof/shared";
 import { NotificationService } from "../services/notification-service";
-import { getContextLogger } from "../../../shared/utils/logger";
 import { Pool } from "pg";
 
 const logger = getContextLogger({ service: "order-event-handler" });

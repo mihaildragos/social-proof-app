@@ -1,5 +1,5 @@
 import { Kafka, Producer, ProducerRecord, CompressionTypes } from "kafkajs";
-import { logger } from "../../../../shared/src/utils/logger.js";
+import { logger } from "@social-proof/shared";
 
 /**
  * KafkaProducer class for handling Kafka integration

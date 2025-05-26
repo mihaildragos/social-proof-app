@@ -84,22 +84,60 @@ export class KafkaConsumer {
     try {
       const event = JSON.parse(value);
 
+      // Debug logging to see the actual message structure
+      console.log("=== DEBUG: Received Event ===");
+      console.log("Raw event:", JSON.stringify(event, null, 2));
+      console.log("event.type:", event.type);
+      console.log("event.event_type:", event.event_type);
+      console.log("============================");
+
       this.logger.info("Processing message", {
         topic,
         partition,
         key,
-        eventType: event.type,
+        eventType: event.type || event.event_type,
       });
 
       // Route to the appropriate handler based on event type
-      switch (event.type) {
+      // Check both event.type and event.event_type for compatibility
+      const eventType = event.type || event.event_type;
+      switch (eventType) {
         case "order.created":
         case "order.paid":
         case "order.fulfilled":
-          await this.orderEventHandler.handle(event);
+          // Transform the integrations service format to the expected OrderEvent format
+          const normalizedEvent = {
+            id: event.order?.id?.toString() || event.id?.toString() || "unknown",
+            type: eventType,
+            siteId: event.site_id || event.siteId,
+            timestamp: event.timestamp || new Date().toISOString(),
+            source: event.platform || event.source || "unknown",
+            data: {
+              id: event.order?.id?.toString() || event.id?.toString() || "unknown",
+              order_number: event.order?.order_number || event.order?.id?.toString() || "unknown",
+              customer: {
+                id: event.customer?.id?.toString() || "unknown",
+                email: event.customer?.email,
+                first_name: event.customer?.first_name,
+                last_name: event.customer?.last_name,
+              },
+              line_items: event.items || event.line_items || [],
+              total_price: event.order?.total_price || "0.00",
+              currency: event.order?.currency || "USD",
+              created_at: event.source_created_at || event.timestamp || new Date().toISOString(),
+              fulfillment_status: event.order?.fulfillment_status,
+              financial_status: event.order?.financial_status,
+              metadata: {
+                platform: event.platform,
+                integration_id: event.integration_id,
+                raw_data: event.raw_data
+              }
+            }
+          };
+          await this.orderEventHandler.handle(normalizedEvent);
           break;
         default:
-          this.logger.warn("Unhandled event type", { eventType: event.type });
+          this.logger.warn("Unhandled event type", { eventType });
       }
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : String(error);

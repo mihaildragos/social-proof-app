@@ -1,0 +1,663 @@
+{"environment":"development","level":"info","message":"Billing service started","port":3006,"service":"billing-service","timestamp":"2025-05-26T08:50:27.628Z"}
+{"level":"info","message":"Received SIGTERM, starting graceful shutdown","service":"billing-service","timestamp":"2025-05-26T08:54:21.722Z"}
+{"environment":"development","level":"info","message":"Billing service started","port":3006,"service":"billing-service","timestamp":"2025-05-26T08:54:25.372Z"}
+{"level":"info","message":"Received SIGTERM, starting graceful shutdown","service":"billing-service","timestamp":"2025-05-26T08:55:40.341Z"}
+{"environment":"development","level":"info","message":"Billing service started","port":"3000","service":"billing-service","timestamp":"2025-05-26T08:55:45.992Z"}
+{"ip":"::ffff:172.18.0.1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T08:55:59.215Z","url":"/health","userAgent":"curl/8.7.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T08:56:11.229Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T08:56:41.269Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T08:57:11.299Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::ffff:172.18.0.1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T08:57:24.580Z","url":"/health","userAgent":"curl/8.7.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T08:57:41.330Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T08:58:11.416Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T08:58:41.459Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T08:59:11.491Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T08:59:41.520Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:00:11.560Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:00:41.595Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:01:11.620Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:01:41.646Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:02:11.682Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:02:41.729Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:03:11.766Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:03:41.798Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:04:11.841Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:04:41.868Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:05:12.176Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:05:42.214Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::ffff:172.18.0.1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:06:07.231Z","url":"/api/plans","userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+{"environment":"development","level":"info","message":"Billing service started","port":"3000","service":"billing-service","timestamp":"2025-05-26T09:07:24.130Z"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:07:48.473Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:08:18.515Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:08:48.549Z","url":"/health","userAgent":"curl/8.12.1"}
+{"level":"info","message":"Received SIGTERM, starting graceful shutdown","service":"billing-service","timestamp":"2025-05-26T09:09:09.803Z"}
+{"environment":"development","level":"info","message":"Billing service started","port":"3000","service":"billing-service","timestamp":"2025-05-26T09:10:18.570Z"}
+{"ip":"::ffff:172.18.0.1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:10:19.113Z","url":"/api/plans","userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+{"environment":"development","level":"info","message":"Billing service started","port":"3000","service":"billing-service","timestamp":"2025-05-26T09:12:34.976Z"}
+{"ip":"::ffff:172.18.0.1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:12:50.073Z","url":"/api/plans","userAgent":"curl/8.7.1"}
+{"environment":"development","level":"info","message":"Billing service started","port":"3000","service":"billing-service","timestamp":"2025-05-26T09:14:25.941Z"}
+{"ip":"::ffff:172.18.0.1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:14:42.889Z","url":"/api/plans","userAgent":"curl/8.7.1"}
+{"environment":"development","level":"info","message":"Billing service started","port":"3000","service":"billing-service","timestamp":"2025-05-26T09:15:51.698Z"}
+{"ip":"::ffff:172.18.0.1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:16:05.391Z","url":"/api/plans","userAgent":"curl/8.7.1"}
+{"environment":"development","level":"info","message":"Billing service started","port":"3000","service":"billing-service","timestamp":"2025-05-26T09:16:41.049Z"}
+{"ip":"::ffff:172.18.0.1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:16:57.239Z","url":"/api/plans","userAgent":"curl/8.7.1"}
+{"environment":"development","level":"info","message":"Billing service started","port":"3000","service":"billing-service","timestamp":"2025-05-26T09:17:41.694Z"}
+{"ip":"::ffff:172.18.0.1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:17:58.060Z","url":"/api/plans","userAgent":"curl/8.7.1"}
+{"environment":"development","level":"info","message":"Billing service started","port":"3000","service":"billing-service","timestamp":"2025-05-26T09:18:35.170Z"}
+{"level":"info","message":"Received SIGTERM, starting graceful shutdown","service":"billing-service","timestamp":"2025-05-26T09:18:45.253Z"}
+{"environment":"development","level":"info","message":"Billing service started","port":"3000","service":"billing-service","timestamp":"2025-05-26T09:18:49.490Z"}
+{"ip":"::ffff:172.18.0.1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:19:05.101Z","url":"/api/plans","userAgent":"curl/8.7.1"}
+{"level":"info","message":"Database pool initialized","service":"billing-service","timestamp":"2025-05-26T09:19:05.102Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:19:05.112Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:19:05.159Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:19:05.159Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:19:05.160Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:19:05.161Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:19:05.161Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:19:05.162Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:19:05.163Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:19:05.164Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:19:05.164Z"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:19:16.203Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:19:46.241Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:20:16.273Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:20:46.310Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:21:16.355Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:21:46.409Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:22:16.448Z","url":"/health","userAgent":"curl/8.12.1"}
+{"level":"info","message":"Received SIGTERM, starting graceful shutdown","service":"billing-service","timestamp":"2025-05-26T09:22:18.765Z"}
+{"environment":"development","level":"info","message":"Billing service started","port":"3000","service":"billing-service","timestamp":"2025-05-26T09:23:01.630Z"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:23:24.768Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:23:54.800Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::ffff:172.18.0.1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:24:00.597Z","url":"/api/plans","userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+{"level":"info","message":"Database pool initialized","service":"billing-service","timestamp":"2025-05-26T09:24:00.598Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:24:00.611Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:24:00.657Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:24:00.658Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:24:00.659Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:24:00.660Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:24:00.661Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:24:00.661Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:24:00.664Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:24:00.664Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:24:00.665Z"}
+{"ip":"::ffff:172.18.0.1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:24:02.785Z","url":"/api/plans","userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:24:24.842Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::ffff:172.18.0.1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:24:38.270Z","url":"/api/plans","userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:24:38.279Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:24:38.328Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:24:38.329Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:24:38.329Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:24:38.330Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:24:38.330Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:24:38.330Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:24:38.333Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:24:38.334Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:24:38.334Z"}
+{"ip":"::ffff:172.18.0.1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:24:40.518Z","url":"/api/plans","userAgent":"curl/8.7.1"}
+{"ip":"::ffff:172.18.0.1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:24:46.043Z","url":"/api/plans","userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:24:54.872Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:25:24.917Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::ffff:172.18.0.1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:25:48.466Z","url":"/api/plans","userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:25:48.472Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:25:48.508Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:25:48.508Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:25:48.508Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:25:48.509Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:25:48.510Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:25:48.510Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:25:48.514Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:25:48.515Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:25:48.515Z"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:25:54.964Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:26:25.009Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::ffff:172.18.0.1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:26:27.314Z","url":"/api/plans","userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:26:27.320Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:26:27.366Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:26:27.366Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:26:27.366Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:26:27.367Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:26:27.367Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:26:27.368Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:26:27.372Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:26:27.374Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:26:27.374Z"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:26:55.047Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:27:25.131Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:27:55.175Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:28:25.211Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:28:55.253Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:29:25.286Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:29:55.324Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:30:25.364Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::ffff:172.18.0.1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:30:50.347Z","url":"/api/plans","userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:30:50.354Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:30:50.396Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:30:50.396Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:30:50.396Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:30:50.397Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:30:50.397Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:30:50.397Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:30:50.400Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:30:50.401Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:30:50.401Z"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:30:55.407Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:31:25.442Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:31:55.492Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::ffff:172.18.0.1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:32:21.524Z","url":"/api/plans","userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:32:21.531Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:32:21.570Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:32:21.570Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:32:21.571Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:32:21.571Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:32:21.571Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:32:21.572Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:32:21.575Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:32:21.576Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T09:32:21.576Z"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:32:25.538Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:32:55.584Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:33:25.622Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:33:55.681Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:34:25.726Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:34:55.772Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:35:25.818Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:35:55.853Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:36:25.901Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:36:55.952Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:37:26.000Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:37:56.040Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:38:26.096Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:38:56.140Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:39:26.174Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:39:56.217Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:40:26.268Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:40:56.333Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:41:26.381Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:41:56.432Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:42:26.475Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:42:56.535Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:43:26.585Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:43:56.633Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:44:26.659Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:44:56.697Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:45:26.737Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:45:56.786Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:46:26.838Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:46:56.879Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:47:26.923Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:47:56.970Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T09:48:27.025Z","url":"/health","userAgent":"curl/8.12.1"}
+{"environment":"development","level":"info","message":"Billing service started","port":"3000","service":"billing-service","timestamp":"2025-05-26T14:15:16.508Z"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:15:40.227Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::ffff:172.18.0.1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:16:02.542Z","url":"/api/plans","userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+{"level":"info","message":"Database pool initialized","service":"billing-service","timestamp":"2025-05-26T14:16:02.543Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T14:16:02.559Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T14:16:02.617Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T14:16:02.618Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T14:16:02.619Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T14:16:02.620Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T14:16:02.620Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T14:16:02.621Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T14:16:02.623Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T14:16:02.624Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T14:16:02.624Z"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:16:10.249Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:16:40.292Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:17:10.320Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:17:40.361Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:18:10.410Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:18:40.448Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:19:10.477Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:19:40.523Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:20:10.565Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:20:40.610Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:21:10.648Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:21:40.685Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:22:10.720Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:22:40.755Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:23:10.791Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:23:40.829Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:24:10.876Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:24:40.911Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:25:10.956Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:25:41.003Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:26:11.038Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:26:41.078Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:27:11.114Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:27:41.161Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::ffff:172.18.0.1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:28:01.947Z","url":"/api/plans","userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T14:28:01.952Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T14:28:01.990Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T14:28:01.991Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T14:28:01.991Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T14:28:01.991Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T14:28:01.992Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T14:28:01.992Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T14:28:01.994Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T14:28:01.994Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T14:28:01.995Z"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:28:11.205Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::ffff:172.18.0.1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:28:24.072Z","url":"/api/plans","userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:28:41.229Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:29:11.268Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:29:41.296Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:30:11.334Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:30:41.374Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:31:11.413Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:31:41.455Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:32:11.497Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:32:41.533Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:33:11.567Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:33:41.604Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:34:11.644Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:34:41.670Z","url":"/health","userAgent":"curl/8.12.1"}
+{"level":"info","message":"Received SIGTERM, starting graceful shutdown","service":"billing-service","timestamp":"2025-05-26T14:34:58.207Z"}
+{"environment":"development","level":"info","message":"Billing service started","port":"3000","service":"billing-service","timestamp":"2025-05-26T14:35:38.858Z"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:36:03.645Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:36:33.674Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:37:03.718Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:37:33.762Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:38:03.815Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:38:33.857Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:39:03.902Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:39:33.946Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:40:03.984Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:40:34.026Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:41:04.064Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:41:34.105Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:42:04.144Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:42:34.182Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:43:04.213Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:43:34.243Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:44:04.285Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:44:34.326Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:45:04.363Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:45:34.410Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:46:04.455Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:46:34.501Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:47:04.539Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:47:34.576Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:48:04.629Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:48:34.674Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:49:04.707Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:49:34.732Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:50:04.775Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:50:34.816Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:51:04.867Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:51:34.906Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:52:04.963Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:52:35.006Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:53:05.049Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:53:35.088Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:54:05.121Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:54:35.172Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:55:05.224Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:55:35.259Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:56:05.307Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:56:35.347Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:57:05.392Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:57:35.416Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:58:05.455Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:58:35.505Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:59:05.554Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T14:59:35.593Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:00:05.645Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:00:35.703Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:01:05.758Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:01:35.803Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:02:05.855Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:02:35.824Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:03:05.872Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:03:35.929Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:04:05.964Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:04:35.995Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:05:06.045Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:05:36.084Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:06:06.134Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:06:36.177Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:07:06.228Z","url":"/health","userAgent":"curl/8.12.1"}
+{"level":"info","message":"Received SIGTERM, starting graceful shutdown","service":"billing-service","timestamp":"2025-05-26T15:07:12.504Z"}
+{"environment":"development","level":"info","message":"Billing service started","port":"3000","service":"billing-service","timestamp":"2025-05-26T15:07:53.727Z"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:08:17.942Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:08:47.985Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:09:18.024Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:09:48.050Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:10:18.074Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:10:48.094Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:11:18.129Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:11:48.175Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:12:18.204Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:12:48.243Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:13:18.288Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:13:48.320Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:14:18.351Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:14:48.387Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:15:18.417Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:15:48.453Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:16:18.491Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:16:48.534Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:17:18.574Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:17:48.615Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:18:18.658Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:18:48.700Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:19:18.742Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:19:48.788Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:20:18.841Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:20:48.886Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:21:18.918Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:21:48.964Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:22:19.009Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:22:49.055Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:23:19.109Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:23:49.153Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:24:19.191Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:24:49.242Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:25:19.290Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:25:49.330Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:26:19.363Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:26:49.403Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:27:19.455Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:27:49.494Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:28:19.532Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:28:49.574Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:29:19.617Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:29:49.644Z","url":"/health","userAgent":"curl/8.12.1"}
+{"level":"info","message":"Received SIGTERM, starting graceful shutdown","service":"billing-service","timestamp":"2025-05-26T15:30:18.517Z"}
+{"environment":"development","level":"info","message":"Billing service started","port":"3000","service":"billing-service","timestamp":"2025-05-26T15:30:30.899Z"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:30:55.443Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:31:25.471Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:31:55.527Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:32:25.570Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:32:55.608Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:33:25.651Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:33:55.687Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:34:25.717Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:34:55.749Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:35:25.777Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:35:55.812Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:36:25.836Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:36:55.868Z","url":"/health","userAgent":"curl/8.12.1"}
+{"level":"info","message":"Received SIGTERM, starting graceful shutdown","service":"billing-service","timestamp":"2025-05-26T15:37:10.922Z"}
+{"environment":"development","level":"info","message":"Billing service started","port":"3000","service":"billing-service","timestamp":"2025-05-26T15:37:50.148Z"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:38:15.657Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:38:45.680Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:39:15.722Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:39:45.753Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:40:15.790Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:40:45.819Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:41:15.848Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:41:45.888Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:42:15.924Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:42:45.945Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:43:15.984Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:43:46.015Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:44:16.048Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:44:46.067Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:45:16.114Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:45:46.160Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:46:16.211Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:46:46.261Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:47:16.311Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:47:46.343Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:48:16.389Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:48:46.441Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:49:16.482Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:49:46.528Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:50:16.575Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:50:46.617Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:51:16.647Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:51:46.694Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:52:16.754Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:52:46.781Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:53:16.822Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:53:46.869Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:54:16.914Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:54:46.953Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:55:17.016Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:55:47.055Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:56:17.092Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:56:47.142Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:57:17.185Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:57:47.228Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:58:17.261Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:58:47.310Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:59:17.354Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T15:59:47.384Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:00:17.420Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:00:47.460Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:01:17.505Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:01:47.541Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:02:17.581Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:02:47.619Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:03:17.652Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:03:47.699Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:04:17.744Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:04:47.789Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:05:17.823Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:05:47.851Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:06:17.892Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:06:47.925Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:07:17.973Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:07:48.015Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:08:18.050Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:08:48.087Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:09:18.128Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:09:48.171Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:10:18.210Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:10:48.252Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:11:18.303Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:11:48.369Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:12:18.412Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:12:48.461Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:13:18.506Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:13:48.556Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:14:18.595Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:14:48.634Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:15:18.666Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:15:48.709Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:16:18.758Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:16:48.794Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:17:18.825Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:17:48.870Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:18:18.907Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:18:48.961Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:19:19.015Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:19:49.073Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:20:19.117Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:20:49.144Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:21:19.198Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:21:49.245Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:22:19.274Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:22:49.325Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:23:19.378Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:23:49.425Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:24:19.462Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:24:49.511Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:25:19.557Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:25:49.605Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:26:19.653Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:26:49.699Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:27:19.751Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:27:49.780Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:28:19.828Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::ffff:172.18.0.1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:28:25.409Z","url":"/api/plans","userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+{"level":"info","message":"Database pool initialized","service":"billing-service","timestamp":"2025-05-26T16:28:25.409Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T16:28:25.418Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T16:28:25.457Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T16:28:25.457Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T16:28:25.457Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T16:28:25.458Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T16:28:25.458Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T16:28:25.458Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T16:28:25.463Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T16:28:25.463Z"}
+{"level":"info","message":"Database pool connected","service":"billing-service","timestamp":"2025-05-26T16:28:25.464Z"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:28:49.865Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:29:19.903Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:29:49.950Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:30:20.005Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:30:50.048Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:31:20.089Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:31:50.146Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:32:20.188Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:32:50.224Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:33:20.252Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:33:50.298Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:34:20.341Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:34:50.372Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:35:20.418Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:35:50.466Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:36:20.506Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:36:50.555Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:37:20.591Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:37:50.642Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:38:20.674Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:38:50.723Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:39:20.773Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:39:50.822Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:40:20.850Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:40:50.894Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:41:20.935Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:41:50.968Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:42:21.016Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:42:51.056Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:43:21.094Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:43:51.142Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:44:21.172Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:44:51.212Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:45:21.240Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:45:51.291Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:46:21.340Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:46:51.384Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:47:21.437Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:47:51.484Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:48:21.531Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:48:51.568Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:49:21.616Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:49:51.662Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:50:21.710Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:50:51.744Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:51:21.777Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:51:51.810Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:52:21.840Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:52:51.891Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:53:21.927Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:53:51.969Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:54:22.014Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:54:52.039Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:55:22.099Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:55:52.134Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:56:22.179Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:56:52.236Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:57:22.282Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:57:52.326Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:58:22.377Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:58:52.415Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T16:59:22.450Z","url":"/health","userAgent":"curl/8.12.1"}
+{"environment":"development","level":"info","message":"Billing service started","port":"3000","service":"billing-service","timestamp":"2025-05-26T18:22:59.399Z"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:23:24.214Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:23:54.253Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:24:24.286Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:24:54.319Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:25:24.355Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:25:54.398Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:26:24.437Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:26:54.485Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:27:24.531Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:27:54.572Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:28:24.609Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:28:54.634Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:29:24.653Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:29:54.692Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:30:24.741Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:30:54.786Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:31:24.828Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:31:54.876Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:32:24.916Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:32:54.955Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:33:25.005Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:33:55.054Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:34:25.102Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:34:55.146Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:35:25.185Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:35:55.226Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:36:25.278Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:36:55.322Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:37:25.367Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:37:55.416Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:38:25.464Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:38:55.506Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:39:25.552Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:39:55.601Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:40:25.635Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:40:55.682Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:41:25.725Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:41:55.765Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:42:25.814Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:42:55.857Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:43:25.897Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:43:55.938Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:44:25.990Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:44:56.023Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:45:26.056Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:45:56.102Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:46:26.144Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:46:56.188Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:47:26.229Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:47:56.270Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:48:26.306Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:48:56.355Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:49:26.396Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:49:56.438Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:50:26.471Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:50:56.527Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:51:26.571Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:51:56.613Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:52:26.652Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:52:56.701Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:53:26.741Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:53:56.762Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:54:26.802Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:54:56.847Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:55:26.899Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:55:56.944Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:56:26.995Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:56:57.042Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:57:27.077Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:57:57.124Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:58:27.159Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:58:57.206Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:59:27.245Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T18:59:57.280Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T19:00:27.335Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T19:00:57.391Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T19:01:27.430Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T19:01:57.472Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T19:02:27.508Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T19:02:57.558Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T19:03:27.605Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T19:03:57.645Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T19:04:27.695Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T19:04:57.725Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T19:05:27.757Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T19:05:57.806Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T19:06:27.844Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T19:06:57.892Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T19:07:27.921Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T19:07:57.973Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T19:08:28.017Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T19:08:58.058Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T19:09:28.107Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T19:09:58.153Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T19:10:28.193Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T19:10:58.240Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T19:11:28.285Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T19:11:58.334Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T19:12:28.393Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T19:12:58.446Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T19:13:28.481Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T19:13:58.523Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T19:14:28.571Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T19:14:58.601Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T19:15:28.644Z","url":"/health","userAgent":"curl/8.12.1"}

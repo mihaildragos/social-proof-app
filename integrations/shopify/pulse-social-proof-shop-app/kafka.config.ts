@@ -9,7 +9,7 @@
 // Kafka connection configuration
 export const KAFKA_CONFIG = {
   // Comma-separated list of Kafka broker addresses
-  BROKERS: process.env.KAFKA_BROKERS?.split(",") || ["localhost:9092"],
+  BROKERS: process.env.KAFKA_BROKERS?.split(",") || ["kafka:9092"],
 
   // Client ID used to identify this application to the Kafka broker
   CLIENT_ID: process.env.KAFKA_CLIENT_ID || "shopify-app-producer",

@@ -8,43 +8,45 @@ The application consists of the following services, each accessible via HTTPS wi
 
 ### Core Microservices
 
-- **Users Service** (`users-staging.pulsesocialproof.com`): Handles user authentication and management
-- **Notifications Service** (`notifications-staging.pulsesocialproof.com`): Core service for notification generation and management
-- **Analytics Service** (`analytics-staging.pulsesocialproof.com`): Processes and stores analytics data
-- **Billing Service** (`billing-staging.pulsesocialproof.com`): Manages subscription and payment processing
-- **Integrations Service** (`integrations-staging.pulsesocialproof.com`): Handles third-party platform integrations (Shopify, WooCommerce, etc.)
+* __Users Service__ (`users-staging.pulsesocialproof.com`): Handles user authentication and management
+* __Notifications Service__ (`notifications-staging.pulsesocialproof.com`): Core service for notification generation and management
+* __Analytics Service__ (`analytics-staging.pulsesocialproof.com`): Processes and stores analytics data
+* __Billing Service__ (`billing-staging.pulsesocialproof.com`): Manages subscription and payment processing
+* __Integrations Service__ (`integrations-staging.pulsesocialproof.com`): Handles third-party platform integrations (Shopify, WooCommerce, etc.)
 
 ### Infrastructure Services
 
-- **Redis**: Used for caching and pub/sub messaging
-- **Kafka**: Event streaming platform for service communication
-- **PostgreSQL**: Primary database for structured data
-- **ClickHouse**: Analytics database for high-performance queries
+* __Redis__: Used for caching and pub/sub messaging
+* __Kafka__: Event streaming platform for service communication
+* __PostgreSQL__: Primary database for structured data
+* __ClickHouse__: Analytics database for high-performance queries
 
 ## HTTPS and SSL Configuration
 
 All microservices are deployed with enterprise-grade HTTPS configuration:
 
 ### ✅ Automatic SSL Certificates
-- **Let's Encrypt Integration**: Free SSL certificates automatically generated for all subdomains
-- **Auto-Renewal**: Certificates automatically renew before expiration (90-day cycle)
-- **Multi-Domain Support**: Single certificate covers all microservice subdomains
+
+* __Let's Encrypt Integration__: Free SSL certificates automatically generated for all subdomains
+* __Auto-Renewal__: Certificates automatically renew before expiration (90-day cycle)
+* __Multi-Domain Support__: Single certificate covers all microservice subdomains
 
 ### ✅ Security Features
-- **HTTP to HTTPS Redirect**: All HTTP requests automatically redirected to HTTPS (308 Permanent Redirect)
-- **Security Headers**: HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy
-- **Rate Limiting**: Protection against abuse and DDoS attacks (100 requests/minute per IP)
-- **TLS 1.2+**: Modern encryption with strong cipher suites
+
+* __HTTP to HTTPS Redirect__: All HTTP requests automatically redirected to HTTPS (308 Permanent Redirect)
+* __Security Headers__: HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy
+* __Rate Limiting__: Protection against abuse and DDoS attacks (100 requests/minute per IP)
+* __TLS 1.2+__: Modern encryption with strong cipher suites
 
 ### ✅ Microservice Endpoints
 
-| Service | HTTPS Endpoint | Purpose |
-|---------|---------------|---------|
-| Users | `https://users-staging.pulsesocialproof.com` | User management and authentication |
-| Notifications | `https://notifications-staging.pulsesocialproof.com` | Real-time notification delivery |
-| Analytics | `https://analytics-staging.pulsesocialproof.com` | Data processing and insights |
-| Billing | `https://billing-staging.pulsesocialproof.com` | Payment processing and subscriptions |
-| Integrations | `https://integrations-staging.pulsesocialproof.com` | Third-party platform connections |
+| Service       | HTTPS Endpoint                                       | Purpose                              |
+| ------------- | ---------------------------------------------------- | ------------------------------------ |
+| Users         | `https://users-staging.pulsesocialproof.com`         | User management and authentication   |
+| Notifications | `https://notifications-staging.pulsesocialproof.com` | Real-time notification delivery      |
+| Analytics     | `https://analytics-staging.pulsesocialproof.com`     | Data processing and insights         |
+| Billing       | `https://billing-staging.pulsesocialproof.com`       | Payment processing and subscriptions |
+| Integrations  | `https://integrations-staging.pulsesocialproof.com`  | Third-party platform connections     |
 
 ### Testing HTTPS Endpoints
 
@@ -65,8 +67,8 @@ curl -I http://users-staging.pulsesocialproof.com/
 
 ### Prerequisites
 
-- Docker and Docker Compose installed on your machine
-- Node.js 18+ and npm (for local development)
+* Docker and Docker Compose installed on your machine
+* Node.js 18+ and npm (for local development)
 
 ### Building and Running All Services
 
@@ -83,9 +85,10 @@ curl -I http://users-staging.pulsesocialproof.com/
    ```
 
    This will:
-   - Build all service images
-   - Start all containers in detached mode
-   - Display the status of all running containers
+
+   * Build all service images
+   * Start all containers in detached mode
+   * Display the status of all running containers
 
 ### Running Individual Services
 
@@ -137,7 +140,7 @@ The microservices are deployed to Google Kubernetes Engine (GKE) with the follow
 
 ### Deployment Architecture
 
-```
+```sh
 Internet → nginx-ingress-controller → Kubernetes Services
     ↓
 HTTP (Port 80) → 308 Permanent Redirect → HTTPS (Port 443)
@@ -148,11 +151,12 @@ Let's Encrypt SSL Certificates → Microservice Pods
 ### Kubernetes Resources
 
 Each microservice includes:
-- **Deployment**: Container orchestration and scaling
-- **Service**: Internal load balancing and service discovery
-- **Ingress**: HTTPS routing and SSL termination
-- **ConfigMap**: Environment-specific configuration
-- **Secret**: Sensitive data management
+
+* __Deployment__: Container orchestration and scaling
+* __Service__: Internal load balancing and service discovery
+* __Ingress__: HTTPS routing and SSL termination
+* __ConfigMap__: Environment-specific configuration
+* __Secret__: Sensitive data management
 
 ### Health Checks
 
@@ -194,7 +198,7 @@ The docker-compose.yml file is configured with default environment variables for
 1. Create a `.env` file in the microservices directory
 2. Set the following variables (add more as needed):
 
-```
+```dotenv
 # Infrastructure
 POSTGRES_PASSWORD=secure_password
 
@@ -213,23 +217,23 @@ TRUST_PROXY=true
 
 ## Tech Stack
 
-- **Runtime**: Node.js & TypeScript
-- **Framework**: Express for API endpoints
-- **Messaging**: Kafka for event streaming, Redis for pub/sub
-- **Database**: PostgreSQL for persistent storage, ClickHouse for analytics
-- **Containerization**: Docker and Docker Compose
-- **Orchestration**: Kubernetes (GKE)
-- **SSL/HTTPS**: nginx-ingress-controller with cert-manager
-- **Monitoring**: Health checks and logging
+* __Runtime__: Node.js & TypeScript
+* __Framework__: Express for API endpoints
+* __Messaging__: Kafka for event streaming, Redis for pub/sub
+* __Database__: PostgreSQL for persistent storage, ClickHouse for analytics
+* __Containerization__: Docker and Docker Compose
+* __Orchestration__: Kubernetes (GKE)
+* __SSL/HTTPS__: nginx-ingress-controller with cert-manager
+* __Monitoring__: Health checks and logging
 
 ## Prerequisites
 
-- Node.js 18+
-- Docker and Docker Compose
-- PostgreSQL 14+
-- Kafka
-- Redis
-- kubectl and gcloud CLI (for Kubernetes deployment)
+* Node.js 18+
+* Docker and Docker Compose
+* PostgreSQL 14+
+* Kafka
+* Redis
+* kubectl and gcloud CLI (for Kubernetes deployment)
 
 ## Getting Started
 
@@ -315,6 +319,7 @@ git push origin develop
 ```
 
 This will:
+
 1. Build Docker images for all microservices
 2. Deploy to GKE cluster
 3. Configure nginx-ingress-controller
@@ -325,8 +330,8 @@ This will:
 
 For manual deployment, see the detailed guides:
 
-- [GCP Deployment Guide](../gcp/GCP_DEPLOYMENT_GUIDE.md)
-- [HTTPS Redirect Setup](../gcp/kubernetes/HTTPS_REDIRECT_README.md)
+* [GCP Deployment Guide](../gcp/GCP_DEPLOYMENT_GUIDE.md)
+* [HTTPS Redirect Setup](../gcp/kubernetes/HTTPS_REDIRECT_README.md)
 
 ### Monitoring Production
 
@@ -351,26 +356,27 @@ done
 
 ### Enterprise-Grade Security Features
 
-- **HTTPS Everywhere**: All traffic encrypted with TLS 1.2+
-- **Automatic SSL Certificates**: Let's Encrypt integration with auto-renewal
-- **Security Headers**: HSTS, X-Frame-Options, CSP, and more
-- **Rate Limiting**: Protection against abuse and DDoS attacks
-- **JWT Authentication**: Secure inter-service communication
-- **Network Policies**: Kubernetes-level network segmentation
+* __HTTPS Everywhere__: All traffic encrypted with TLS 1.2+
+* __Automatic SSL Certificates__: Let's Encrypt integration with auto-renewal
+* __Security Headers__: HSTS, X-Frame-Options, CSP, and more
+* __Rate Limiting__: Protection against abuse and DDoS attacks
+* __JWT Authentication__: Secure inter-service communication
+* __Network Policies__: Kubernetes-level network segmentation
 
 ### SSL Certificate Management
 
-- **Certificate Authority**: Let's Encrypt (free, trusted)
-- **Validation Method**: HTTP-01 challenge
-- **Renewal**: Automatic (30 days before expiration)
-- **Coverage**: All microservice subdomains
-- **Monitoring**: Automated certificate health checks
+* __Certificate Authority__: Let's Encrypt (free, trusted)
+* __Validation Method__: HTTP-01 challenge
+* __Renewal__: Automatic (30 days before expiration)
+* __Coverage__: All microservice subdomains
+* __Monitoring__: Automated certificate health checks
 
 ## Troubleshooting
 
 ### Common Issues
 
 #### Service Not Responding
+
 ```bash
 # Check pod status
 kubectl get pods -n social-proof-system
@@ -383,6 +389,7 @@ kubectl describe ingress social-proof-nginx-ingress -n social-proof-system
 ```
 
 #### SSL Certificate Issues
+
 ```bash
 # Check certificate status
 kubectl get certificates -n social-proof-system
@@ -395,6 +402,7 @@ kubectl delete certificate social-proof-nginx-tls -n social-proof-system
 ```
 
 #### DNS Issues
+
 ```bash
 # Check nginx-ingress external IP
 kubectl get svc -n ingress-nginx ingress-nginx-controller
@@ -410,9 +418,9 @@ For detailed troubleshooting, see [HTTPS Redirect README](../gcp/kubernetes/HTTP
 
 ## Documentation
 
-- [GCP Deployment Guide](../gcp/GCP_DEPLOYMENT_GUIDE.md) - Complete deployment instructions
-- [HTTPS Redirect Setup](../gcp/kubernetes/HTTPS_REDIRECT_README.md) - SSL/HTTPS configuration
-- [Individual Service READMEs](./services/) - Service-specific documentation
+* [GCP Deployment Guide](../gcp/GCP_DEPLOYMENT_GUIDE.md) - Complete deployment instructions
+* [HTTPS Redirect Setup](../gcp/kubernetes/HTTPS_REDIRECT_README.md) - SSL/HTTPS configuration
+* [Individual Service READMEs](./services/) - Service-specific documentation
 
 ## Support
 
@@ -426,6 +434,6 @@ For microservice-specific issues:
 
 ---
 
-**Last Updated**: May 25, 2025  
-**Microservices**: 5 services with HTTPS endpoints  
-**SSL Status**: ✅ Active with auto-renewal
+__Last Updated__: May 25, 2025\
+__Microservices__: 5 services with HTTPS endpoints\
+__SSL Status__: ✅ Active with auto-renewal
