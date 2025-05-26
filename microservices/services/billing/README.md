@@ -238,7 +238,7 @@ src/
 │   ├── SubscriptionRepository.ts
 │   └── PlanRepository.ts
 ├── middleware/              # Express middleware
-│   ├── authMiddleware.ts
+│   ├── auth.ts
 │   └── errorHandler.ts
 ├── utils/                   # Utility functions
 │   ├── database.ts
