@@ -26,22 +26,27 @@
     "deploy:staging": "./scripts/deploy-staging.sh",
     "deploy:staging:force": "./scripts/deploy-staging.sh --force",
     "deploy:check": "node scripts/check-deployment-status.js",
+
     "dev:all": "docker-compose -f docker-compose.dev.yml up",
     "dev:services": "docker-compose -f docker-compose.dev.yml up integrations billing notifications notification-stream users analytics",
     "dev:infra": "docker-compose -f docker-compose.dev.yml up postgres redis kafka zookeeper clickhouse",
     "dev:frontend": "docker-compose -f docker-compose.dev.yml up nextjs",
+
     "dev:build": "docker-compose -f docker-compose.dev.yml build",
     "dev:build:nocache": "docker-compose -f docker-compose.dev.yml build --no-cache",
+
     "dev:logs": "docker-compose -f docker-compose.dev.yml logs -f",
     "dev:logs:service": "docker-compose -f docker-compose.dev.yml logs -f",
     "dev:stop": "docker-compose -f docker-compose.dev.yml down",
     "dev:restart": "npm run dev:stop && npm run dev:all",
     "dev:clean": "docker-compose -f docker-compose.dev.yml down -v --remove-orphans",
     "dev:status": "docker-compose -f docker-compose.dev.yml ps",
+
     "dev:shell:billing": "docker-compose -f docker-compose.dev.yml exec billing sh",
     "dev:shell:integrations": "docker-compose -f docker-compose.dev.yml exec integrations sh",
     "dev:shell:notifications": "docker-compose -f docker-compose.dev.yml exec notifications sh",
     "dev:shell:postgres": "docker-compose -f docker-compose.dev.yml exec postgres psql -U postgres -d social_proof_mvp",
+
     "migrate": "node scripts/run-all-migrations.js",
     "migrate:dry-run": "node scripts/run-all-migrations.js --dry-run",
     "migrate:help": "node scripts/run-all-migrations.js --help",
