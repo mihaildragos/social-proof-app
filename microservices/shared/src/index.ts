@@ -8,8 +8,8 @@ export * from "./redis/publisher";
 export * from "./redis/subscriber";
 
 // Export Kafka classes
-export * from "./kafka/consumer";
-export * from "./kafka/producer";
+export * from "./events/consumer";
+export * from "./events/producer";
 
 // Export middleware
 export * from "./middleware/health-check";

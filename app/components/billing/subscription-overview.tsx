@@ -160,14 +160,14 @@ export function SubscriptionOverview({ className }: SubscriptionOverviewProps) {
 
             <div className="flex gap-2">
               <Button
-                variant="outline"
+                variant="primary"
                 size="sm"
                 className="flex-1"
               >
                 Change Plan
               </Button>
               <Button
-                variant="outline"
+                variant="primary"
                 size="sm"
                 className="flex-1"
               >
@@ -178,7 +178,7 @@ export function SubscriptionOverview({ className }: SubscriptionOverviewProps) {
             {subscription.subscription.status === "active" &&
               !subscription.subscription.cancels_at_period_end && (
                 <Button
-                  variant="destructive"
+                  variant="primary"
                   size="sm"
                   className="w-full"
                 >
@@ -193,6 +193,7 @@ export function SubscriptionOverview({ className }: SubscriptionOverviewProps) {
           <UsageOverviewCard
             usage={usage}
             limits={subscription.limits}
+            subscription={subscription}
           />
         )}
       </div>
@@ -227,7 +228,7 @@ function StatusIcon({ status }: { status: string }) {
 }
 
 // Usage Overview Card Component
-function UsageOverviewCard({ usage, limits }: { usage: UsageMetrics; limits: any[] }) {
+function UsageOverviewCard({ usage, limits, subscription }: { usage: UsageMetrics; limits: any[]; subscription: SubscriptionWithPlan }) {
   return (
     <Card>
       <CardHeader>
@@ -264,7 +265,7 @@ function UsageOverviewCard({ usage, limits }: { usage: UsageMetrics; limits: any
                 <p className="text-xs text-orange-600">
                   {resource.overage_quantity.toLocaleString()} overage units
                   {resource.overage_amount > 0 &&
-                    ` (${formatCurrency(resource.overage_amount, "USD")})`}
+                    ` (${formatCurrency(resource.overage_amount, subscription?.plan?.currency || "USD")})`}
                 </p>
               )}
             </div>
@@ -277,7 +278,7 @@ function UsageOverviewCard({ usage, limits }: { usage: UsageMetrics; limits: any
             <div className="flex items-center justify-between font-medium">
               <span>Total Overage</span>
               <span className="text-orange-600">
-                {formatCurrency(usage.total_overage_amount, "USD")}
+                {formatCurrency(usage.total_overage_amount, subscription?.plan?.currency || "USD")}
               </span>
             </div>
           </>

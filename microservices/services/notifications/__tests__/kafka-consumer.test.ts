@@ -1,4 +1,4 @@
-import { KafkaConsumer } from "../../../shared/kafka/consumer";
+import { KafkaConsumer } from "../../../shared/src/events/consumer";
 import { RedisPublisher } from "../../../shared/redis/publisher";
 import { OrderEventHandler } from "../handlers/order-event-handler";
 import { NotificationService } from "../services/notification-service";
