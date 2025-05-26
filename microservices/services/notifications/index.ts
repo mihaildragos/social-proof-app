@@ -14,7 +14,7 @@ const orderEventHandler = new OrderEventHandler(redisPublisher, notificationServ
 // Create Kafka consumer
 const consumer = new KafkaConsumer({
   clientId: process.env.KAFKA_CLIENT_ID || "notifications-service",
-  brokers: (process.env.KAFKA_BROKERS || "localhost:9092").split(","),
+  brokers: (process.env.KAFKA_BROKERS || "kafka:9092").split(","),
   groupId: process.env.KAFKA_GROUP_ID || "notifications-group",
   topic: "order-events",
 });

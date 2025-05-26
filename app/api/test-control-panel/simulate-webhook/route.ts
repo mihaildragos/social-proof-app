@@ -290,7 +290,7 @@ export async function POST(request: NextRequest) {
 
     // Send the webhook to the integrations service
     const integrationsUrl = getIntegrationsServiceUrl();
-    const webhookUrl = `${integrationsUrl}/api/webhooks/shopify/orders/create`;
+    const webhookUrl = `${integrationsUrl}/api/webhooks/shopify/orders-create`;
 
     console.log(`Sending simulated webhook to: ${webhookUrl}`);
     console.log(`Shop domain: ${shop_domain}`);
@@ -316,7 +316,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const result = await response.json();
+    // Handle both JSON and text responses
+    let result;
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      result = await response.json();
+    } else {
+      result = await response.text();
+    }
 
     return NextResponse.json({
       success: true,

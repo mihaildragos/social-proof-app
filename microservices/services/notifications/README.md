@@ -28,7 +28,7 @@ NODE_ENV=development
 LOG_LEVEL=info
 
 # Kafka configuration
-KAFKA_BROKERS=localhost:9092
+KAFKA_BROKERS=kafka:9092
 KAFKA_GROUP_ID=notifications-service
 KAFKA_TOPICS=events.orders,events.customers
 KAFKA_SASL_USERNAME=

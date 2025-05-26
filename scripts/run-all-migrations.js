@@ -96,6 +96,11 @@ const migrations = {
         file: "microservices/services/notifications/db/schema.sql",
         description: "Creates notification campaigns and delivery tables",
       },
+      {
+        name: "Default Notification Template",
+        file: "microservices/services/notifications/db/migrations/002_add_default_notification_template.sql",
+        description: "Adds default notification template for test site",
+      },
     ],
     users: [
       {

@@ -1,14 +1,18 @@
+import express from "express";
 import { Logger } from "./utils/logger";
 import { KafkaConsumer } from "./kafka/consumer";
 import { RedisPublisher } from "./redis/publisher";
 import { NotificationService } from "./services/notificationService";
 import { config } from "./config";
+import templatesRouter from "./routes/templates";
 
 export class NotificationsApp {
   private logger: Logger;
   private kafkaConsumer: KafkaConsumer;
   private redisPublisher: RedisPublisher;
   private notificationService: NotificationService;
+  private app: express.Application;
+  private server: any;
   private isRunning: boolean = false;
 
   constructor() {
@@ -22,6 +26,10 @@ export class NotificationsApp {
     this.logger.info("Initializing Notifications Service", {
       environment: process.env.NODE_ENV || "development",
     });
+
+    // Initialize Express app
+    this.app = express();
+    this.setupExpressApp();
 
     // Initialize services
     this.notificationService = new NotificationService(config.database, this.logger);
@@ -39,6 +47,34 @@ export class NotificationsApp {
   }
 
   /**
+   * Setup Express application middleware and routes
+   */
+  private setupExpressApp(): void {
+    // Middleware
+    this.app.use(express.json());
+    this.app.use(express.urlencoded({ extended: true }));
+
+    // Health check endpoint
+    this.app.get("/health", (_req, res) => {
+      res.json({ status: "healthy", service: "notifications" });
+    });
+
+    // API routes
+    this.app.use("/api/templates", templatesRouter);
+
+    // Error handling middleware
+    this.app.use(
+      (error: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+        this.logger.error("Express error:", error);
+        res.status(500).json({
+          error: "Internal server error",
+          details: process.env.NODE_ENV === "development" ? error.message : undefined,
+        });
+      }
+    );
+  }
+
+  /**
    * Start the application and all its services
    */
   public async start(): Promise<void> {
@@ -48,6 +84,12 @@ export class NotificationsApp {
     }
 
     try {
+      // Start HTTP server
+      this.logger.info("Starting HTTP server");
+      this.server = this.app.listen(config.port, () => {
+        this.logger.info(`HTTP server listening on port ${config.port}`);
+      });
+
       // Start Kafka consumer
       this.logger.info("Starting Kafka consumer");
       await this.kafkaConsumer.start();
@@ -97,6 +139,12 @@ export class NotificationsApp {
     this.logger.info("Stopping Notifications Service");
 
     try {
+      // Stop HTTP server
+      if (this.server) {
+        this.server.close();
+        this.logger.info("HTTP server stopped");
+      }
+
       // Stop Kafka consumer
       await this.kafkaConsumer.stop();
 

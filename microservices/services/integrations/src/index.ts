@@ -1,7 +1,7 @@
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
-import webhookRoutes from "./routes/webhookRoutes.js";
-import { kafkaProducer } from "./utils/kafka.js";
+import webhookRoutes from "./routes/webhookRoutes";
+import { kafkaProducer } from "./utils/kafka";
 import { logger } from "@social-proof/shared";
 
 // Create express application
@@ -10,19 +10,79 @@ const PORT = process.env.PORT || 3004;
 
 // Configure middleware
 app.use(cors());
-app.use(express.json());
+
+// Add request logging middleware
+app.use((req, res, next) => {
+  try {
+    logger.info("Incoming request", {
+      method: req.method,
+      url: req.url,
+      timestamp: new Date().toISOString()
+    });
+    next();
+  } catch (error) {
+    logger.error("Error in request logging middleware", { error });
+    next(error);
+  }
+});
+
+// Use express.json() only for non-webhook routes to avoid conflicts with custom body parser
+app.use((req, res, next) => {
+  if (req.url.startsWith('/api/webhooks/shopify')) {
+    // Skip express.json() for Shopify webhook routes - they use custom body parser
+    next();
+  } else {
+    express.json()(req, res, next);
+  }
+});
 
 // Health check endpoint
 app.get("/health", (req: Request, res: Response) => {
   res.status(200).json({ status: "ok" });
 });
 
+// Test endpoint
+app.post("/test", (req: Request, res: Response) => {
+  logger.info("Test endpoint called", { body: req.body });
+  res.status(200).json({ message: "Test successful" });
+});
+
+// Simple webhook test endpoint
+app.post("/api/webhooks/test", (req: Request, res: Response) => {
+  try {
+    logger.info("Simple webhook test called", { 
+      headers: {
+        shopDomain: req.headers["x-shopify-shop-domain"],
+        topic: req.headers["x-shopify-topic"],
+        hmac: req.headers["x-shopify-hmac-sha256"]
+      },
+      body: req.body 
+    });
+    res.status(200).json({ message: "Webhook test successful" });
+  } catch (error) {
+    logger.error("Error in simple webhook test", { error });
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 // Register routes
-app.use("/api/webhooks", webhookRoutes);
+try {
+  app.use("/api/webhooks", webhookRoutes);
+  logger.info("Webhook routes registered successfully");
+} catch (error) {
+  logger.error("Error registering webhook routes", { error });
+}
 
 // Global error handler
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  logger.error("Unhandled error", { error: err.message, stack: err.stack });
+  logger.error("Unhandled error", { 
+    error: err.message, 
+    stack: err.stack,
+    name: err.name,
+    fullError: err,
+    url: req.url,
+    method: req.method
+  });
   res.status(500).json({ error: "Internal server error" });
 });
 

@@ -1,6 +1,6 @@
 import crypto from "crypto";
-import { ShopifyIntegration, ShopifyStore, ShopifyWebhook } from "../models/shopify.js";
-import { kafkaProducer } from "../utils/kafka.js";
+import { ShopifyIntegration, ShopifyStore, ShopifyWebhook } from "../models/shopify";
+import { kafkaProducer } from "../utils/kafka";
 import { logger } from "@social-proof/shared";
 
 /**
@@ -137,7 +137,7 @@ export class ShopifyService {
 
       // Send to Kafka
       await kafkaProducer.sendMessage(
-        "order-events",
+        "events.orders",
         transformedOrder,
         `${shopifyStore.site_id}-${orderData.id}`
       );
@@ -145,7 +145,7 @@ export class ShopifyService {
       logger.info("Processed Shopify order event", {
         shopDomain,
         orderId: orderData.id,
-        kafkaTopic: "order-events",
+        kafkaTopic: "events.orders",
       });
     } catch (error) {
       logger.error("Error processing Shopify order webhook", { error, shopDomain });
@@ -177,7 +177,7 @@ export class ShopifyService {
 
     // Construct standardized order event
     return {
-      event_type: "order_created",
+      event_type: "order.created",
       platform: "shopify",
       site_id: shopifyStore.site_id,
       integration_id: shopifyStore.id,
@@ -290,7 +290,7 @@ export class ShopifyService {
         throw new Error(`Shopify script tag creation failed: ${JSON.stringify(errorData)}`);
       }
 
-      const scriptTagData = await response.json();
+      const scriptTagData: any = await response.json();
       logger.info("Created Shopify script tag", {
         shopDomain: shopifyStore.shop_domain,
         scriptTagId: scriptTagData.script_tag.id,

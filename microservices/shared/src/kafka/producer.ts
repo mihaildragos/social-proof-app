@@ -17,7 +17,7 @@ export class KafkaProducer {
    */
   constructor(
     private clientId: string = "social-proof-producer",
-    private brokers: string[] = (process.env.KAFKA_BROKERS || "localhost:9092").split(",")
+    private brokers: string[] = (process.env.KAFKA_BROKERS || "kafka:9092").split(",")
   ) {
     const kafka = new Kafka({
       clientId: this.clientId,

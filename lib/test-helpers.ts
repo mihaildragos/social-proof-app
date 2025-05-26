@@ -6,6 +6,7 @@
 import { createClerkSupabaseClientSsr } from "@/utils/supabase/server";
 import { randomBytes } from "crypto";
 import { SiteStatus } from "@/types/sites";
+import { getServiceUrl } from "@/lib/service-urls";
 
 export interface TestSite {
   id: string;
@@ -44,6 +45,49 @@ export function generateTestShopDomain(userId: string): string {
   const userHash = userId.slice(-8); // Last 8 characters of user ID
   const randomSuffix = randomBytes(4).toString("hex");
   return `test-store-${userHash}-${randomSuffix}.myshopify.com`;
+}
+
+/**
+ * Create default notification template for a test site
+ * @param siteId - Site ID to create template for
+ * @param siteName - Site name
+ * @param siteDomain - Site domain
+ * @param ownerId - Owner user ID
+ */
+async function createDefaultNotificationTemplate(
+  siteId: string, 
+  siteName?: string, 
+  siteDomain?: string, 
+  ownerId?: string
+): Promise<void> {
+  try {
+    const notificationsServiceUrl = getServiceUrl("notifications");
+
+    // Call the notifications service to create default template
+    const response = await fetch(`${notificationsServiceUrl}/api/templates/create-default`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        site_id: siteId,
+        site_name: siteName,
+        site_domain: siteDomain,
+        owner_id: ownerId,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to create default template: ${response.status} - ${errorText}`);
+    }
+
+    const result = await response.json();
+    console.log(`Default template created with ID: ${result.template_id}`);
+  } catch (error: any) {
+    console.error(`Error creating default template for site ${siteId}:`, error);
+    throw error;
+  }
 }
 
 /**
@@ -112,6 +156,20 @@ export async function createTestSiteWithIntegration(
 
     console.log(`✅ Site created successfully: ${siteData.id}`);
 
+    // Create default notification template for the test site
+    try {
+      await createDefaultNotificationTemplate(
+        siteData.id, 
+        siteData.name, 
+        siteData.domain, 
+        userId
+      );
+      console.log(`✅ Default notification template created for site: ${siteData.id}`);
+    } catch (templateError) {
+      console.warn(`⚠️ Failed to create default template for site ${siteData.id}:`, templateError);
+      // Don't fail the entire site creation if template creation fails
+    }
+
     const testSite: TestSite = {
       id: siteData.id,
       name: siteData.name,
@@ -168,23 +226,23 @@ export async function getOrCreateTestSite(
       const testIntegration = existingSite.settings?.test_integration;
 
       if (testIntegration) {
-      const testSite: TestSite = {
-        id: existingSite.id,
-        name: existingSite.name,
-        domain: existingSite.domain,
+        const testSite: TestSite = {
+          id: existingSite.id,
+          name: existingSite.name,
+          domain: existingSite.domain,
           shop_domain: testIntegration.shop_domain || "unknown",
           integration_id: testIntegration.id || "unknown",
-        status: existingSite.status,
-        created_at: existingSite.created_at,
-        updated_at: existingSite.updated_at,
-      };
+          status: existingSite.status,
+          created_at: existingSite.created_at,
+          updated_at: existingSite.updated_at,
+        };
 
-      console.log(`Found existing test site for user ${userId}: ${testSite.id}`);
+        console.log(`Found existing test site for user ${userId}: ${testSite.id}`);
 
-      return {
-        success: true,
-        site: testSite,
-      };
+        return {
+          success: true,
+          site: testSite,
+        };
       }
     }
 

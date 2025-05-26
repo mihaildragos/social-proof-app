@@ -1,6 +1,6 @@
 import { Router } from "express";
 import bodyParser from "body-parser";
-import { WebhookController } from "../controllers/webhookController.js";
+import { WebhookController } from "../controllers/webhookController";
 
 const router = Router();
 
