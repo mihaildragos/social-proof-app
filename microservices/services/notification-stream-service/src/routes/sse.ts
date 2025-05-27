@@ -45,8 +45,23 @@ export class SSEServer extends EventEmitter {
       ...config,
     };
 
+    // Start ping interval
     this.startPingInterval();
     logger.info("SSE server initialized", this.config);
+
+    // Add error handler to prevent unhandled error exceptions
+    this.on('error', (connection: SSEConnection, error: Error) => {
+      logger.error('SSE connection error handled gracefully:', error, {
+        connectionId: connection.id,
+        organizationId: connection.organizationId,
+        siteId: connection.siteId
+      });
+      
+      // Clean up the connection if it's still active
+      if (this.getConnection(connection.id)) {
+        this.handleDisconnection(connection);
+      }
+    });
   }
 
   /**
@@ -494,6 +509,21 @@ export class SSEServer extends EventEmitter {
 
 // Create SSE server instance
 const sseServer = new SSEServer();
+
+// Add error handler to prevent unhandled error exceptions
+sseServer.on('error', (connection: SSEConnection, error: Error) => {
+  logger.error('SSE connection error handled gracefully:', error, {
+    connectionId: connection.id,
+    organizationId: connection.organizationId,
+    siteId: connection.siteId
+  });
+  
+  // Clean up the connection if it's still active
+  if (sseServer.getConnection(connection.id)) {
+    // Access private method using bracket notation
+    (sseServer as any).handleDisconnection(connection);
+  }
+});
 
 // Create router
 const router = Router();

@@ -102,6 +102,17 @@ export function createServer() {
       return res.status(400).json({ error: "Site ID is required" });
     }
 
+    // Handle HEAD requests separately - just return headers without establishing SSE connection
+    if (req.method === 'HEAD') {
+      console.log(`HEAD request for SSE endpoint - site ${siteId}, organization ${organizationId}`);
+      res.setHeader("Content-Type", "text/event-stream");
+      res.setHeader("Cache-Control", "no-cache");
+      res.setHeader("Connection", "keep-alive");
+      res.setHeader("Access-Control-Allow-Origin", "*");
+      res.setHeader("Access-Control-Allow-Headers", "Cache-Control");
+      return res.status(200).end();
+    }
+
     console.log(`SSE connection request for site ${siteId}, organization ${organizationId}`);
 
     // Set SSE headers

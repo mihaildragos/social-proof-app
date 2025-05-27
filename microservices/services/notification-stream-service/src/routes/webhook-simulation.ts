@@ -27,6 +27,30 @@ router.post('/shopify/orders-create', async (req: Request, res: Response) => {
     // Extract shop domain from headers or body
     const shopDomain = req.headers['x-shopify-shop-domain'] as string || req.body.shop_domain || 'test-shop.myshopify.com';
     
+    // Look up site ID from shop domain
+    let siteId: string | null = null;
+    
+    if (shopDomain.includes('test-store')) {
+      // For test sites, we need to look up the site ID from the shop domain
+      // This simulates what the main webhook handler does
+      logger.info('Looking up site ID for test shop domain', { shopDomain });
+      
+      // For now, we'll extract the site ID from the shop domain pattern
+      // Pattern: test-store-{siteId}-{hash}.myshopify.com
+      // Site ID is a UUID format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+      const match = shopDomain.match(/test-store-([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})-/);
+      if (match) {
+        siteId = match[1];
+        logger.info('Extracted site ID from shop domain', { shopDomain, siteId });
+      } else {
+        logger.warn('Could not extract site ID from shop domain, using fallback', { shopDomain });
+        siteId = 'test-site';
+      }
+    } else {
+      // For real shop domains, use the shop domain as site ID (simplified)
+      siteId = shopDomain.replace('.myshopify.com', '');
+    }
+
     // Check if this is a full Shopify webhook payload (from control panel)
     if (req.body.line_items && req.body.customer) {
       // This is a full Shopify webhook - extract data from it
@@ -35,9 +59,9 @@ router.post('/shopify/orders-create', async (req: Request, res: Response) => {
       const notificationEvent = {
         event_type: 'order.created',
         platform: 'shopify',
-        site_id: req.body.site_id || 'test-site',
+        site_id: siteId,
         timestamp: new Date().toISOString(),
-        source_created_at: shopifyOrder.created_at,
+        source_created_at: shopifyOrder.created_at || new Date().toISOString(),
         order: {
           id: shopifyOrder.id,
           order_number: shopifyOrder.order_number || shopifyOrder.number,
@@ -74,7 +98,7 @@ router.post('/shopify/orders-create', async (req: Request, res: Response) => {
           },
           body: JSON.stringify({
             organizationId: req.body.organization_id || 'test-org',
-            siteId: req.body.site_id || 'test-site',
+            siteId: siteId,
             payload: {
               type: 'order',
               title: '🛍️ New Purchase!',
@@ -88,15 +112,17 @@ router.post('/shopify/orders-create', async (req: Request, res: Response) => {
 
         if (notificationResponse.ok) {
           const notificationResult = await notificationResponse.json();
-          logger.info('Notification sent successfully', { notificationResult });
+          logger.info('Notification sent successfully', { notificationResult, siteId, shopDomain });
         } else {
           logger.error('Failed to send notification', { 
             status: notificationResponse.status,
-            statusText: notificationResponse.statusText
+            statusText: notificationResponse.statusText,
+            siteId,
+            shopDomain
           });
         }
       } catch (notificationError) {
-        logger.error('Error sending notification', { error: notificationError });
+        logger.error('Error sending notification', { error: notificationError, siteId, shopDomain });
       }
 
       // Return success response
@@ -104,7 +130,9 @@ router.post('/shopify/orders-create', async (req: Request, res: Response) => {
         success: true,
         message: 'Shopify webhook processed successfully',
         order: shopifyOrder,
-        notification: notificationEvent
+        notification: notificationEvent,
+        siteId: siteId,
+        shopDomain: shopDomain
       });
 
     } else {
@@ -154,7 +182,7 @@ router.post('/shopify/orders-create', async (req: Request, res: Response) => {
       const notificationEvent = {
         event_type: 'order.created',
         platform: 'shopify',
-        site_id: req.body.site_id || 'test-site',
+        site_id: siteId,
         timestamp: new Date().toISOString(),
         source_created_at: simulatedOrder.created_at,
         order: {
@@ -187,7 +215,7 @@ router.post('/shopify/orders-create', async (req: Request, res: Response) => {
           },
           body: JSON.stringify({
             organizationId: req.body.organization_id || 'test-org',
-            siteId: req.body.site_id || 'test-site',
+            siteId: siteId,
             payload: {
               type: 'order',
               title: '🛍️ New Purchase!',
@@ -201,15 +229,17 @@ router.post('/shopify/orders-create', async (req: Request, res: Response) => {
 
         if (notificationResponse.ok) {
           const notificationResult = await notificationResponse.json();
-          logger.info('Notification sent successfully', { notificationResult });
+          logger.info('Notification sent successfully', { notificationResult, siteId, shopDomain });
         } else {
           logger.error('Failed to send notification', { 
             status: notificationResponse.status,
-            statusText: notificationResponse.statusText
+            statusText: notificationResponse.statusText,
+            siteId,
+            shopDomain
           });
         }
       } catch (notificationError) {
-        logger.error('Error sending notification', { error: notificationError });
+        logger.error('Error sending notification', { error: notificationError, siteId, shopDomain });
       }
 
       // Return success response
@@ -217,7 +247,9 @@ router.post('/shopify/orders-create', async (req: Request, res: Response) => {
         success: true,
         message: 'Webhook simulation processed successfully',
         order: simulatedOrder,
-        notification: notificationEvent
+        notification: notificationEvent,
+        siteId: siteId,
+        shopDomain: shopDomain
       });
     }
 

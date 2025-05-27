@@ -566,7 +566,9 @@
         console.log("loadSocialProofScript() called");
         
         const script = document.createElement("script");
-        script.src = `/api/embed/${siteId}.js`;
+        // Add cache-busting timestamp to force reload of embed script
+        const timestamp = Date.now();
+        script.src = `/api/embed/${siteId}.js?t=${timestamp}`;
         script.async = true;
 
         console.log("Created script element with src:", script.src);

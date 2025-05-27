@@ -54,6 +54,7 @@ export async function GET(req: Request, { params }: { params: { siteId: string }
   // Configuration
   var config = {
     siteId: "${siteId}",
+    organizationId: "test-org", // Default organization for development
     apiHost: "${process.env.NEXT_PUBLIC_VERCEL_URL || "localhost:3000"}",
     apiEndpoint: "${process.env.NEXT_PUBLIC_VERCEL_URL || "localhost:3000"}/api",
     notificationStreamHost: "${process.env.NODE_ENV === 'development' ? 'localhost:3002' : process.env.NEXT_PUBLIC_VERCEL_URL || "localhost:3000"}",
@@ -161,7 +162,7 @@ export async function GET(req: Request, { params }: { params: { siteId: string }
     }
     
     try {
-      var sseUrl = config.protocol + '://' + config.notificationStreamHost + '/api/notifications/sse/' + config.siteId;
+      var sseUrl = config.protocol + '://' + config.notificationStreamHost + '/api/notifications/sse/' + config.siteId + '?organizationId=' + config.organizationId;
       console.log('Social Proof: Connecting to SSE URL:', sseUrl);
       console.log('Social Proof: EventSource supported:', !!window.EventSource);
       
@@ -570,7 +571,7 @@ export async function GET(req: Request, { params }: { params: { siteId: string }
       status: 200,
       headers: {
         "Content-Type": "application/javascript",
-        "Cache-Control": "public, max-age=3600",
+        "Cache-Control": process.env.NODE_ENV === 'development' ? "no-cache, no-store, must-revalidate" : "public, max-age=3600",
         "Cross-Origin-Resource-Policy": "cross-origin",
         "Access-Control-Allow-Origin": "*",
       },
