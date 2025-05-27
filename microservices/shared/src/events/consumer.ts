@@ -1,5 +1,5 @@
 import { Kafka, Consumer, EachMessagePayload } from "kafkajs";
-import { getContextLogger } from "../utils/logger";
+import { getContextLogger } from "../../utils/logger";
 import { Event } from "../events/schemas";
 import { validateAndMigrateEvent } from "../events/versioning";
 

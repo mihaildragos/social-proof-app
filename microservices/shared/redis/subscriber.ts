@@ -1,5 +1,5 @@
 import Redis from "ioredis";
-import { getContextLogger } from "../utils/logger";
+import { getContextLogger } from "@social-proof/shared/utils/logger";
 
 const logger = getContextLogger({ service: "redis-subscriber" });
 

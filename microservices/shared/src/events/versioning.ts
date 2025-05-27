@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { Event, EventSchema } from "./schemas";
 
 /**
  * Event version information

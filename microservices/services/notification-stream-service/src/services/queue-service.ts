@@ -1,5 +1,5 @@
 import { EventEmitter } from "events";
-import { getContextLogger } from "../utils/logger";
+import { getContextLogger } from "@social-proof/shared/utils/logger";
 import { metrics } from "../utils/metrics";
 
 const logger = getContextLogger({ service: "queue-service" });

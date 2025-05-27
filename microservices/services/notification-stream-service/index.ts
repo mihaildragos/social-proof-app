@@ -1,5 +1,5 @@
 import { createServer } from "./server";
-import { getContextLogger } from "./src/utils/logger";
+import { getContextLogger } from "@social-proof/shared/utils/logger";
 
 const logger = getContextLogger({ service: "notification-stream-service" });
 

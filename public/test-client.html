@@ -6,7 +6,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0"
     />
-    <title>Test Store - Social Proof Demo</title>
+    <title>Test Store Page - Social Proof Demo</title>
     <style>
       * {
         margin: 0;
@@ -442,6 +442,12 @@
             >
               🔗 Open Control Panel
             </a>
+            <button
+              class="btn btn-primary"
+              onclick="triggerTestNotification()"
+            >
+              🚀 Trigger Test Notification
+            </button>
           </div>
         </div>
       </div>
@@ -471,6 +477,8 @@
     </button>
 
     <script>
+      console.log("Test page script starting...");
+      
       // State management
       let siteId = null;
       let scriptLoaded = false;
@@ -482,8 +490,17 @@
       const siteIdBadge = document.getElementById("site-id-badge");
       const scriptActiveBadge = document.getElementById("script-active-badge");
 
+      console.log("DOM elements found:", {
+        scriptStatus: !!scriptStatus,
+        notificationCountEl: !!notificationCountEl,
+        siteIdBadge: !!siteIdBadge,
+        scriptActiveBadge: !!scriptActiveBadge
+      });
+
       // Initialize the page
       function init() {
+        console.log("init() function called");
+        
         // Get site ID from URL parameters or local storage
         const params = new URLSearchParams(window.location.search);
         const urlSiteId = params.get("siteId");
@@ -491,27 +508,38 @@
         if (urlSiteId) {
           siteId = urlSiteId;
           localStorage.setItem("test-site-id", urlSiteId);
+          console.log("Using URL site ID:", siteId);
         } else {
           const storedSiteId = localStorage.getItem("test-site-id");
           if (storedSiteId) {
             siteId = storedSiteId;
+            console.log("Using stored site ID:", siteId);
+          } else {
+            // Default to test-site for development
+            siteId = "test-site";
+            console.log("Using default test site ID:", siteId);
           }
         }
 
         updateUI();
 
         if (siteId) {
+          console.log("About to load social proof script for site:", siteId);
           loadSocialProofScript();
         } else {
+          console.log("No site ID, showing no site ID message");
           showNoSiteIdMessage();
         }
 
         // Listen for notification events
         window.addEventListener("social-proof-notification", handleNotification);
+        console.log("Event listener added for social-proof-notification");
       }
 
       // Update UI elements
       function updateUI() {
+        console.log("updateUI() called, scriptLoaded:", scriptLoaded, "notificationCount:", notificationCount);
+        
         if (siteId) {
           siteIdBadge.textContent = `Site ID: ${siteId}`;
         } else {
@@ -535,17 +563,25 @@
 
       // Load the social proof script
       function loadSocialProofScript() {
+        console.log("loadSocialProofScript() called");
+        
         const script = document.createElement("script");
         script.src = `/api/embed/${siteId}.js`;
         script.async = true;
 
+        console.log("Created script element with src:", script.src);
+
         script.onload = () => {
+          console.log("Script onload event fired");
           scriptLoaded = true;
           updateUI();
           console.log("Social proof script loaded successfully");
+          console.log("window.SocialProof exists:", !!window.SocialProof);
+          console.log("window.SocialProof.init exists:", !!(window.SocialProof && window.SocialProof.init));
           
           // Initialize the social proof widget
           if (window.SocialProof && window.SocialProof.init) {
+            console.log("Calling SocialProof.init()...");
             window.SocialProof.init({
               position: "bottom-left",
               displayTime: 5000,
@@ -554,27 +590,63 @@
             console.log("Social proof widget initialized");
           } else {
             console.error("SocialProof.init not found");
+            console.log("window.SocialProof:", window.SocialProof);
           }
         };
 
-        script.onerror = () => {
+        script.onerror = (error) => {
+          console.error("Script onerror event fired:", error);
           console.error("Failed to load social proof script");
           scriptStatus.textContent = "Script: Error";
           scriptStatus.className = "badge badge-error";
         };
 
+        console.log("Appending script to document head...");
         document.head.appendChild(script);
+        console.log("Script appended to head");
       }
 
       // Handle notification events
       function handleNotification(event) {
+        console.log("handleNotification() called with event:", event);
         notificationCount++;
         updateUI();
         console.log("Social proof notification received:", event.detail);
       }
 
+      // Trigger a test notification
+      function triggerTestNotification() {
+        console.log("triggerTestNotification() called");
+        console.log("Triggering test notification...");
+        
+        fetch("http://localhost:3002/api/webhooks/shopify/orders-create", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            organizationId: "test-org",
+            siteId: siteId || "test-site",
+          }),
+        })
+        .then(response => {
+          console.log("Fetch response received:", response.status, response.statusText);
+          return response.json();
+        })
+        .then(data => {
+          console.log("Test notification triggered successfully:", data);
+          // Update notification count
+          notificationCount++;
+          updateUI();
+        })
+        .catch(error => {
+          console.error("Error triggering test notification:", error);
+        });
+      }
+
       // Show message when no site ID is available
       function showNoSiteIdMessage() {
+        console.log("showNoSiteIdMessage() called");
         // Replace the main content with a message
         const container = document.querySelector(".products .container");
         container.innerHTML = `
@@ -600,11 +672,64 @@
       }
 
       // Initialize when DOM is loaded
+      console.log("Document readyState:", document.readyState);
       if (document.readyState === "loading") {
+        console.log("Adding DOMContentLoaded event listener");
         document.addEventListener("DOMContentLoaded", init);
       } else {
+        console.log("DOM already loaded, calling init() immediately");
         init();
       }
+      
+      console.log("Test page script completed");
+      
+      // Global test function for manual testing
+      window.testNotification = function() {
+        console.log("Manual test notification triggered");
+        
+        // Test if SocialProof is available
+        if (window.SocialProof && window.SocialProof.test) {
+          console.log("Calling SocialProof.test()");
+          window.SocialProof.test();
+        } else if (window.SocialProof && window.SocialProof.showNotification) {
+          console.log("Calling SocialProof.showNotification() directly");
+          window.SocialProof.showNotification({
+            id: 'manual-test-' + Date.now(),
+            type: 'order',
+            content: {
+              title: '🛍️ Manual Test',
+              message: 'This is a manual test notification',
+              image: null
+            },
+            createdAt: new Date().toISOString()
+          });
+        } else {
+          console.error("SocialProof not available for testing");
+          console.log("window.SocialProof:", window.SocialProof);
+          
+          // Try to create a simple notification manually
+          console.log("Creating manual notification element...");
+          const container = document.getElementById('social-proof-container');
+          if (container) {
+            const notif = document.createElement('div');
+            notif.style.cssText = 'position:fixed;bottom:20px;left:20px;background:white;padding:1rem;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);z-index:9999;max-width:300px;';
+            notif.innerHTML = '<strong>🛍️ Manual Test</strong><br>This is a manual test notification';
+            container.appendChild(notif);
+            
+            setTimeout(() => {
+              if (container.contains(notif)) {
+                container.removeChild(notif);
+              }
+            }, 5000);
+            
+            console.log("Manual notification element created and added to container");
+          } else {
+            console.error("social-proof-container not found");
+          }
+        }
+      };
+      
+      console.log("Global testNotification() function added - call testNotification() in console to test");
     </script>
   </body>
 </html>

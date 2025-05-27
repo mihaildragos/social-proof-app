@@ -1,0 +1,27 @@
+2025-05-27 18:48:58:4858 [32minfo[39m: [32mSSE server initialized[39m
+2025-05-27 18:48:58:4858 [32minfo[39m: [32mNotification processing started[39m
+2025-05-27 18:48:58:4858 [32minfo[39m: [32mNotification queue service initialized[39m
+2025-05-27 18:48:58:4858 [32minfo[39m: [32mDelivery confirmation batch processing started[39m
+2025-05-27 18:48:58:4858 [32minfo[39m: [32mDelivery confirmation service initialized[39m
+2025-05-27 18:48:58:4858 [32minfo[39m: [32mWeb notification processor initialized[39m
+2025-05-27 18:48:58:4858 [32minfo[39m: [32mEmail notification processor initialized[39m
+2025-05-27 18:48:58:4858 [32minfo[39m: [32mPush notification processor initialized[39m
+2025-05-27 18:48:58:4858 [32minfo[39m: [32mNotification processor registered[39m
+2025-05-27 18:48:58:4858 [32minfo[39m: [32mNotification processor registered[39m
+2025-05-27 18:48:58:4858 [32minfo[39m: [32mNotification processor registered[39m
+2025-05-27 18:48:58:4858 [32minfo[39m: [32mNotification processors registered with queue service[39m
+2025-05-27 18:48:58:4858 [32minfo[39m: [32mNotification stream service listening on port 3002[39m
+2025-05-27 18:49:31:4931 [32minfo[39m: [32mSIGINT received. Shutting down gracefully[39m
+2025-05-27 18:49:37:4937 [32minfo[39m: [32mSSE server initialized[39m
+2025-05-27 18:49:37:4937 [32minfo[39m: [32mNotification processing started[39m
+2025-05-27 18:49:37:4937 [32minfo[39m: [32mNotification queue service initialized[39m
+2025-05-27 18:49:37:4937 [32minfo[39m: [32mDelivery confirmation batch processing started[39m
+2025-05-27 18:49:37:4937 [32minfo[39m: [32mDelivery confirmation service initialized[39m
+2025-05-27 18:49:37:4937 [32minfo[39m: [32mWeb notification processor initialized[39m
+2025-05-27 18:49:37:4937 [32minfo[39m: [32mEmail notification processor initialized[39m
+2025-05-27 18:49:37:4937 [32minfo[39m: [32mPush notification processor initialized[39m
+2025-05-27 18:49:37:4937 [32minfo[39m: [32mNotification processor registered[39m
+2025-05-27 18:49:37:4937 [32minfo[39m: [32mNotification processor registered[39m
+2025-05-27 18:49:37:4937 [32minfo[39m: [32mNotification processor registered[39m
+2025-05-27 18:49:37:4937 [32minfo[39m: [32mNotification processors registered with queue service[39m
+2025-05-27 18:49:37:4937 [32minfo[39m: [32mNotification stream service listening on port 3002[39m

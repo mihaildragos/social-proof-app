@@ -2,7 +2,7 @@ import { KafkaConsumer, KafkaConsumerConfig } from "./consumer";
 import { KafkaProducer } from "./producer";
 import { Event, KAFKA_TOPICS } from "./schemas";
 import { validateAndMigrateEvent } from "./versioning";
-import { getContextLogger } from "../utils/logger";
+import { getContextLogger } from "../../utils/logger";
 
 const logger = getContextLogger({ service: "event-replay" });
 

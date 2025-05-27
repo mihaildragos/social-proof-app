@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from "express";
-import { z } from "zod";
 import { validateAndMigrateEvent } from "./versioning";
 import { BaseEventSchema, EVENT_TYPES } from "./schemas";
 import { logger } from "../utils/logger";

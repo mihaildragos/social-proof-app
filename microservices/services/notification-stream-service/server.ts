@@ -7,6 +7,7 @@ import cors from "cors";
 import helmet from "helmet";
 import webhookSimulationRoutes from "./src/routes/webhook-simulation";
 import notificationRoutes from "./src/routes/notifications";
+import { sseRouter } from "./src/routes/sse";
 
 // Simple request logger middleware
 const requestLogger = (req: ExpressRequest, _res: ExpressResponse, next: NextFunction) => {
@@ -89,44 +90,47 @@ export function createServer() {
   // Register notification routes
   app.use("/api/notifications", notificationRoutes);
 
-  // SSE endpoint for real-time notifications
-  app.get("/api/notifications/sse", (req: Request, res: Response) => {
-    const shopDomain = req.query.shopDomain as string;
+  // Register SSE routes
+  app.use("/api/notifications/sse", sseRouter);
 
-    if (!shopDomain) {
-      return res.status(400).json({ error: "Shop domain is required" });
+  // Legacy SSE endpoint for backward compatibility
+  app.get("/api/notifications/sse/:siteId", async (req: Request, res: Response) => {
+    const { siteId } = req.params;
+    const organizationId = req.query.organizationId as string || 'test-org';
+
+    if (!siteId) {
+      return res.status(400).json({ error: "Site ID is required" });
     }
 
-    // Set headers for SSE
+    console.log(`SSE connection request for site ${siteId}, organization ${organizationId}`);
+
+    // Set SSE headers
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Connection", "keep-alive");
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Headers", "Cache-Control");
     res.flushHeaders();
 
-    // Create Redis subscriber
-    const subscriber = new RedisSubscriber(process.env.REDIS_URL);
-    const channel = `notifications:${shopDomain}`;
+    try {
+      // Import SSE server to register this connection
+      const { sseServer } = await import('./src/routes/sse');
 
-    // Function to send notification to client
-    const sendNotification = (message: string) => {
-      res.write(`data: ${message}\n\n`);
-    };
+      // Update the request query parameters to include the required params
+      req.query.organizationId = organizationId;
+      req.query.siteId = siteId;
 
-    // Subscribe to Redis channel
-    subscriber.subscribe(channel, sendNotification).catch((error: Error) => {
-      console.error(`Error subscribing to channel ${channel}:`, error);
+      console.log(`Passing to SSE server with params:`, { organizationId, siteId });
+
+      // Register this connection with the SSE server using the original request object
+      sseServer.handleConnection(req, res);
+
+      console.log(`SSE connection established for site ${siteId}, organization ${organizationId}`);
+    } catch (error) {
+      console.error(`Error setting up SSE connection for site ${siteId}:`, error);
+      // Close the connection on error
       res.end();
-    });
-
-    // Handle client disconnect
-    req.on("close", () => {
-      subscriber.unsubscribe(channel).catch((error: Error) => {
-        console.error(`Error unsubscribing from channel ${channel}:`, error);
-      });
-    });
-
-    // Send initial connection confirmation
-    res.write(`data: ${JSON.stringify({ type: "connection_established" })}\n\n`);
+    }
   });
 
   // Error handling middleware

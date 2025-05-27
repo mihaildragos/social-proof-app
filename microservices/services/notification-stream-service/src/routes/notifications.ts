@@ -1,14 +1,13 @@
 import { Router, Request, Response } from 'express';
-import { getContextLogger } from '../utils/logger';
+import { getContextLogger } from "@social-proof/shared/utils/logger";
 import { metrics } from '../utils/metrics';
 import { 
-  NotificationQueueService, 
+  NotificationQueueService,
   NotificationPriority, 
   DeliveryChannel,
   QueuedNotification 
 } from '../services/queue-service';
-import { 
-  DeliveryConfirmationService} from '../services/delivery-service';
+import { DeliveryConfirmationService } from '../services/delivery-service';
 import { sseServer } from './sse';
 import { createRateLimitMiddleware, RateLimitStrategy } from '../middleware/rate-limiter';
 
@@ -20,6 +19,50 @@ const router = Router();
 // Create service instances
 const queueService = new NotificationQueueService();
 const deliveryService = new DeliveryConfirmationService();
+
+// Register processors with queue service
+import { WebNotificationProcessor } from '../channels/web';
+import { EmailNotificationProcessor } from '../channels/email';
+import { PushNotificationProcessor } from '../channels/push';
+
+// Initialize and register processors
+const webProcessor = new WebNotificationProcessor({
+  websocketPort: 3003,
+  sseEndpoint: '/api/notifications/sse',
+  enableWebSocket: true,
+  enableSSE: true,
+  rateLimits: { perSecond: 50, perMinute: 3000, perHour: 180000 },
+  retryConfig: { maxRetries: 2, backoffMultiplier: 1.5, initialDelay: 500 },
+});
+
+const emailProcessor = new EmailNotificationProcessor({
+  provider: 'sendgrid',
+  apiKey: process.env.SENDGRID_API_KEY || 'test-api-key',
+  fromEmail: process.env.FROM_EMAIL || 'notifications@example.com',
+  fromName: process.env.FROM_NAME || 'Social Proof App',
+  templates: {
+    default: 'default-template',
+    order: 'order-template',
+    welcome: 'welcome-template',
+    notification: 'notification-template',
+  },
+  rateLimits: { perSecond: 10, perMinute: 600, perHour: 36000 },
+});
+
+const pushProcessor = new PushNotificationProcessor({
+  provider: 'firebase',
+  serverKey: process.env.FIREBASE_SERVER_KEY || 'test-server-key',
+  projectId: process.env.FIREBASE_PROJECT_ID || 'test-project',
+  rateLimits: { perSecond: 20, perMinute: 1200, perHour: 72000 },
+  retryConfig: { maxRetries: 3, backoffMultiplier: 2, initialDelay: 1000 },
+});
+
+// Register processors
+queueService.registerProcessor(DeliveryChannel.WEB, webProcessor);
+queueService.registerProcessor(DeliveryChannel.EMAIL, emailProcessor);
+queueService.registerProcessor(DeliveryChannel.PUSH, pushProcessor);
+
+logger.info('Notification processors registered with queue service');
 
 // Rate limiting middleware for different endpoints
 const rateLimitSend = createRateLimitMiddleware({

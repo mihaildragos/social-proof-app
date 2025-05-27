@@ -2,7 +2,7 @@ import { WebSocketServer, WebSocket } from "ws";
 import { IncomingMessage } from "http";
 import { URL } from "url";
 import { EventEmitter } from "events";
-import { getContextLogger } from "../utils/logger";
+import { getContextLogger } from "@social-proof/shared/utils/logger";
 import { metrics } from "../utils/metrics";
 
 const logger = getContextLogger({ service: "websocket-server" });

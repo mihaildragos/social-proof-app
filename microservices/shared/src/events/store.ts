@@ -1,4 +1,4 @@
-import { Event, BaseEvent } from "./schemas";
+import { Event } from "./schemas";
 import { logger } from "../utils/logger";
 
 // Event store query options
