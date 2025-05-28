@@ -110,3 +110,4 @@ export class NotificationEventProcessor {
 export function createNotificationEventProcessor(): NotificationEventProcessor {
   return new NotificationEventProcessor();
 }
+ 
