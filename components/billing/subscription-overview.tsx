@@ -14,9 +14,9 @@ import {
   DollarSign,
   Activity,
 } from "lucide-react";
-import { useSubscription, useUsage } from "../../hooks/use-billing";
-import { formatCurrency, formatDate } from "../../lib/utils";
-import { UsageMetrics } from "../../lib/api/billing-types";
+import { useSubscription, useUsage } from "@/hooks/use-billing";
+import { formatCurrency, formatDate } from "@/lib/utils";
+import { UsageMetrics, type SubscriptionWithPlan } from "@/lib/api/billing-types";
 
 interface SubscriptionOverviewProps {
   className?: string;
@@ -160,14 +160,14 @@ export function SubscriptionOverview({ className }: SubscriptionOverviewProps) {
 
             <div className="flex gap-2">
               <Button
-                variant="primary"
+                variant="default"
                 size="sm"
                 className="flex-1"
               >
                 Change Plan
               </Button>
               <Button
-                variant="primary"
+                variant="default"
                 size="sm"
                 className="flex-1"
               >
@@ -178,7 +178,7 @@ export function SubscriptionOverview({ className }: SubscriptionOverviewProps) {
             {subscription.subscription.status === "active" &&
               !subscription.subscription.cancels_at_period_end && (
                 <Button
-                  variant="primary"
+                  variant="default"
                   size="sm"
                   className="w-full"
                 >
@@ -228,7 +228,15 @@ function StatusIcon({ status }: { status: string }) {
 }
 
 // Usage Overview Card Component
-function UsageOverviewCard({ usage, limits, subscription }: { usage: UsageMetrics; limits: any[]; subscription: SubscriptionWithPlan }) {
+function UsageOverviewCard({
+  usage,
+  limits,
+  subscription,
+}: {
+  usage: UsageMetrics;
+  limits: any[];
+  subscription: SubscriptionWithPlan;
+}) {
   return (
     <Card>
       <CardHeader>
@@ -345,7 +353,7 @@ function SubscriptionOverviewError({ error }: { error: any }) {
       </CardHeader>
       <CardContent>
         <Button
-          variant="outline"
+          variant="secondary"
           onClick={() => window.location.reload()}
         >
           Try Again

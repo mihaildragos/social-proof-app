@@ -44,4 +44,7 @@ export default defineConfig([
   { files: ["**/*.css"], plugins: { css }, language: "css/css", extends: ["css/recommended"] },
   // exclude node_modules
   { files: ["**/node_modules/**"], excludedFiles: ["**/node_modules/**"] },
+  { files: ["**/__tests__/**"], excludedFiles: ["**/__tests__/**"] },
+  { files: ["**/__mocks__/**"], excludedFiles: ["**/__mocks__/**"] },
+
 ]);

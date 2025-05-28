@@ -7,9 +7,8 @@ import { Button } from "../ui/button";
 import { Switch } from "../ui/switch";
 import { Separator } from "../ui/separator";
 import { Check, Star, Zap, Shield, Users, BarChart3 } from "lucide-react";
-import { formatCurrency } from "../../lib/utils";
-import { usePlans, useSubscription } from "../../hooks/use-billing";
-import { PlanWithDetails } from "../../lib/api/billing-types";
+import { useBilling } from "@/hooks/use-billing";
+import { PlanWithDetails } from "@/lib/api/billing-types";
 
 interface PlanSelectionProps {
   onSelectPlan?: (planId: string, billingCycle: "monthly" | "yearly") => void;
@@ -18,15 +17,14 @@ interface PlanSelectionProps {
 
 export function PlanSelection({ onSelectPlan, className }: PlanSelectionProps) {
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
-  const { plans, isLoading, error } = usePlans();
-  const { subscription } = useSubscription();
+  const { subscription, plans, isLoading, errors } = useBilling();
 
   if (isLoading) {
     return <PlanSelectionSkeleton />;
   }
 
-  if (error) {
-    return <PlanSelectionError error={error} />;
+  if (errors.plans) {
+    return <PlanSelectionError error={errors.plans} />;
   }
 
   const handleSelectPlan = (planId: string) => {
@@ -95,17 +93,19 @@ interface PlanCardProps {
 
 function PlanCard({ plan, billingCycle, isCurrentPlan, onSelect }: PlanCardProps) {
   // Convert string prices to numbers with safety checks
-  const priceMonthly = typeof plan.plan.price_monthly === 'string' 
-    ? parseFloat(plan.plan.price_monthly) 
+  const priceMonthly =
+    typeof plan.plan.price_monthly === "string" ?
+      parseFloat(plan.plan.price_monthly)
     : plan.plan.price_monthly;
-  const priceYearly = typeof plan.plan.price_yearly === 'string' 
-    ? parseFloat(plan.plan.price_yearly) 
+  const priceYearly =
+    typeof plan.plan.price_yearly === "string" ?
+      parseFloat(plan.plan.price_yearly)
     : plan.plan.price_yearly;
-  
+
   // Ensure we have valid numbers, fallback to 0 if not
   const validPriceMonthly = isNaN(priceMonthly) || priceMonthly == null ? 0 : priceMonthly;
   const validPriceYearly = isNaN(priceYearly) || priceYearly == null ? 0 : priceYearly;
-  
+
   const price = billingCycle === "monthly" ? validPriceMonthly : validPriceYearly;
   const monthlyPrice = billingCycle === "yearly" ? price / 12 : price;
   const isPopular = plan.plan.name === "pro"; // Assuming "pro" is the popular plan
@@ -179,10 +179,10 @@ function PlanCard({ plan, billingCycle, isCurrentPlan, onSelect }: PlanCardProps
         <Button
           className="w-full"
           variant={
-            isCurrentPlan ? "outline"
+            isCurrentPlan ? "secondary"
             : isPopular ?
               "default"
-            : "outline"
+            : "secondary"
           }
           onClick={onSelect}
           disabled={isCurrentPlan}
@@ -347,7 +347,7 @@ function PlanSelectionError({ error }: { error: any }) {
       </CardHeader>
       <CardContent>
         <Button
-          variant="outline"
+          variant="secondary"
           onClick={() => window.location.reload()}
         >
           Try Again

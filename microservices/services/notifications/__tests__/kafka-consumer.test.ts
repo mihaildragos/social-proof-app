@@ -19,8 +19,8 @@ describe("Kafka Consumer Integration", () => {
     jest.clearAllMocks();
 
     // Create mocked instances
-    redisPublisher = new RedisPublisher() as jest.Mocked<RedisPublisher>;
-    notificationService = new NotificationService() as jest.Mocked<NotificationService>;
+    redisPublisher = new RedisPublisher() as unknown as jest.Mocked<RedisPublisher>;
+    notificationService = new NotificationService() as unknown as jest.Mocked<NotificationService>;
 
     // Create actual handler with mocked dependencies
     orderEventHandler = new OrderEventHandler(redisPublisher, notificationService);
