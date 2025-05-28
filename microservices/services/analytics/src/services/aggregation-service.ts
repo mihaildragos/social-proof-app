@@ -40,7 +40,7 @@ export class AggregationService extends EventEmitter {
       
       if (eventTypes && eventTypes.length > 0) {
         eventTypeFilter = ` AND event_type = ANY($${values.length + 1})`;
-        values.push(eventTypes);
+        values.push(eventTypes as unknown as string | Date);
       }
 
       const query = `
@@ -99,7 +99,7 @@ export class AggregationService extends EventEmitter {
       
       if (eventTypes && eventTypes.length > 0) {
         eventTypeFilter = ` AND event_type = ANY($${values.length + 1})`;
-        values.push(eventTypes);
+        values.push(eventTypes as unknown as string | Date);
       }
 
       // Build segment fields dynamically

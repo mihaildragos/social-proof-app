@@ -10,6 +10,7 @@ export * from "./redis/subscriber";
 // Export Kafka classes
 export * from "./events/consumer";
 export * from "./events/producer";
+export * from "./events/schemas";
 
 // Export middleware
 export * from "./middleware/health-check";
