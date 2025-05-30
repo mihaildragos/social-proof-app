@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { logger } from "../utils/logger";
 import { UnauthorizedError } from "./errorHandler";
-import { db } from "../utils/db";
+import { prisma } from "../lib/prisma";
 
 /**
  * Middleware to authenticate SCIM requests using bearer token
@@ -22,40 +22,39 @@ export const scimAuthMiddleware = async (req: Request, res: Response, next: Next
       throw UnauthorizedError("Missing token in Authorization header");
     }
 
-    // Look up the token in the database
-    const result = await db.query(
-      `SELECT id, organization_id, is_active, expires_at
-       FROM scim_tokens
-       WHERE token = $1`,
-      [token]
-    );
+    // Look up the token in the database using Prisma
+    const scimToken = await prisma.scimToken.findFirst({
+      where: { token },
+      select: {
+        id: true,
+        organizationId: true,
+        isActive: true,
+        expiresAt: true,
+      },
+    });
 
-    if (result.rows.length === 0) {
+    if (!scimToken) {
       throw UnauthorizedError("Invalid SCIM token");
     }
 
-    const scimToken = result.rows[0];
-
     // Check if token is active
-    if (!scimToken.is_active) {
+    if (!scimToken.isActive) {
       throw UnauthorizedError("SCIM token is inactive");
     }
 
     // Check if token has expired
-    if (scimToken.expires_at && new Date(scimToken.expires_at) < new Date()) {
+    if (scimToken.expiresAt && scimToken.expiresAt < new Date()) {
       throw UnauthorizedError("SCIM token has expired");
     }
 
     // Add organization ID to request for downstream handlers
-    req.organizationId = scimToken.organization_id;
+    req.organizationId = scimToken.organizationId;
 
     // Update last used timestamp
-    await db.query(
-      `UPDATE scim_tokens
-       SET last_used_at = NOW()
-       WHERE id = $1`,
-      [scimToken.id]
-    );
+    await prisma.scimToken.update({
+      where: { id: scimToken.id },
+      data: { lastUsedAt: new Date() },
+    });
 
     // Log SCIM API usage
     logger.info("SCIM API request", {
@@ -65,22 +64,20 @@ export const scimAuthMiddleware = async (req: Request, res: Response, next: Next
     });
 
     // Create audit log entry
-    await db.query(
-      `INSERT INTO scim_audit_logs (
-         organization_id, operation, resource_type, resource_id, 
-         performed_by, request_payload
-       ) VALUES ($1, $2, $3, $4, $5, $6)`,
-      [
-        req.organizationId,
-        req.method,
-        req.path.includes("/Users") ? "User"
-        : req.path.includes("/Groups") ? "Group"
-        : "Other",
-        req.params.id || "list",
-        `SCIM Token (${scimToken.id})`,
-        req.method !== "GET" ? JSON.stringify(req.body) : null,
-      ]
-    );
+    await prisma.scimAuditLog.create({
+      data: {
+        organizationId: req.organizationId,
+        operation: req.method,
+        resourceType:
+          req.path.includes("/Users") ? "User"
+          : req.path.includes("/Groups") ? "Group"
+          : "Other",
+        resourceId: req.params.id || "list",
+        performedBy: `SCIM Token (${scimToken.id})`,
+        requestPayload: req.method !== "GET" ? JSON.stringify(req.body) : null,
+        createdAt: new Date(),
+      },
+    });
 
     next();
   } catch (error) {

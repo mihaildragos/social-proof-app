@@ -4,7 +4,6 @@ export default {
   testEnvironment: "node",
   roots: ["<rootDir>/src"],
   testMatch: ["**/__tests__/**/*.test.ts"],
-  setupFilesAfterEnv: ["<rootDir>/src/__tests__/setup.ts"],
   collectCoverageFrom: ["src/**/*.ts", "!src/**/*.d.ts", "!src/__tests__/**", "!src/index.ts"],
   coverageDirectory: "coverage",
   coverageReporters: ["text", "lcov", "html"],
@@ -15,7 +14,7 @@ export default {
   clearMocks: true,
   restoreMocks: true,
   globals: {
-    "ts-jest": {
+    'ts-jest': {
       isolatedModules: true,
       useESM: true,
       tsconfig: {
@@ -30,6 +29,8 @@ export default {
         noImplicitReturns: false,
         noFallthroughCasesInSwitch: false,
         noUncheckedIndexedAccess: false,
+        suppressImplicitAnyIndexErrors: true,
+        noStrictGenericChecks: true
       },
     },
   },

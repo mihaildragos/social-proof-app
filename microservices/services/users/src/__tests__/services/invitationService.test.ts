@@ -1,34 +1,33 @@
 import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 import { invitationService } from "../../services/invitationService";
-import { db } from "../../utils/db";
+import { prisma } from "../../lib/prisma";
 
-// Mock the database module
-jest.mock("../../utils/db");
-const mockDb = db as jest.Mocked<typeof db>;
-
-// Mock the logger
-jest.mock("../../utils/logger", () => ({
-  logger: {
-    info: jest.fn(),
-    error: jest.fn(),
-    warn: jest.fn(),
-    debug: jest.fn(),
+// Mock the Prisma module
+jest.mock("../../lib/prisma", () => ({
+  prisma: {
+    invitation: {
+      create: jest.fn(),
+      findFirst: jest.fn(),
+      findMany: jest.fn(),
+      update: jest.fn(),
+    },
+    user: {
+      findFirst: jest.fn(),
+      create: jest.fn(),
+    },
+    organizationMember: {
+      findFirst: jest.fn(),
+      create: jest.fn(),
+    },
   },
 }));
 
-// Mock crypto
-jest.mock("crypto", () => ({
-  randomBytes: jest.fn(() => ({
-    toString: jest.fn(() => "mock-token-123"),
-  })),
-  createHash: jest.fn(() => ({
-    update: jest.fn(() => ({
-      digest: jest.fn(() => "mocked-hash"),
-    })),
-  })),
-}));
+const mockPrisma = prisma as jest.Mocked<typeof prisma>;
 
-describe("InvitationService", () => {
+// Mock the logger
+jest.mock("../../utils/logger");
+
+describe("Users Service - Invitation Management (PostgreSQL + Prisma Architecture)", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -60,12 +59,9 @@ describe("InvitationService", () => {
         slug: "test-org",
       };
 
-      mockDb.getOne
-        .mockResolvedValueOnce(mockMembership) // User permission check
-        .mockResolvedValueOnce(null) // No existing user
-        .mockResolvedValueOnce(null) // No existing invitation
-        .mockResolvedValueOnce(mockInvitation) // Created invitation
-        .mockResolvedValueOnce(mockOrganization); // Organization details
+      mockPrisma.invitation.create.mockResolvedValueOnce(mockInvitation);
+      mockPrisma.organizationMember.findFirst.mockResolvedValueOnce(mockMembership);
+      mockPrisma.organization.findFirst.mockResolvedValueOnce(mockOrganization);
 
       const result = await invitationService.createInvitation(mockParams);
 
@@ -88,7 +84,7 @@ describe("InvitationService", () => {
     });
 
     it("should throw unauthorized error if user cannot invite", async () => {
-      mockDb.getOne.mockResolvedValueOnce({ role: "member" });
+      mockPrisma.organizationMember.findFirst.mockResolvedValueOnce({ role: "member" });
 
       await expect(invitationService.createInvitation(mockParams)).rejects.toThrow(
         "Not authorized to send invitations"
@@ -99,7 +95,7 @@ describe("InvitationService", () => {
       const mockMembership = { role: "owner" };
       const mockExistingUser = { id: "existing-user" };
 
-      mockDb.getOne.mockResolvedValueOnce(mockMembership).mockResolvedValueOnce(mockExistingUser);
+      mockPrisma.organizationMember.findFirst.mockResolvedValueOnce(mockMembership).mockResolvedValueOnce(mockExistingUser);
 
       await expect(invitationService.createInvitation(mockParams)).rejects.toThrow(
         "User is already a member of this organization"
@@ -110,8 +106,7 @@ describe("InvitationService", () => {
       const mockMembership = { role: "owner" };
       const mockExistingInvitation = { id: "existing-invitation" };
 
-      mockDb.getOne
-        .mockResolvedValueOnce(mockMembership)
+      mockPrisma.organizationMember.findFirst.mockResolvedValueOnce(mockMembership)
         .mockResolvedValueOnce(null) // No existing user
         .mockResolvedValueOnce(mockExistingInvitation);
 
@@ -158,8 +153,8 @@ describe("InvitationService", () => {
         },
       ];
 
-      mockDb.getOne.mockResolvedValueOnce(mockMembership);
-      mockDb.getMany.mockResolvedValueOnce(mockInvitations);
+      mockPrisma.organizationMember.findFirst.mockResolvedValueOnce(mockMembership);
+      mockPrisma.invitation.findMany.mockResolvedValueOnce(mockInvitations);
 
       const result = await invitationService.listOrganizationInvitations(organizationId, userId);
 
@@ -171,7 +166,7 @@ describe("InvitationService", () => {
     });
 
     it("should throw unauthorized error if user is not a member", async () => {
-      mockDb.getOne.mockResolvedValueOnce(null);
+      mockPrisma.organizationMember.findFirst.mockResolvedValueOnce(null);
 
       await expect(
         invitationService.listOrganizationInvitations(organizationId, userId)
@@ -198,7 +193,7 @@ describe("InvitationService", () => {
         org_slug: "test-org",
       };
 
-      mockDb.getOne.mockResolvedValueOnce(mockInvitation);
+      mockPrisma.invitation.findFirst.mockResolvedValueOnce(mockInvitation);
 
       const result = await invitationService.verifyInvitationToken(token);
 
@@ -208,7 +203,7 @@ describe("InvitationService", () => {
     });
 
     it("should throw error if token is invalid", async () => {
-      mockDb.getOne.mockResolvedValueOnce(null);
+      mockPrisma.invitation.findFirst.mockResolvedValueOnce(null);
 
       await expect(invitationService.verifyInvitationToken(token)).rejects.toThrow(
         "Invalid invitation token"
@@ -222,7 +217,7 @@ describe("InvitationService", () => {
         expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
       };
 
-      mockDb.getOne.mockResolvedValueOnce(mockInvitation);
+      mockPrisma.invitation.findFirst.mockResolvedValueOnce(mockInvitation);
 
       await expect(invitationService.verifyInvitationToken(token)).rejects.toThrow(
         "Invitation has already been used or cancelled"
@@ -236,7 +231,7 @@ describe("InvitationService", () => {
         expires_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // Past date
       };
 
-      mockDb.getOne.mockResolvedValueOnce(mockInvitation);
+      mockPrisma.invitation.findFirst.mockResolvedValueOnce(mockInvitation);
 
       await expect(invitationService.verifyInvitationToken(token)).rejects.toThrow(
         "Invitation has expired"
@@ -271,9 +266,7 @@ describe("InvitationService", () => {
       // Mock verifyInvitationToken
       jest.spyOn(invitationService, "verifyInvitationToken").mockResolvedValueOnce(mockInvitation);
 
-      mockDb.execute
-        .mockResolvedValueOnce(1) // Add to organization
-        .mockResolvedValueOnce(1); // Mark invitation as accepted
+      mockPrisma.organizationMember.create.mockResolvedValueOnce(1);
 
       const result = await invitationService.acceptInvitation(mockParams);
 
@@ -284,10 +277,13 @@ describe("InvitationService", () => {
         userId: "existing-user-123",
       });
 
-      expect(mockDb.execute).toHaveBeenCalledWith(
-        expect.stringContaining("INSERT INTO organization_members"),
-        ["existing-user-123", "org-123", "admin"]
-      );
+      expect(mockPrisma.organizationMember.create).toHaveBeenCalledWith({
+        data: {
+          userId: "existing-user-123",
+          organizationId: "org-123",
+          role: "admin",
+        },
+      });
     });
 
     it("should accept invitation for new user", async () => {
@@ -302,13 +298,9 @@ describe("InvitationService", () => {
       // Mock verifyInvitationToken
       jest.spyOn(invitationService, "verifyInvitationToken").mockResolvedValueOnce(mockInvitation);
 
-      mockDb.getOne
-        .mockResolvedValueOnce(null) // No existing user
-        .mockResolvedValueOnce(mockNewUser); // Created user
-
-      mockDb.execute
-        .mockResolvedValueOnce(1) // Add to organization
-        .mockResolvedValueOnce(1); // Mark invitation as accepted
+      mockPrisma.user.findFirst.mockResolvedValueOnce(null);
+      mockPrisma.user.create.mockResolvedValueOnce(mockNewUser);
+      mockPrisma.organizationMember.create.mockResolvedValueOnce(1);
 
       const result = await invitationService.acceptInvitation(mockParams);
 
@@ -342,7 +334,7 @@ describe("InvitationService", () => {
       // Mock verifyInvitationToken
       jest.spyOn(invitationService, "verifyInvitationToken").mockResolvedValueOnce(mockInvitation);
 
-      mockDb.getOne.mockResolvedValueOnce(mockExistingUser);
+      mockPrisma.user.findFirst.mockResolvedValueOnce(mockExistingUser);
 
       await expect(invitationService.acceptInvitation(mockParams)).rejects.toThrow(
         "User already exists. Please sign in to accept the invitation."
@@ -361,19 +353,20 @@ describe("InvitationService", () => {
       };
       const mockMembership = { role: "admin" };
 
-      mockDb.getOne.mockResolvedValueOnce(mockInvitation).mockResolvedValueOnce(mockMembership);
-      mockDb.execute.mockResolvedValueOnce(1);
+      mockPrisma.invitation.findFirst.mockResolvedValueOnce(mockInvitation).mockResolvedValueOnce(mockMembership);
+      mockPrisma.organizationMember.findFirst.mockResolvedValueOnce(mockMembership);
+      mockPrisma.invitation.update.mockResolvedValueOnce(1);
 
       await invitationService.cancelInvitation(invitationId, userId);
 
-      expect(mockDb.execute).toHaveBeenCalledWith(
-        "UPDATE invitations SET status = 'cancelled', cancelled_at = NOW() WHERE id = $1",
-        [invitationId]
-      );
+      expect(mockPrisma.invitation.update).toHaveBeenCalledWith({
+        where: { id: invitationId },
+        data: { status: "cancelled", cancelled_at: expect.any(Date) },
+      });
     });
 
     it("should throw error if invitation not found", async () => {
-      mockDb.getOne.mockResolvedValueOnce(null);
+      mockPrisma.invitation.findFirst.mockResolvedValueOnce(null);
 
       await expect(invitationService.cancelInvitation(invitationId, userId)).rejects.toThrow(
         "Invitation not found"
@@ -386,7 +379,7 @@ describe("InvitationService", () => {
         status: "accepted",
       };
 
-      mockDb.getOne.mockResolvedValueOnce(mockInvitation);
+      mockPrisma.invitation.findFirst.mockResolvedValueOnce(mockInvitation);
 
       await expect(invitationService.cancelInvitation(invitationId, userId)).rejects.toThrow(
         "Can only cancel pending invitations"
@@ -400,7 +393,7 @@ describe("InvitationService", () => {
       };
       const mockMembership = { role: "member" };
 
-      mockDb.getOne.mockResolvedValueOnce(mockInvitation).mockResolvedValueOnce(mockMembership);
+      mockPrisma.invitation.findFirst.mockResolvedValueOnce(mockInvitation).mockResolvedValueOnce(mockMembership);
 
       await expect(invitationService.cancelInvitation(invitationId, userId)).rejects.toThrow(
         "Not authorized to cancel invitations"
@@ -420,19 +413,19 @@ describe("InvitationService", () => {
       };
       const mockMembership = { role: "admin" };
 
-      mockDb.getOne.mockResolvedValueOnce(mockInvitation).mockResolvedValueOnce(mockMembership);
-      mockDb.execute.mockResolvedValueOnce(1);
+      mockPrisma.invitation.findFirst.mockResolvedValueOnce(mockInvitation).mockResolvedValueOnce(mockMembership);
+      mockPrisma.invitation.update.mockResolvedValueOnce(1);
 
       await invitationService.resendInvitation(invitationId, userId);
 
-      expect(mockDb.execute).toHaveBeenCalledWith(
-        "UPDATE invitations SET expires_at = $1, updated_at = NOW() WHERE id = $2",
-        [expect.any(String), invitationId]
-      );
+      expect(mockPrisma.invitation.update).toHaveBeenCalledWith({
+        where: { id: invitationId },
+        data: { expires_at: expect.any(Date), updated_at: expect.any(Date) },
+      });
     });
 
     it("should throw error if invitation not found", async () => {
-      mockDb.getOne.mockResolvedValueOnce(null);
+      mockPrisma.invitation.findFirst.mockResolvedValueOnce(null);
 
       await expect(invitationService.resendInvitation(invitationId, userId)).rejects.toThrow(
         "Invitation not found"
@@ -446,7 +439,7 @@ describe("InvitationService", () => {
         email: "test@example.com",
       };
 
-      mockDb.getOne.mockResolvedValueOnce(mockInvitation);
+      mockPrisma.invitation.findFirst.mockResolvedValueOnce(mockInvitation);
 
       await expect(invitationService.resendInvitation(invitationId, userId)).rejects.toThrow(
         "Can only resend pending invitations"
@@ -461,7 +454,7 @@ describe("InvitationService", () => {
       };
       const mockMembership = { role: "member" };
 
-      mockDb.getOne.mockResolvedValueOnce(mockInvitation).mockResolvedValueOnce(mockMembership);
+      mockPrisma.invitation.findFirst.mockResolvedValueOnce(mockInvitation).mockResolvedValueOnce(mockMembership);
 
       await expect(invitationService.resendInvitation(invitationId, userId)).rejects.toThrow(
         "Not authorized to resend invitations"

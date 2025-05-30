@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 import { IntegrationService } from "../services/integration-service";
-import { ShopifyService } from "../services/shopifyService";
+import { ShopifyService } from "../services/shopify-service";
 import { authMiddleware } from "../middleware/auth";
 import { validateRequest } from "../middleware/validation";
 import { z } from "zod";

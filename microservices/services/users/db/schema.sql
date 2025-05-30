@@ -28,7 +28,12 @@ CREATE TABLE users (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
   last_login_at TIMESTAMPTZ,
+  last_logout_at TIMESTAMPTZ,
   account_status TEXT DEFAULT 'active',
+  verification_token TEXT,
+  verification_token_expires_at TIMESTAMPTZ,
+  reset_token TEXT,
+  reset_token_expires_at TIMESTAMPTZ,
   CONSTRAINT unique_auth_provider_id UNIQUE (auth_provider, auth_provider_id)
 );
 
@@ -52,6 +57,19 @@ CREATE TABLE organization_members (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
   CONSTRAINT unique_user_per_org UNIQUE (user_id, organization_id)
+);
+
+-- Clerk sync tracking table
+CREATE TABLE user_clerk_sync (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  clerk_user_id TEXT NOT NULL,
+  sync_status TEXT DEFAULT 'active',
+  synced_at TIMESTAMPTZ DEFAULT NOW(),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  CONSTRAINT unique_user_clerk_sync UNIQUE (user_id),
+  CONSTRAINT unique_clerk_user UNIQUE (clerk_user_id)
 );
 
 -- Invitations for team members

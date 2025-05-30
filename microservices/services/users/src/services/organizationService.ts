@@ -1,5 +1,5 @@
 import { BadRequestError, NotFoundError, UnauthorizedError } from "../middleware/errorHandler";
-import { db } from "../utils/db";
+import { prisma } from "../lib/prisma";
 import { logger } from "../utils/logger";
 
 interface Organization {
@@ -46,43 +46,50 @@ class OrganizationService {
       const { name, slug, dataRegion, userId } = params;
 
       // Check if slug is already taken
-      const existingOrg = await db.getOne(
-        "SELECT id FROM organizations WHERE slug = $1",
-        [slug]
-      );
+      const existingOrg = await prisma.organization.findUnique({
+        where: {
+          slug: slug,
+        },
+      });
 
       if (existingOrg) {
         throw BadRequestError("Organization slug is already taken");
       }
 
       // Create organization
-      const organization = await db.getOne(
-        `INSERT INTO organizations (name, slug, data_region, settings, created_at, updated_at)
-         VALUES ($1, $2, $3, $4, NOW(), NOW())
-         RETURNING id, name, slug, data_region, settings, created_at, updated_at`,
-        [name, slug, dataRegion || "us-east-1", JSON.stringify({})]
-      );
+      const organization = await prisma.organization.create({
+        data: {
+          name: name,
+          slug: slug,
+          dataRegion: dataRegion || "us-east-1",
+          settings: JSON.stringify({}),
+        },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          dataRegion: true,
+          settings: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
 
       if (!organization) {
         throw BadRequestError("Failed to create organization");
       }
 
       // Add user as owner
-      await db.execute(
-        `INSERT INTO organization_members (user_id, organization_id, role, joined_at)
-         VALUES ($1, $2, $3, NOW())`,
-        [userId, organization.id, "owner"]
-      );
+      await prisma.organizationMember.create({
+        data: {
+          userId: userId,
+          organizationId: organization.id,
+          role: "owner",
+          joinedAt: new Date().toISOString(),
+        },
+      });
 
-      return {
-        id: organization.id,
-        name: organization.name,
-        slug: organization.slug,
-        dataRegion: organization.data_region,
-        settings: organization.settings,
-        createdAt: organization.created_at,
-        updatedAt: organization.updated_at,
-      };
+      return organization;
     } catch (error) {
       logger.error("Error in createOrganization", { error, params });
       throw error;
@@ -95,34 +102,29 @@ class OrganizationService {
   async getOrganization(organizationId: string, userId: string): Promise<Organization | null> {
     try {
       // Check if user is a member of the organization
-      const membership = await db.getOne(
-        "SELECT role FROM organization_members WHERE organization_id = $1 AND user_id = $2",
-        [organizationId, userId]
-      );
+      const membership = await prisma.organizationMember.findFirst({
+        where: {
+          organizationId: organizationId,
+          userId: userId,
+        },
+      });
 
       if (!membership) {
         throw UnauthorizedError("Not authorized to access this organization");
       }
 
       // Get organization data
-      const organization = await db.getOne(
-        "SELECT * FROM organizations WHERE id = $1",
-        [organizationId]
-      );
+      const organization = await prisma.organization.findUnique({
+        where: {
+          id: organizationId,
+        },
+      });
 
       if (!organization) {
         return null;
       }
 
-      return {
-        id: organization.id,
-        name: organization.name,
-        slug: organization.slug,
-        dataRegion: organization.data_region,
-        settings: organization.settings,
-        createdAt: organization.created_at,
-        updatedAt: organization.updated_at,
-      };
+      return organization;
     } catch (error) {
       logger.error("Error in getOrganization", { error, organizationId, userId });
       throw error;
@@ -139,52 +141,50 @@ class OrganizationService {
   ): Promise<Organization> {
     try {
       // Check if user has admin or owner role
-      const membership = await db.getOne(
-        "SELECT role FROM organization_members WHERE organization_id = $1 AND user_id = $2",
-        [organizationId, userId]
-      );
+      const membership = await prisma.organizationMember.findFirst({
+        where: {
+          organizationId: organizationId,
+          userId: userId,
+        },
+      });
 
       if (!membership || !["admin", "owner"].includes(membership.role)) {
         throw UnauthorizedError("Not authorized to update this organization");
       }
 
-      const updateFields: string[] = [];
-      const updateValues: any[] = [];
-      let paramIndex = 1;
+      const updateData: any = {};
 
       if (params.name !== undefined) {
-        updateFields.push(`name = $${paramIndex++}`);
-        updateValues.push(params.name);
+        updateData.name = params.name;
       }
 
       if (params.settings !== undefined) {
-        updateFields.push(`settings = $${paramIndex++}`);
-        updateValues.push(JSON.stringify(params.settings));
+        updateData.settings = JSON.stringify(params.settings);
       }
 
-      updateFields.push(`updated_at = NOW()`);
-      updateValues.push(organizationId);
+      updateData.updatedAt = new Date();
 
-      const organization = await db.getOne(
-        `UPDATE organizations SET ${updateFields.join(", ")} 
-         WHERE id = $${paramIndex} 
-         RETURNING id, name, slug, data_region, settings, created_at, updated_at`,
-        updateValues
-      );
+      const organization = await prisma.organization.update({
+        where: {
+          id: organizationId,
+        },
+        data: updateData,
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          dataRegion: true,
+          settings: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
 
       if (!organization) {
         throw BadRequestError("Failed to update organization");
       }
 
-      return {
-        id: organization.id,
-        name: organization.name,
-        slug: organization.slug,
-        dataRegion: organization.data_region,
-        settings: organization.settings,
-        createdAt: organization.created_at,
-        updatedAt: organization.updated_at,
-      };
+      return organization;
     } catch (error) {
       logger.error("Error in updateOrganization", { error, organizationId, userId });
       throw error;
@@ -196,22 +196,33 @@ class OrganizationService {
    */
   async listUserOrganizations(userId: string): Promise<Organization[]> {
     try {
-      const organizations = await db.getMany(
-        `SELECT o.id, o.name, o.slug, o.data_region, o.settings, o.created_at, o.updated_at
-         FROM organizations o
-         JOIN organization_members om ON o.id = om.organization_id
-         WHERE om.user_id = $1`,
-        [userId]
-      );
+      const organizations = await prisma.organizationMember.findMany({
+        where: {
+          userId: userId,
+        },
+        select: {
+          organization: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              dataRegion: true,
+              settings: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
+        },
+      });
 
       return organizations.map((org: any) => ({
-        id: org.id,
-        name: org.name,
-        slug: org.slug,
-        dataRegion: org.data_region,
-        settings: org.settings,
-        createdAt: org.created_at,
-        updatedAt: org.updated_at,
+        id: org.organization.id,
+        name: org.organization.name,
+        slug: org.organization.slug,
+        dataRegion: org.organization.dataRegion,
+        settings: org.organization.settings,
+        createdAt: org.organization.createdAt,
+        updatedAt: org.organization.updatedAt,
       }));
     } catch (error) {
       logger.error("Error in listUserOrganizations", { error, userId });
@@ -228,35 +239,48 @@ class OrganizationService {
   ): Promise<OrganizationMember[]> {
     try {
       // Check if user is a member of the organization
-      const membership = await db.getOne(
-        "SELECT role FROM organization_members WHERE organization_id = $1 AND user_id = $2",
-        [organizationId, userId]
-      );
+      const membership = await prisma.organizationMember.findFirst({
+        where: {
+          organizationId: organizationId,
+          userId: userId,
+        },
+      });
 
       if (!membership) {
         throw UnauthorizedError("Not authorized to access this organization");
       }
 
       // Get all members
-      const members = await db.getMany(
-        `SELECT om.id, om.user_id, om.organization_id, om.role, om.joined_at,
-                u.id as user_id, u.email_encrypted, u.full_name_encrypted
-         FROM organization_members om
-         JOIN users u ON om.user_id = u.id
-         WHERE om.organization_id = $1`,
-        [organizationId]
-      );
+      const members = await prisma.organizationMember.findMany({
+        where: {
+          organizationId: organizationId,
+        },
+        select: {
+          id: true,
+          userId: true,
+          organizationId: true,
+          role: true,
+          joinedAt: true,
+          user: {
+            select: {
+              id: true,
+              email: true,
+              fullName: true,
+            },
+          },
+        },
+      });
 
       return members.map((member: any) => ({
         id: member.id,
-        userId: member.user_id,
-        organizationId: member.organization_id,
+        userId: member.userId,
+        organizationId: member.organizationId,
         role: member.role,
-        joinedAt: member.joined_at,
+        joinedAt: member.joinedAt,
         user: {
-          id: member.user_id,
-          email: `user_${member.user_id.substring(0, 8)}@example.com`, // Simulated decryption
-          fullName: `User ${member.user_id.substring(0, 8)}`, // Simulated decryption
+          id: member.userId,
+          email: `user_${member.userId.substring(0, 8)}@example.com`, // Simulated decryption
+          fullName: `User ${member.userId.substring(0, 8)}`, // Simulated decryption
         },
       }));
     } catch (error) {
@@ -276,20 +300,24 @@ class OrganizationService {
   ): Promise<void> {
     try {
       // Check if user has admin or owner role
-      const userMembership = await db.getOne(
-        "SELECT role FROM organization_members WHERE organization_id = $1 AND user_id = $2",
-        [organizationId, userId]
-      );
+      const userMembership = await prisma.organizationMember.findFirst({
+        where: {
+          organizationId: organizationId,
+          userId: userId,
+        },
+      });
 
       if (!userMembership || !["admin", "owner"].includes(userMembership.role)) {
         throw UnauthorizedError("Not authorized to update member roles");
       }
 
       // Get target member
-      const targetMember = await db.getOne(
-        "SELECT role, user_id FROM organization_members WHERE organization_id = $1 AND user_id = $2",
-        [organizationId, memberId]
-      );
+      const targetMember = await prisma.organizationMember.findFirst({
+        where: {
+          organizationId: organizationId,
+          userId: memberId,
+        },
+      });
 
       if (!targetMember) {
         throw NotFoundError("Member not found");
@@ -306,10 +334,17 @@ class OrganizationService {
       }
 
       // Update member role
-      await db.execute(
-        "UPDATE organization_members SET role = $1 WHERE organization_id = $2 AND user_id = $3",
-        [newRole, organizationId, memberId]
-      );
+      await prisma.organizationMember.update({
+        where: {
+          organizationId_userId: {
+            organizationId: organizationId,
+            userId: memberId,
+          },
+        },
+        data: {
+          role: newRole,
+        },
+      });
     } catch (error) {
       logger.error("Error in updateMemberRole", { error, organizationId, memberId, userId });
       throw error;
@@ -322,20 +357,24 @@ class OrganizationService {
   async removeMember(organizationId: string, memberId: string, userId: string): Promise<void> {
     try {
       // Check if user has admin or owner role
-      const userMembership = await db.getOne(
-        "SELECT role FROM organization_members WHERE organization_id = $1 AND user_id = $2",
-        [organizationId, userId]
-      );
+      const userMembership = await prisma.organizationMember.findFirst({
+        where: {
+          organizationId: organizationId,
+          userId: userId,
+        },
+      });
 
       if (!userMembership || !["admin", "owner"].includes(userMembership.role)) {
         throw UnauthorizedError("Not authorized to remove members");
       }
 
       // Get target member
-      const targetMember = await db.getOne(
-        "SELECT role FROM organization_members WHERE organization_id = $1 AND user_id = $2",
-        [organizationId, memberId]
-      );
+      const targetMember = await prisma.organizationMember.findFirst({
+        where: {
+          organizationId: organizationId,
+          userId: memberId,
+        },
+      });
 
       if (!targetMember) {
         throw NotFoundError("Member not found");
@@ -347,10 +386,14 @@ class OrganizationService {
       }
 
       // Remove member
-      await db.execute(
-        "DELETE FROM organization_members WHERE organization_id = $1 AND user_id = $2",
-        [organizationId, memberId]
-      );
+      await prisma.organizationMember.delete({
+        where: {
+          organizationId_userId: {
+            organizationId: organizationId,
+            userId: memberId,
+          },
+        },
+      });
     } catch (error) {
       logger.error("Error in removeMember", { error, organizationId, memberId, userId });
       throw error;
@@ -358,4 +401,4 @@ class OrganizationService {
   }
 }
 
-export const organizationService = new OrganizationService(); 
+export const organizationService = new OrganizationService();
