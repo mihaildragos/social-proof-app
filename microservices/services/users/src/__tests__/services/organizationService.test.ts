@@ -9,6 +9,7 @@ jest.mock("../../lib/prisma", () => ({
     organization: {
       create: jest.fn(),
       findUnique: jest.fn(),
+      findMany: jest.fn(),
       update: jest.fn(),
     },
     organizationMember: {
@@ -32,14 +33,14 @@ describe("Users Service - Organization Management (PostgreSQL + Prisma Architect
   });
 
   describe("createOrganization", () => {
-    it("should create organization successfully", async () => {
-      const mockParams = {
-        name: "Test Organization",
-        slug: "test-org",
-        dataRegion: "us-east-1",
-        userId: "user-123",
-      };
+    const mockParams = {
+      name: "Test Organization",
+      slug: "test-org",
+      dataRegion: "us-east-1",
+      userId: "user-123",
+    };
 
+    it("should create organization successfully", async () => {
       const mockOrganization = {
         id: "org-123",
         name: "Test Organization",
@@ -50,9 +51,8 @@ describe("Users Service - Organization Management (PostgreSQL + Prisma Architect
         updatedAt: "2023-01-01T00:00:00.000Z",
       };
 
-      (mockPrisma.organization.findUnique as jest.Mock)
-        .mockResolvedValueOnce(null) // No existing organization with slug
-        .mockResolvedValueOnce(mockOrganization); // Created organization
+      (mockPrisma.organization.findUnique as jest.Mock).mockResolvedValueOnce(null); // No existing organization with slug
+      (mockPrisma.organization.create as jest.Mock).mockResolvedValueOnce(mockOrganization); // Created organization
       (mockPrisma.organizationMember.create as jest.Mock).mockResolvedValueOnce({ id: 1 }); // Member insertion
 
       const result = await organizationService.createOrganization(mockParams);
@@ -84,13 +84,13 @@ describe("Users Service - Organization Management (PostgreSQL + Prisma Architect
       (mockPrisma.organization.findUnique as jest.Mock).mockResolvedValueOnce({ id: "existing-org" });
 
       await expect(organizationService.createOrganization(mockParams)).rejects.toThrow(
-        BadRequestError
+        "Organization slug is already taken"
       );
     });
 
     it("should throw error if organization creation fails", async () => {
-      (mockPrisma.organization.findUnique as jest.Mock).mockResolvedValueOnce(null)
-        .mockResolvedValueOnce(null);
+      (mockPrisma.organization.findUnique as jest.Mock).mockResolvedValueOnce(null);
+      (mockPrisma.organization.create as jest.Mock).mockResolvedValueOnce(null);
 
       await expect(organizationService.createOrganization(mockParams)).rejects.toThrow(
         "Failed to create organization"
@@ -108,15 +108,14 @@ describe("Users Service - Organization Management (PostgreSQL + Prisma Architect
         id: "org-123",
         name: "Test Organization",
         slug: "test-org",
-        data_region: "us-east-1",
+        dataRegion: "us-east-1",
         settings: {},
-        created_at: "2024-01-01T00:00:00Z",
-        updated_at: "2024-01-01T00:00:00Z",
+        createdAt: "2024-01-01T00:00:00Z",
+        updatedAt: "2024-01-01T00:00:00Z",
       };
 
-      (mockPrisma.organization.findUnique as jest.Mock)
-        .mockResolvedValueOnce(mockMembership)
-        .mockResolvedValueOnce(mockOrganization);
+      (mockPrisma.organizationMember.findFirst as jest.Mock).mockResolvedValueOnce(mockMembership);
+      (mockPrisma.organization.findUnique as jest.Mock).mockResolvedValueOnce(mockOrganization);
 
       const result = await organizationService.getOrganization(organizationId, userId);
 
@@ -132,7 +131,7 @@ describe("Users Service - Organization Management (PostgreSQL + Prisma Architect
     });
 
     it("should throw unauthorized error if user is not a member", async () => {
-      (mockPrisma.organization.findUnique as jest.Mock).mockResolvedValueOnce(null);
+      (mockPrisma.organizationMember.findFirst as jest.Mock).mockResolvedValueOnce(null);
 
       await expect(organizationService.getOrganization(organizationId, userId)).rejects.toThrow(
         "Not authorized to access this organization"
@@ -141,9 +140,8 @@ describe("Users Service - Organization Management (PostgreSQL + Prisma Architect
 
     it("should return null if organization not found", async () => {
       const mockMembership = { role: "admin" };
-      (mockPrisma.organization.findUnique as jest.Mock)
-        .mockResolvedValueOnce(mockMembership)
-        .mockResolvedValueOnce(null);
+      (mockPrisma.organizationMember.findFirst as jest.Mock).mockResolvedValueOnce(mockMembership);
+      (mockPrisma.organization.findUnique as jest.Mock).mockResolvedValueOnce(null);
 
       const result = await organizationService.getOrganization(organizationId, userId);
 
@@ -165,15 +163,14 @@ describe("Users Service - Organization Management (PostgreSQL + Prisma Architect
         id: "org-123",
         name: "Updated Organization",
         slug: "test-org",
-        data_region: "us-east-1",
+        dataRegion: "us-east-1",
         settings: { theme: "dark" },
-        created_at: "2024-01-01T00:00:00Z",
-        updated_at: "2024-01-01T01:00:00Z",
+        createdAt: "2024-01-01T00:00:00Z",
+        updatedAt: "2024-01-01T01:00:00Z",
       };
 
-      (mockPrisma.organization.findUnique as jest.Mock)
-        .mockResolvedValueOnce(mockMembership)
-        .mockResolvedValueOnce(mockUpdatedOrganization);
+      (mockPrisma.organizationMember.findFirst as jest.Mock).mockResolvedValueOnce(mockMembership);
+      (mockPrisma.organization.update as jest.Mock).mockResolvedValueOnce(mockUpdatedOrganization);
 
       const result = await organizationService.updateOrganization(
         organizationId,
@@ -187,7 +184,7 @@ describe("Users Service - Organization Management (PostgreSQL + Prisma Architect
 
     it("should throw unauthorized error if user is not admin or owner", async () => {
       const mockMembership = { role: "member" };
-      (mockPrisma.organization.findUnique as jest.Mock).mockResolvedValueOnce(mockMembership);
+      (mockPrisma.organizationMember.findFirst as jest.Mock).mockResolvedValueOnce(mockMembership);
 
       await expect(
         organizationService.updateOrganization(organizationId, updateParams, userId)
@@ -196,8 +193,8 @@ describe("Users Service - Organization Management (PostgreSQL + Prisma Architect
 
     it("should throw error if update fails", async () => {
       const mockMembership = { role: "owner" };
-      mockPrisma.prisma.organization.findUnique.mockResolvedValueOnce(mockMembership)
-        .mockResolvedValueOnce(null);
+      (mockPrisma.organizationMember.findFirst as jest.Mock).mockResolvedValueOnce(mockMembership);
+      (mockPrisma.organization.update as jest.Mock).mockResolvedValueOnce(null);
 
       await expect(
         organizationService.updateOrganization(organizationId, updateParams, userId)
@@ -209,28 +206,32 @@ describe("Users Service - Organization Management (PostgreSQL + Prisma Architect
     const userId = "user-123";
 
     it("should list user organizations successfully", async () => {
-      const mockOrganizations = [
+      const mockMemberships = [
         {
-          id: "org-1",
-          name: "Organization 1",
-          slug: "org-1",
-          data_region: "us-east-1",
-          settings: {},
-          created_at: "2024-01-01T00:00:00Z",
-          updated_at: "2024-01-01T00:00:00Z",
+          organization: {
+            id: "org-1",
+            name: "Organization 1",
+            slug: "org-1",
+            dataRegion: "us-east-1",
+            settings: {},
+            createdAt: "2024-01-01T00:00:00Z",
+            updatedAt: "2024-01-01T00:00:00Z",
+          },
         },
         {
-          id: "org-2",
-          name: "Organization 2",
-          slug: "org-2",
-          data_region: "us-west-2",
-          settings: {},
-          created_at: "2024-01-02T00:00:00Z",
-          updated_at: "2024-01-02T00:00:00Z",
+          organization: {
+            id: "org-2",
+            name: "Organization 2",
+            slug: "org-2",
+            dataRegion: "us-west-2",
+            settings: {},
+            createdAt: "2024-01-02T00:00:00Z",
+            updatedAt: "2024-01-02T00:00:00Z",
+          },
         },
       ];
 
-      mockPrisma.prisma.organization.findMany.mockResolvedValueOnce(mockOrganizations);
+      (mockPrisma.organizationMember.findMany as jest.Mock).mockResolvedValueOnce(mockMemberships);
 
       const result = await organizationService.listUserOrganizations(userId);
 
@@ -240,7 +241,7 @@ describe("Users Service - Organization Management (PostgreSQL + Prisma Architect
     });
 
     it("should return empty array if user has no organizations", async () => {
-      mockPrisma.prisma.organization.findMany.mockResolvedValueOnce([]);
+      (mockPrisma.organizationMember.findMany as jest.Mock).mockResolvedValueOnce([]);
 
       const result = await organizationService.listUserOrganizations(userId);
 
@@ -257,22 +258,32 @@ describe("Users Service - Organization Management (PostgreSQL + Prisma Architect
       const mockMembers = [
         {
           id: "member-1",
-          user_id: "user-1",
-          organization_id: "org-123",
+          userId: "user-1",
+          organizationId: "org-123",
           role: "owner",
-          joined_at: "2024-01-01T00:00:00Z",
+          joinedAt: "2024-01-01T00:00:00Z",
+          user: {
+            id: "user-1",
+            email: "user1@example.com",
+            fullName: "User One",
+          },
         },
         {
           id: "member-2",
-          user_id: "user-2",
-          organization_id: "org-123",
+          userId: "user-2",
+          organizationId: "org-123",
           role: "admin",
-          joined_at: "2024-01-02T00:00:00Z",
+          joinedAt: "2024-01-02T00:00:00Z",
+          user: {
+            id: "user-2",
+            email: "user2@example.com",
+            fullName: "User Two",
+          },
         },
       ];
 
-      mockPrisma.prisma.organization.findUnique.mockResolvedValueOnce(mockMembership);
-      mockPrisma.prisma.organizationMember.findMany.mockResolvedValueOnce(mockMembers);
+      (mockPrisma.organizationMember.findFirst as jest.Mock).mockResolvedValueOnce(mockMembership);
+      (mockPrisma.organizationMember.findMany as jest.Mock).mockResolvedValueOnce(mockMembers);
 
       const result = await organizationService.listOrganizationMembers(organizationId, userId);
 
@@ -282,7 +293,7 @@ describe("Users Service - Organization Management (PostgreSQL + Prisma Architect
     });
 
     it("should throw unauthorized error if user is not a member", async () => {
-      mockPrisma.prisma.organization.findUnique.mockResolvedValueOnce(null);
+      (mockPrisma.organizationMember.findFirst as jest.Mock).mockResolvedValueOnce(null);
 
       await expect(
         organizationService.listOrganizationMembers(organizationId, userId)
@@ -298,15 +309,16 @@ describe("Users Service - Organization Management (PostgreSQL + Prisma Architect
 
     it("should update member role successfully", async () => {
       const mockUserMembership = { role: "owner" };
-      const mockTargetMember = { role: "member", user_id: "user-456" };
+      const mockTargetMember = { role: "member", userId: "user-456" };
 
-      mockPrisma.prisma.organization.findUnique.mockResolvedValueOnce(mockUserMembership)
+      (mockPrisma.organizationMember.findFirst as jest.Mock)
+        .mockResolvedValueOnce(mockUserMembership)
         .mockResolvedValueOnce(mockTargetMember);
-      mockPrisma.prisma.organizationMember.update.mockResolvedValueOnce({ id: 1 });
+      (mockPrisma.organizationMember.update as jest.Mock).mockResolvedValueOnce({ id: 1 });
 
       await organizationService.updateMemberRole(organizationId, memberId, newRole, userId);
 
-      expect(mockPrisma.prisma.organizationMember.update).toHaveBeenCalledWith({
+      expect(mockPrisma.organizationMember.update).toHaveBeenCalledWith({
         where: {
           organizationId_userId: {
             organizationId: organizationId,
@@ -321,7 +333,7 @@ describe("Users Service - Organization Management (PostgreSQL + Prisma Architect
 
     it("should throw unauthorized error if user is not admin or owner", async () => {
       const mockUserMembership = { role: "member" };
-      mockPrisma.prisma.organization.findUnique.mockResolvedValueOnce(mockUserMembership);
+      (mockPrisma.organizationMember.findFirst as jest.Mock).mockResolvedValueOnce(mockUserMembership);
 
       await expect(
         organizationService.updateMemberRole(organizationId, memberId, newRole, userId)
@@ -330,7 +342,8 @@ describe("Users Service - Organization Management (PostgreSQL + Prisma Architect
 
     it("should throw error if target member not found", async () => {
       const mockUserMembership = { role: "owner" };
-      mockPrisma.prisma.organization.findUnique.mockResolvedValueOnce(mockUserMembership)
+      (mockPrisma.organizationMember.findFirst as jest.Mock)
+        .mockResolvedValueOnce(mockUserMembership)
         .mockResolvedValueOnce(null);
 
       await expect(
@@ -340,9 +353,10 @@ describe("Users Service - Organization Management (PostgreSQL + Prisma Architect
 
     it("should throw error if non-owner tries to change owner role", async () => {
       const mockUserMembership = { role: "admin" };
-      const mockTargetMember = { role: "owner", user_id: "user-456" };
+      const mockTargetMember = { role: "owner", userId: "user-456" };
 
-      mockPrisma.prisma.organization.findUnique.mockResolvedValueOnce(mockUserMembership)
+      (mockPrisma.organizationMember.findFirst as jest.Mock)
+        .mockResolvedValueOnce(mockUserMembership)
         .mockResolvedValueOnce(mockTargetMember);
 
       await expect(
@@ -360,13 +374,14 @@ describe("Users Service - Organization Management (PostgreSQL + Prisma Architect
       const mockUserMembership = { role: "owner" };
       const mockTargetMember = { role: "member" };
 
-      mockPrisma.prisma.organization.findUnique.mockResolvedValueOnce(mockUserMembership)
+      (mockPrisma.organizationMember.findFirst as jest.Mock)
+        .mockResolvedValueOnce(mockUserMembership)
         .mockResolvedValueOnce(mockTargetMember);
-      mockPrisma.prisma.organizationMember.delete.mockResolvedValueOnce({ id: 1 });
+      (mockPrisma.organizationMember.delete as jest.Mock).mockResolvedValueOnce({ id: 1 });
 
       await organizationService.removeMember(organizationId, memberId, userId);
 
-      expect(mockPrisma.prisma.organizationMember.delete).toHaveBeenCalledWith({
+      expect(mockPrisma.organizationMember.delete).toHaveBeenCalledWith({
         where: {
           organizationId_userId: {
             organizationId: organizationId,
@@ -378,7 +393,7 @@ describe("Users Service - Organization Management (PostgreSQL + Prisma Architect
 
     it("should throw unauthorized error if user is not admin or owner", async () => {
       const mockUserMembership = { role: "member" };
-      mockPrisma.prisma.organization.findUnique.mockResolvedValueOnce(mockUserMembership);
+      (mockPrisma.organizationMember.findFirst as jest.Mock).mockResolvedValueOnce(mockUserMembership);
 
       await expect(
         organizationService.removeMember(organizationId, memberId, userId)
@@ -387,7 +402,8 @@ describe("Users Service - Organization Management (PostgreSQL + Prisma Architect
 
     it("should throw error if target member not found", async () => {
       const mockUserMembership = { role: "owner" };
-      mockPrisma.prisma.organization.findUnique.mockResolvedValueOnce(mockUserMembership)
+      (mockPrisma.organizationMember.findFirst as jest.Mock)
+        .mockResolvedValueOnce(mockUserMembership)
         .mockResolvedValueOnce(null);
 
       await expect(
@@ -399,7 +415,8 @@ describe("Users Service - Organization Management (PostgreSQL + Prisma Architect
       const mockUserMembership = { role: "admin" };
       const mockTargetMember = { role: "owner" };
 
-      mockPrisma.prisma.organization.findUnique.mockResolvedValueOnce(mockUserMembership)
+      (mockPrisma.organizationMember.findFirst as jest.Mock)
+        .mockResolvedValueOnce(mockUserMembership)
         .mockResolvedValueOnce(mockTargetMember);
 
       await expect(

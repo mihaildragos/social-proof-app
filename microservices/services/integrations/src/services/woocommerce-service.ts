@@ -1,6 +1,6 @@
 import { EventEmitter } from "events";
 import axios, { AxiosInstance } from "axios";
-import crypto from "crypto";
+import * as crypto from "crypto";
 
 export interface WooCommerceConfig {
   storeUrl: string;

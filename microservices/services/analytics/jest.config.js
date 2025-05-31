@@ -12,15 +12,16 @@ module.exports = {
   testTimeout: 10000,
   clearMocks: true,
   restoreMocks: true,
-  globals: {
-    "ts-jest": {
+  transform: {
+    "^.+\\.ts$": ["ts-jest", {
       tsconfig: {
         strict: false,
         noImplicitAny: false,
-        allowJs: true,
-        esModuleInterop: true,
-        skipLibCheck: true,
+        noImplicitReturns: false,
+        strictNullChecks: false,
+        strictFunctionTypes: false,
+        types: ["node", "jest"],
       },
-    },
+    }],
   },
 };

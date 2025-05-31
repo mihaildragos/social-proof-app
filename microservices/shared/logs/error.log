@@ -14,3 +14,5 @@
 {"error":"Cannot read properties of null (reading 'exp')","level":"error","message":"Failed to refresh token","service":"auth-middleware","timestamp":"2025-05-28T22:14:00.378Z"}
 {"error":"Cannot read properties of null (reading 'exp')","level":"error","message":"Failed to refresh token","service":"auth-middleware","timestamp":"2025-05-28T22:14:16.226Z"}
 {"error":"Cannot read properties of null (reading 'exp')","level":"error","message":"Failed to refresh token","service":"auth-middleware","timestamp":"2025-05-28T22:55:24.004Z"}
+{"error":"Cannot read properties of null (reading 'exp')","level":"error","message":"Failed to refresh token","service":"auth-middleware","timestamp":"2025-05-31T10:47:56.495Z"}
+{"error":"Cannot read properties of null (reading 'exp')","level":"error","message":"Failed to refresh token","service":"auth-middleware","timestamp":"2025-05-31T11:27:04.038Z"}

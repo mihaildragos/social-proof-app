@@ -398,3 +398,53 @@
 {"level":"warn","message":"No service found in request for scope check","requiredScope":"user:read","service":"service-auth","timestamp":"2025-05-28T22:55:24.002Z"}
 {"level":"warn","message":"Service lacks any of the required scopes","path":"/test","requiredScopes":["billing:read","integration:webhook"],"service":"service-auth","serviceName":"notifications","serviceScope":["notification:read","user:read","stream:publish"],"timestamp":"2025-05-28T22:55:24.003Z"}
 {"level":"warn","message":"No service found in request for scope check","requiredScopes":["user:read"],"service":"service-auth","timestamp":"2025-05-28T22:55:24.003Z"}
+{"level":"warn","message":"Invalid role provided","role":"invalid-role","service":"rbac","timestamp":"2025-05-31T10:47:56.486Z"}
+{"level":"warn","message":"Invalid role provided","role":"ADMIN","service":"rbac","timestamp":"2025-05-31T10:47:56.487Z"}
+{"level":"warn","message":"Invalid role provided","role":"invalid-role","service":"rbac","timestamp":"2025-05-31T10:47:56.488Z"}
+{"level":"warn","message":"User lacks required permission","path":"/test","permission":"user:delete","role":"designer","service":"rbac","timestamp":"2025-05-31T10:47:56.489Z","userId":"user123"}
+{"level":"warn","message":"No user found in request for permission check","permission":"user:read","service":"rbac","timestamp":"2025-05-31T10:47:56.490Z"}
+{"level":"warn","message":"User lacks required role","path":"/test","requiredRole":"admin","service":"rbac","timestamp":"2025-05-31T10:47:56.490Z","userId":"user123","userRole":"designer"}
+{"level":"warn","message":"No user found in request for role check","role":"admin","service":"rbac","timestamp":"2025-05-31T10:47:56.490Z"}
+{"level":"warn","message":"User lacks any of the required permissions","path":"/test","permissions":["user:delete","billing:update"],"role":"designer","service":"rbac","timestamp":"2025-05-31T10:47:56.491Z","userId":"user123"}
+{"level":"warn","message":"No user found in request for permission check","permissions":["user:read"],"service":"rbac","timestamp":"2025-05-31T10:47:56.491Z"}
+{"level":"warn","message":"No authorization header provided","path":"/test","service":"auth-middleware","timestamp":"2025-05-31T10:47:56.488Z"}
+{"level":"warn","message":"Empty authorization header provided","path":"/test","service":"auth-middleware","timestamp":"2025-05-31T10:47:56.489Z"}
+{"error":"invalid signature","level":"warn","message":"Invalid JWT token","path":"/test","service":"auth-middleware","timestamp":"2025-05-31T10:47:56.492Z"}
+{"level":"warn","message":"JWT token expired","path":"/test","service":"auth-middleware","timestamp":"2025-05-31T10:47:56.493Z"}
+{"error":"invalid token","level":"warn","message":"Invalid JWT token","path":"/test","service":"auth-middleware","timestamp":"2025-05-31T10:47:56.493Z"}
+{"error":"Cannot read properties of null (reading 'exp')","level":"error","message":"Failed to refresh token","service":"auth-middleware","timestamp":"2025-05-31T10:47:56.495Z"}
+{"error":"jwt malformed","level":"warn","message":"Invalid service token","service":"service-auth","timestamp":"2025-05-31T10:47:56.491Z"}
+{"error":"invalid signature","level":"warn","message":"Invalid service token","service":"service-auth","timestamp":"2025-05-31T10:47:56.493Z"}
+{"error":"jwt expired","level":"warn","message":"Invalid service token","service":"service-auth","timestamp":"2025-05-31T10:47:56.494Z"}
+{"level":"warn","message":"No service auth header provided","path":"/test","service":"service-auth","timestamp":"2025-05-31T10:47:56.497Z"}
+{"level":"warn","message":"No service auth header provided","path":"/test","service":"service-auth","timestamp":"2025-05-31T10:47:56.497Z"}
+{"error":"jwt malformed","level":"warn","message":"Invalid service token","service":"service-auth","timestamp":"2025-05-31T10:47:56.497Z"}
+{"level":"warn","message":"Service lacks required scope","path":"/test","requiredScope":"billing:read","service":"service-auth","serviceName":"users","serviceScope":["user:read","user:write","analytics:write"],"timestamp":"2025-05-31T10:47:56.498Z"}
+{"level":"warn","message":"No service found in request for scope check","requiredScope":"user:read","service":"service-auth","timestamp":"2025-05-31T10:47:56.498Z"}
+{"level":"warn","message":"Service lacks any of the required scopes","path":"/test","requiredScopes":["billing:read","integration:webhook"],"service":"service-auth","serviceName":"notifications","serviceScope":["notification:read","user:read","stream:publish"],"timestamp":"2025-05-31T10:47:56.498Z"}
+{"level":"warn","message":"No service found in request for scope check","requiredScopes":["user:read"],"service":"service-auth","timestamp":"2025-05-31T10:47:56.499Z"}
+{"level":"warn","message":"Invalid role provided","role":"invalid-role","service":"rbac","timestamp":"2025-05-31T11:27:04.025Z"}
+{"level":"warn","message":"Invalid role provided","role":"ADMIN","service":"rbac","timestamp":"2025-05-31T11:27:04.027Z"}
+{"level":"warn","message":"Invalid role provided","role":"invalid-role","service":"rbac","timestamp":"2025-05-31T11:27:04.027Z"}
+{"level":"warn","message":"User lacks required permission","path":"/test","permission":"user:delete","role":"designer","service":"rbac","timestamp":"2025-05-31T11:27:04.030Z","userId":"user123"}
+{"level":"warn","message":"No user found in request for permission check","permission":"user:read","service":"rbac","timestamp":"2025-05-31T11:27:04.031Z"}
+{"level":"warn","message":"User lacks required role","path":"/test","requiredRole":"admin","service":"rbac","timestamp":"2025-05-31T11:27:04.031Z","userId":"user123","userRole":"designer"}
+{"level":"warn","message":"No user found in request for role check","role":"admin","service":"rbac","timestamp":"2025-05-31T11:27:04.031Z"}
+{"level":"warn","message":"User lacks any of the required permissions","path":"/test","permissions":["user:delete","billing:update"],"role":"designer","service":"rbac","timestamp":"2025-05-31T11:27:04.032Z","userId":"user123"}
+{"level":"warn","message":"No user found in request for permission check","permissions":["user:read"],"service":"rbac","timestamp":"2025-05-31T11:27:04.032Z"}
+{"level":"warn","message":"No authorization header provided","path":"/test","service":"auth-middleware","timestamp":"2025-05-31T11:27:04.028Z"}
+{"level":"warn","message":"Empty authorization header provided","path":"/test","service":"auth-middleware","timestamp":"2025-05-31T11:27:04.029Z"}
+{"error":"invalid signature","level":"warn","message":"Invalid JWT token","path":"/test","service":"auth-middleware","timestamp":"2025-05-31T11:27:04.032Z"}
+{"level":"warn","message":"JWT token expired","path":"/test","service":"auth-middleware","timestamp":"2025-05-31T11:27:04.035Z"}
+{"error":"invalid token","level":"warn","message":"Invalid JWT token","path":"/test","service":"auth-middleware","timestamp":"2025-05-31T11:27:04.036Z"}
+{"error":"Cannot read properties of null (reading 'exp')","level":"error","message":"Failed to refresh token","service":"auth-middleware","timestamp":"2025-05-31T11:27:04.038Z"}
+{"error":"jwt malformed","level":"warn","message":"Invalid service token","service":"service-auth","timestamp":"2025-05-31T11:27:04.028Z"}
+{"error":"invalid signature","level":"warn","message":"Invalid service token","service":"service-auth","timestamp":"2025-05-31T11:27:04.031Z"}
+{"error":"jwt expired","level":"warn","message":"Invalid service token","service":"service-auth","timestamp":"2025-05-31T11:27:04.032Z"}
+{"level":"warn","message":"No service auth header provided","path":"/test","service":"service-auth","timestamp":"2025-05-31T11:27:04.036Z"}
+{"level":"warn","message":"No service auth header provided","path":"/test","service":"service-auth","timestamp":"2025-05-31T11:27:04.037Z"}
+{"error":"jwt malformed","level":"warn","message":"Invalid service token","service":"service-auth","timestamp":"2025-05-31T11:27:04.037Z"}
+{"level":"warn","message":"Service lacks required scope","path":"/test","requiredScope":"billing:read","service":"service-auth","serviceName":"users","serviceScope":["user:read","user:write","analytics:write"],"timestamp":"2025-05-31T11:27:04.038Z"}
+{"level":"warn","message":"No service found in request for scope check","requiredScope":"user:read","service":"service-auth","timestamp":"2025-05-31T11:27:04.038Z"}
+{"level":"warn","message":"Service lacks any of the required scopes","path":"/test","requiredScopes":["billing:read","integration:webhook"],"service":"service-auth","serviceName":"notifications","serviceScope":["notification:read","user:read","stream:publish"],"timestamp":"2025-05-31T11:27:04.038Z"}
+{"level":"warn","message":"No service found in request for scope check","requiredScopes":["user:read"],"service":"service-auth","timestamp":"2025-05-31T11:27:04.039Z"}

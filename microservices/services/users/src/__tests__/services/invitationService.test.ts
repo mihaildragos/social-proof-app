@@ -15,6 +15,9 @@ jest.mock("../../lib/prisma", () => ({
       findFirst: jest.fn(),
       create: jest.fn(),
     },
+    organization: {
+      findFirst: jest.fn(),
+    },
     organizationMember: {
       findFirst: jest.fn(),
       create: jest.fn(),
@@ -45,13 +48,13 @@ describe("Users Service - Invitation Management (PostgreSQL + Prisma Architectur
       const mockInvitation = {
         id: "invitation-123",
         email: "test@example.com",
-        organization_id: "org-123",
+        organizationId: "org-123",
         role: "admin",
         token: "mock-token-123",
         status: "pending",
-        invited_by: "user-123",
-        created_at: "2024-01-01T00:00:00Z",
-        expires_at: "2024-01-08T00:00:00Z",
+        invitedBy: "user-123",
+        createdAt: "2024-01-01T00:00:00Z",
+        expiresAt: "2024-01-08T00:00:00Z",
       };
       const mockOrganization = {
         id: "org-123",
@@ -59,8 +62,10 @@ describe("Users Service - Invitation Management (PostgreSQL + Prisma Architectur
         slug: "test-org",
       };
 
-      mockPrisma.invitation.create.mockResolvedValueOnce(mockInvitation);
       mockPrisma.organizationMember.findFirst.mockResolvedValueOnce(mockMembership);
+      mockPrisma.user.findFirst.mockResolvedValueOnce(null);
+      mockPrisma.invitation.findFirst.mockResolvedValueOnce(null);
+      mockPrisma.invitation.create.mockResolvedValueOnce(mockInvitation);
       mockPrisma.organization.findFirst.mockResolvedValueOnce(mockOrganization);
 
       const result = await invitationService.createInvitation(mockParams);
@@ -95,7 +100,8 @@ describe("Users Service - Invitation Management (PostgreSQL + Prisma Architectur
       const mockMembership = { role: "owner" };
       const mockExistingUser = { id: "existing-user" };
 
-      mockPrisma.organizationMember.findFirst.mockResolvedValueOnce(mockMembership).mockResolvedValueOnce(mockExistingUser);
+      mockPrisma.organizationMember.findFirst.mockResolvedValueOnce(mockMembership);
+      mockPrisma.user.findFirst.mockResolvedValueOnce(mockExistingUser);
 
       await expect(invitationService.createInvitation(mockParams)).rejects.toThrow(
         "User is already a member of this organization"
@@ -106,9 +112,9 @@ describe("Users Service - Invitation Management (PostgreSQL + Prisma Architectur
       const mockMembership = { role: "owner" };
       const mockExistingInvitation = { id: "existing-invitation" };
 
-      mockPrisma.organizationMember.findFirst.mockResolvedValueOnce(mockMembership)
-        .mockResolvedValueOnce(null) // No existing user
-        .mockResolvedValueOnce(mockExistingInvitation);
+      mockPrisma.organizationMember.findFirst.mockResolvedValueOnce(mockMembership);
+      mockPrisma.user.findFirst.mockResolvedValueOnce(null); // No existing user
+      mockPrisma.invitation.findFirst.mockResolvedValueOnce(mockExistingInvitation);
 
       await expect(invitationService.createInvitation(mockParams)).rejects.toThrow(
         "Invitation already sent to this email"
@@ -126,30 +132,34 @@ describe("Users Service - Invitation Management (PostgreSQL + Prisma Architectur
         {
           id: "invitation-1",
           email: "user1@example.com",
-          organization_id: "org-123",
+          organizationId: "org-123",
           role: "admin",
           token: "token-1",
           status: "pending",
-          invited_by: "user-123",
-          created_at: "2024-01-01T00:00:00Z",
-          expires_at: "2024-01-08T00:00:00Z",
-          org_id: "org-123",
-          org_name: "Test Organization",
-          org_slug: "test-org",
+          invitedBy: "user-123",
+          createdAt: "2024-01-01T00:00:00Z",
+          expiresAt: "2024-01-08T00:00:00Z",
+          organization: {
+            id: "org-123",
+            name: "Test Organization",
+            slug: "test-org",
+          },
         },
         {
           id: "invitation-2",
           email: "user2@example.com",
-          organization_id: "org-123",
+          organizationId: "org-123",
           role: "member",
           token: "token-2",
           status: "accepted",
-          invited_by: "user-123",
-          created_at: "2024-01-02T00:00:00Z",
-          expires_at: "2024-01-09T00:00:00Z",
-          org_id: "org-123",
-          org_name: "Test Organization",
-          org_slug: "test-org",
+          invitedBy: "user-123",
+          createdAt: "2024-01-02T00:00:00Z",
+          expiresAt: "2024-01-09T00:00:00Z",
+          organization: {
+            id: "org-123",
+            name: "Test Organization",
+            slug: "test-org",
+          },
         },
       ];
 
@@ -181,16 +191,18 @@ describe("Users Service - Invitation Management (PostgreSQL + Prisma Architectur
       const mockInvitation = {
         id: "invitation-123",
         email: "test@example.com",
-        organization_id: "org-123",
+        organizationId: "org-123",
         role: "admin",
         token: "valid-token-123",
         status: "pending",
-        invited_by: "user-123",
-        created_at: "2024-01-01T00:00:00Z",
-        expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Future date
-        org_id: "org-123",
-        org_name: "Test Organization",
-        org_slug: "test-org",
+        invitedBy: "user-123",
+        createdAt: "2024-01-01T00:00:00Z",
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Future date
+        organization: {
+          id: "org-123",
+          name: "Test Organization",
+          slug: "test-org",
+        },
       };
 
       mockPrisma.invitation.findFirst.mockResolvedValueOnce(mockInvitation);
@@ -228,7 +240,7 @@ describe("Users Service - Invitation Management (PostgreSQL + Prisma Architectur
       const mockInvitation = {
         id: "invitation-123",
         status: "pending",
-        expires_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // Past date
+        expiresAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // Past date
       };
 
       mockPrisma.invitation.findFirst.mockResolvedValueOnce(mockInvitation);
@@ -282,6 +294,7 @@ describe("Users Service - Invitation Management (PostgreSQL + Prisma Architectur
           userId: "existing-user-123",
           organizationId: "org-123",
           role: "admin",
+          joinedAt: expect.any(Date),
         },
       });
     });
@@ -348,12 +361,12 @@ describe("Users Service - Invitation Management (PostgreSQL + Prisma Architectur
 
     it("should cancel invitation successfully", async () => {
       const mockInvitation = {
-        organization_id: "org-123",
+        organizationId: "org-123",
         status: "pending",
       };
       const mockMembership = { role: "admin" };
 
-      mockPrisma.invitation.findFirst.mockResolvedValueOnce(mockInvitation).mockResolvedValueOnce(mockMembership);
+      mockPrisma.invitation.findFirst.mockResolvedValueOnce(mockInvitation);
       mockPrisma.organizationMember.findFirst.mockResolvedValueOnce(mockMembership);
       mockPrisma.invitation.update.mockResolvedValueOnce(1);
 
@@ -361,7 +374,7 @@ describe("Users Service - Invitation Management (PostgreSQL + Prisma Architectur
 
       expect(mockPrisma.invitation.update).toHaveBeenCalledWith({
         where: { id: invitationId },
-        data: { status: "cancelled", cancelled_at: expect.any(Date) },
+        data: { status: "cancelled", cancelledAt: expect.any(Date) },
       });
     });
 
@@ -375,7 +388,7 @@ describe("Users Service - Invitation Management (PostgreSQL + Prisma Architectur
 
     it("should throw error if invitation is not pending", async () => {
       const mockInvitation = {
-        organization_id: "org-123",
+        organizationId: "org-123",
         status: "accepted",
       };
 
@@ -388,12 +401,13 @@ describe("Users Service - Invitation Management (PostgreSQL + Prisma Architectur
 
     it("should throw unauthorized error if user cannot cancel", async () => {
       const mockInvitation = {
-        organization_id: "org-123",
+        organizationId: "org-123",
         status: "pending",
       };
       const mockMembership = { role: "member" };
 
-      mockPrisma.invitation.findFirst.mockResolvedValueOnce(mockInvitation).mockResolvedValueOnce(mockMembership);
+      mockPrisma.invitation.findFirst.mockResolvedValueOnce(mockInvitation);
+      mockPrisma.organizationMember.findFirst.mockResolvedValueOnce(mockMembership);
 
       await expect(invitationService.cancelInvitation(invitationId, userId)).rejects.toThrow(
         "Not authorized to cancel invitations"
@@ -407,20 +421,21 @@ describe("Users Service - Invitation Management (PostgreSQL + Prisma Architectur
 
     it("should resend invitation successfully", async () => {
       const mockInvitation = {
-        organization_id: "org-123",
+        organizationId: "org-123",
         status: "pending",
         email: "test@example.com",
       };
       const mockMembership = { role: "admin" };
 
-      mockPrisma.invitation.findFirst.mockResolvedValueOnce(mockInvitation).mockResolvedValueOnce(mockMembership);
+      mockPrisma.invitation.findFirst.mockResolvedValueOnce(mockInvitation);
+      mockPrisma.organizationMember.findFirst.mockResolvedValueOnce(mockMembership);
       mockPrisma.invitation.update.mockResolvedValueOnce(1);
 
       await invitationService.resendInvitation(invitationId, userId);
 
       expect(mockPrisma.invitation.update).toHaveBeenCalledWith({
         where: { id: invitationId },
-        data: { expires_at: expect.any(Date), updated_at: expect.any(Date) },
+        data: { expiresAt: expect.any(String) },
       });
     });
 
@@ -434,7 +449,7 @@ describe("Users Service - Invitation Management (PostgreSQL + Prisma Architectur
 
     it("should throw error if invitation is not pending", async () => {
       const mockInvitation = {
-        organization_id: "org-123",
+        organizationId: "org-123",
         status: "accepted",
         email: "test@example.com",
       };
@@ -448,13 +463,14 @@ describe("Users Service - Invitation Management (PostgreSQL + Prisma Architectur
 
     it("should throw unauthorized error if user cannot resend", async () => {
       const mockInvitation = {
-        organization_id: "org-123",
+        organizationId: "org-123",
         status: "pending",
         email: "test@example.com",
       };
       const mockMembership = { role: "member" };
 
-      mockPrisma.invitation.findFirst.mockResolvedValueOnce(mockInvitation).mockResolvedValueOnce(mockMembership);
+      mockPrisma.invitation.findFirst.mockResolvedValueOnce(mockInvitation);
+      mockPrisma.organizationMember.findFirst.mockResolvedValueOnce(mockMembership);
 
       await expect(invitationService.resendInvitation(invitationId, userId)).rejects.toThrow(
         "Not authorized to resend invitations"

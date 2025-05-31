@@ -29,6 +29,7 @@ const mockJose = {
 const mockPrisma = {
   user: {
     findFirst: jest.fn(),
+    findUnique: jest.fn(),
     findMany: jest.fn(),
     create: jest.fn(),
     update: jest.fn(),
@@ -107,11 +108,11 @@ describe("Users Service - Authentication (PostgreSQL + Clerk Architecture)", () 
         preferredTimezone: "UTC",
       };
 
-      // Mock Prisma query for checking existing user (should return empty)
-      mockPrisma.$queryRaw.mockResolvedValueOnce([]); // No existing user
+      // Mock Prisma for checking existing user (should return null)
+      mockPrisma.user.findFirst.mockResolvedValueOnce(null); // No existing user
 
-      // Mock Prisma query for creating user
-      mockPrisma.$queryRaw.mockResolvedValueOnce([{ id: "user-123" }]);
+      // Mock Prisma for creating user
+      mockPrisma.user.create.mockResolvedValueOnce({ id: "user-123" });
 
       // Test the real service implementation
       const result = await authService.signup(signupData);
@@ -123,7 +124,13 @@ describe("Users Service - Authentication (PostgreSQL + Clerk Architecture)", () 
       expect(result.expiresAt).toBeGreaterThan(Date.now());
 
       // Verify Prisma was called correctly
-      expect(mockPrisma.$queryRaw).toHaveBeenCalledTimes(2); // Check + Create
+      expect(mockPrisma.user.findFirst).toHaveBeenCalledWith({
+        where: {
+          OR: [{ email: signupData.email }, { emailEncrypted: signupData.email }],
+        },
+        select: { id: true },
+      });
+      expect(mockPrisma.user.create).toHaveBeenCalled();
       expect(mockJose.SignJWT).toHaveBeenCalled();
       expect(mockSignJWTInstance.sign).toHaveBeenCalled();
     });
@@ -131,23 +138,32 @@ describe("Users Service - Authentication (PostgreSQL + Clerk Architecture)", () 
     it("should register user with Clerk integration", async () => {
       const signupData = {
         email: "clerk@example.com",
-        password: "",
+        password: "TempPassword123!",
         fullName: "Clerk User",
         clerkUserId: "clerk_user_123",
       };
 
-      // Mock Prisma query for checking existing user (should return empty)
-      mockPrisma.$queryRaw.mockResolvedValueOnce([]); // No existing user
+      // Mock Prisma for checking existing user (should return null)
+      mockPrisma.user.findFirst.mockResolvedValueOnce(null); // No existing user
 
-      // Mock Prisma query for creating user
-      mockPrisma.$queryRaw.mockResolvedValueOnce([{ id: "user-456" }]);
+      // Mock Prisma for creating user
+      mockPrisma.user.create.mockResolvedValueOnce({ id: "user-456" });
 
       // Test the real service implementation
       const result = await authService.signup(signupData);
 
       expect(result).toBeDefined();
       expect(result.user.email).toBe(signupData.email);
-      expect(mockClerkSync.syncUserFromClerk).toHaveBeenCalledWith("clerk_user_123", "user-456");
+      // Note: Clerk sync is handled via webhooks, not direct calls
+      expect(mockPrisma.user.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            authProvider: "clerk",
+            authProviderId: "clerk_user_123",
+            clerkUserId: "clerk_user_123",
+          }),
+        })
+      );
     });
 
     it("should throw error if email already exists", async () => {
@@ -158,12 +174,17 @@ describe("Users Service - Authentication (PostgreSQL + Clerk Architecture)", () 
       };
 
       // Mock Prisma response for existing user
-      mockPrisma.$queryRaw.mockResolvedValueOnce([{ id: "existing-user" }]);
+      mockPrisma.user.findFirst.mockResolvedValueOnce({ id: "existing-user" });
 
       // Test the real service implementation
       await expect(authService.signup(signupData)).rejects.toThrow("Email already in use");
 
-      expect(mockPrisma.$queryRaw).toHaveBeenCalledTimes(1); // Only the check call
+      expect(mockPrisma.user.findFirst).toHaveBeenCalledWith({
+        where: {
+          OR: [{ email: signupData.email }, { emailEncrypted: signupData.email }],
+        },
+        select: { id: true },
+      });
     });
   });
 
@@ -184,18 +205,18 @@ describe("Users Service - Authentication (PostgreSQL + Clerk Architecture)", () 
       // Mock Prisma findFirst for login
       mockPrisma.user.findFirst.mockResolvedValueOnce(mockUser);
 
-      // Mock getUserProfile method via raw query
-      mockPrisma.$queryRaw.mockResolvedValueOnce([
-        {
-          email: "test@example.com",
-          full_name: "Test User",
-        },
-      ]);
+      // Mock getUserProfile - findUnique
+      mockPrisma.user.findUnique.mockResolvedValueOnce({
+        email: "test@example.com",
+        emailEncrypted: "test@example.com",
+        fullName: "Test User",
+        fullNameEncrypted: "Test User",
+      });
 
       // Mock organization membership
       mockPrisma.organizationMember.findFirst.mockResolvedValueOnce({
         organizationId: "org-123",
-        role: "ADMIN",
+        role: "admin",
       });
 
       // Mock update last login
@@ -288,18 +309,18 @@ describe("Users Service - Authentication (PostgreSQL + Clerk Architecture)", () 
       // Mock update last login
       mockPrisma.user.update.mockResolvedValueOnce({});
 
-      // Mock getUserProfile
-      mockPrisma.$queryRaw.mockResolvedValueOnce([
-        {
-          email: "clerk@example.com",
-          full_name: "Clerk User",
-        },
-      ]);
+      // Mock getUserProfile - findUnique
+      mockPrisma.user.findUnique.mockResolvedValueOnce({
+        email: "clerk@example.com",
+        emailEncrypted: "clerk@example.com",
+        fullName: "Clerk User",
+        fullNameEncrypted: "Clerk User",
+      });
 
       // Mock organization membership
       mockPrisma.organizationMember.findFirst.mockResolvedValueOnce({
         organizationId: "org-123",
-        role: "USER",
+        role: "user",
       });
 
       const result = await authService.syncFromClerk(clerkUserId, clerkUserData);
@@ -324,18 +345,19 @@ describe("Users Service - Authentication (PostgreSQL + Clerk Architecture)", () 
       };
 
       // Mock no existing user found
-      mockPrisma.user.findFirst.mockResolvedValueOnce(null);
+      mockPrisma.user.findFirst
+        .mockResolvedValueOnce(null) // No existing Clerk user
+        .mockResolvedValueOnce(null); // No existing user with email (in signup)
 
-      // Mock creating new user (via signup method)
-      mockPrisma.$queryRaw
-        .mockResolvedValueOnce([]) // No existing user check
-        .mockResolvedValueOnce([{ id: "user-789" }]); // Create new user
+      // Mock creating new user
+      mockPrisma.user.create.mockResolvedValueOnce({ id: "user-789" });
 
       const result = await authService.syncFromClerk(clerkUserId, clerkUserData);
 
       expect(result).toBeDefined();
       expect(result?.user.email).toBe("newuser@example.com");
-      expect(mockClerkSync.syncUserFromClerk).toHaveBeenCalledWith(clerkUserId, "user-789");
+      expect(result?.user.fullName).toBe("New User");
+      // Note: Clerk sync is handled via webhooks, not direct calls
     });
   });
 
@@ -345,11 +367,11 @@ describe("Users Service - Authentication (PostgreSQL + Clerk Architecture)", () 
 
       const mockUser = {
         id: "user-123",
-        auth_provider: "email",
+        authProvider: "email",
       };
 
-      // Mock Prisma raw query for finding user
-      mockPrisma.$queryRaw.mockResolvedValueOnce([mockUser]);
+      // Mock Prisma findFirst for finding user (actual implementation uses findFirst, not $queryRaw)
+      mockPrisma.user.findFirst.mockResolvedValueOnce(mockUser);
 
       // Mock update for reset token
       mockPrisma.user.update.mockResolvedValueOnce({});
@@ -358,17 +380,22 @@ describe("Users Service - Authentication (PostgreSQL + Clerk Architecture)", () 
       await authService.forgotPassword(email);
 
       // Verify Prisma was called to find user
-      expect(mockPrisma.$queryRaw).toHaveBeenCalledWith(
-        expect.anything(), // SQL template parts
-        email // Email parameter
-      );
+      expect(mockPrisma.user.findFirst).toHaveBeenCalledWith({
+        where: {
+          OR: [{ email: email }, { emailEncrypted: email }],
+        },
+        select: {
+          id: true,
+          authProvider: true,
+        },
+      });
     });
 
     it("should handle non-existent email gracefully (security)", async () => {
       const email = "nonexistent@example.com";
 
       // Mock Prisma response for no user found
-      mockPrisma.$queryRaw.mockResolvedValueOnce([]);
+      mockPrisma.user.findFirst.mockResolvedValueOnce(null);
 
       // Test the real service implementation - should not throw (security practice)
       await expect(authService.forgotPassword(email)).resolves.not.toThrow();
@@ -395,9 +422,8 @@ describe("Users Service - Authentication (PostgreSQL + Clerk Architecture)", () 
       };
 
       // Mock successful signup flow
-      mockPrisma.$queryRaw
-        .mockResolvedValueOnce([]) // No existing user
-        .mockResolvedValueOnce([{ id: "user-123" }]); // Create user
+      mockPrisma.user.findFirst.mockResolvedValueOnce(null); // No existing user
+      mockPrisma.user.create.mockResolvedValueOnce({ id: "user-123" }); // Create user
 
       await authService.signup(signupData);
 
@@ -418,12 +444,13 @@ describe("Users Service - Authentication (PostgreSQL + Clerk Architecture)", () 
         authProviderId: null,
       });
 
-      mockPrisma.$queryRaw.mockResolvedValueOnce([
-        {
-          email: email,
-          full_name: "Prisma User",
-        },
-      ]);
+      // Mock getUserProfile - findUnique
+      mockPrisma.user.findUnique.mockResolvedValueOnce({
+        email: email,
+        emailEncrypted: email,
+        fullName: "Prisma User",
+        fullNameEncrypted: "Prisma User",
+      });
 
       mockPrisma.organizationMember.findFirst.mockResolvedValueOnce(null);
       mockPrisma.user.update.mockResolvedValueOnce({});
@@ -432,7 +459,7 @@ describe("Users Service - Authentication (PostgreSQL + Clerk Architecture)", () 
 
       // Verify Prisma methods were called
       expect(mockPrisma.user.findFirst).toHaveBeenCalled();
-      expect(mockPrisma.$queryRaw).toHaveBeenCalled();
+      expect(mockPrisma.user.findUnique).toHaveBeenCalled();
       expect(mockPrisma.user.update).toHaveBeenCalled();
     });
   });

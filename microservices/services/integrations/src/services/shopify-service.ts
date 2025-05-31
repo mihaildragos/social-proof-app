@@ -1,4 +1,4 @@
-import crypto from "crypto";
+import * as crypto from "crypto";
 import { ShopifyIntegration, ShopifyStore, ShopifyWebhook } from "../models/shopify";
 import { kafkaProducer } from "../utils/kafka";
 import { logger } from "@social-proof/shared";

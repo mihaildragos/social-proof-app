@@ -1,6 +1,6 @@
 import { Pool } from "pg";
 import { EventEmitter } from "events";
-import crypto from "crypto";
+import * as crypto from "crypto";
 import { IntegrationService } from "./integration-service";
 
 export interface WebhookEvent {

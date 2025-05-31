@@ -121,7 +121,7 @@ describe("AnalyticsService", () => {
       const cacheKey = `event_stats:${siteId}:${startDate.toISOString()}:${endDate.toISOString()}:${eventType || "all"}:${groupBy}`;
       const cached = await this.cacheService.get(cacheKey);
       if (cached) {
-        return JSON.parse(cached);
+        return JSON.parse(cached as string);
       }
 
       let query = `
@@ -144,7 +144,7 @@ describe("AnalyticsService", () => {
 
       query += " GROUP BY period, type ORDER BY period";
 
-      const results = await this.timescaleDB.query(query, params);
+      const results = (await this.timescaleDB.query(query, params)) as any;
 
       // Transform results
       const stats = results.reduce((acc: any, row: any) => {
@@ -211,7 +211,7 @@ describe("AnalyticsService", () => {
       `;
 
       const results = await this.timescaleDB.query(query, [siteId, startDate, endDate]);
-      const row = results[0];
+      const row = (results as any)[0];
 
       const funnel = funnelSteps.map((step, index) => ({
         step,
@@ -282,7 +282,7 @@ describe("AnalyticsService", () => {
       // Process cohort analysis
       const cohorts: Record<string, any> = {};
 
-      cohortResults.forEach((row: any) => {
+      (cohortResults as any).forEach((row: any) => {
         const cohortPeriod = row.cohort_period.toISOString();
         if (!cohorts[cohortPeriod]) {
           cohorts[cohortPeriod] = {
@@ -295,8 +295,8 @@ describe("AnalyticsService", () => {
       });
 
       // Calculate retention rates
-      activityResults.forEach((row: any) => {
-        const userCohort = cohortResults.find((c: any) => c.user_id === row.user_id);
+      (activityResults as any).forEach((row: any) => {
+        const userCohort = (cohortResults as any).find((c: any) => c.user_id === row.user_id);
         if (userCohort) {
           const cohortPeriod = userCohort.cohort_period.toISOString();
           const activityPeriod = row.activity_period;
@@ -339,7 +339,7 @@ describe("AnalyticsService", () => {
       const cacheKey = `dashboard_metrics:${siteId}:${startDate.toISOString()}:${endDate.toISOString()}`;
       const cached = await this.cacheService.get(cacheKey);
       if (cached) {
-        return JSON.parse(cached);
+        return JSON.parse(cached as string);
       }
 
       // Get key metrics in parallel
@@ -442,14 +442,14 @@ describe("AnalyticsService", () => {
       const query =
         "SELECT COUNT(*) as count FROM events WHERE site_id = $1 AND timestamp >= $2 AND timestamp <= $3";
       const results = await this.timescaleDB.query(query, [siteId, startDate, endDate]);
-      return parseInt(results[0].count) || 0;
+      return parseInt((results as any)[0].count) || 0;
     }
 
     private async getUniqueUsers(siteId: string, startDate: Date, endDate: Date): Promise<number> {
       const query =
         "SELECT COUNT(DISTINCT user_id) as count FROM events WHERE site_id = $1 AND user_id IS NOT NULL AND timestamp >= $2 AND timestamp <= $3";
       const results = await this.timescaleDB.query(query, [siteId, startDate, endDate]);
-      return parseInt(results[0].count) || 0;
+      return parseInt((results as any)[0].count) || 0;
     }
 
     private async getUniqueSessions(
@@ -460,7 +460,7 @@ describe("AnalyticsService", () => {
       const query =
         "SELECT COUNT(DISTINCT session_id) as count FROM events WHERE site_id = $1 AND session_id IS NOT NULL AND timestamp >= $2 AND timestamp <= $3";
       const results = await this.timescaleDB.query(query, [siteId, startDate, endDate]);
-      return parseInt(results[0].count) || 0;
+      return parseInt((results as any)[0].count) || 0;
     }
 
     private async getTopEvents(
@@ -471,7 +471,7 @@ describe("AnalyticsService", () => {
       const query =
         "SELECT type, COUNT(*) as count FROM events WHERE site_id = $1 AND timestamp >= $2 AND timestamp <= $3 GROUP BY type ORDER BY count DESC LIMIT 10";
       const results = await this.timescaleDB.query(query, [siteId, startDate, endDate]);
-      return results.map((row: any) => ({ type: row.type, count: parseInt(row.count) }));
+      return (results as any).map((row: any) => ({ type: row.type, count: parseInt(row.count) }));
     }
 
     private async getConversionRate(
@@ -487,7 +487,7 @@ describe("AnalyticsService", () => {
         WHERE site_id = $1 AND timestamp >= $2 AND timestamp <= $3
       `;
       const results = await this.timescaleDB.query(query, [siteId, startDate, endDate]);
-      const { displayed, conversions } = results[0];
+      const { displayed, conversions } = (results as any)[0];
       return displayed > 0 ? (conversions / displayed) * 100 : 0;
     }
 
@@ -535,9 +535,9 @@ describe("AnalyticsService", () => {
     };
 
     it("should track event successfully", async () => {
-      mockTimescaleDB.insert.mockResolvedValue(true);
-      mockClickHouse.insert.mockResolvedValue(true);
-      mockEventPublisher.publish.mockResolvedValue(true);
+      mockTimescaleDB.insert.mockResolvedValue(true as never);
+      mockClickHouse.insert.mockResolvedValue(true as never);
+      mockEventPublisher.publish.mockResolvedValue(true as never);
 
       const result = await analyticsService.trackEvent(validEventData);
 
@@ -592,9 +592,9 @@ describe("AnalyticsService", () => {
         siteId: "site-123",
       };
 
-      mockTimescaleDB.insert.mockResolvedValue(true);
-      mockClickHouse.insert.mockResolvedValue(true);
-      mockEventPublisher.publish.mockResolvedValue(true);
+      mockTimescaleDB.insert.mockResolvedValue(true as never);
+      mockClickHouse.insert.mockResolvedValue(true as never);
+      mockEventPublisher.publish.mockResolvedValue(true as never);
 
       const result = await analyticsService.trackEvent(minimalData);
 
@@ -618,7 +618,7 @@ describe("AnalyticsService", () => {
 
     it("should return event statistics from cache", async () => {
       const cachedStats = { "2024-01-01": { notification_displayed: 100 } };
-      mockCacheService.get.mockResolvedValue(JSON.stringify(cachedStats));
+      mockCacheService.get.mockResolvedValue(JSON.stringify(cachedStats) as never);
 
       const result = await analyticsService.getEventStats("site-123", options);
 
@@ -632,9 +632,9 @@ describe("AnalyticsService", () => {
         { period: new Date("2024-01-02"), type: "notification_displayed", count: 150 },
       ];
 
-      mockCacheService.get.mockResolvedValue(null);
-      mockTimescaleDB.query.mockResolvedValue(dbResults);
-      mockCacheService.set.mockResolvedValue(true);
+      mockCacheService.get.mockResolvedValue(null as never);
+      mockTimescaleDB.query.mockResolvedValue(dbResults as never);
+      mockCacheService.set.mockResolvedValue(true as never);
 
       const result = await analyticsService.getEventStats("site-123", options);
 
@@ -664,7 +664,7 @@ describe("AnalyticsService", () => {
     it("should return conversion funnel analysis", async () => {
       const dbResults = [{ step_0_count: 1000, step_1_count: 200, step_2_count: 50 }];
 
-      mockTimescaleDB.query.mockResolvedValue(dbResults);
+      mockTimescaleDB.query.mockResolvedValue(dbResults as never);
 
       const result = await analyticsService.getConversionFunnel("site-123", funnelSteps, options);
 
@@ -707,7 +707,7 @@ describe("AnalyticsService", () => {
         conversionRate: 5.0,
       };
 
-      mockCacheService.get.mockResolvedValue(JSON.stringify(cachedMetrics));
+      mockCacheService.get.mockResolvedValue(JSON.stringify(cachedMetrics) as never);
 
       const result = await analyticsService.getDashboardMetrics("site-123", dateRange);
 
@@ -715,15 +715,15 @@ describe("AnalyticsService", () => {
     });
 
     it("should calculate dashboard metrics when cache miss", async () => {
-      mockCacheService.get.mockResolvedValue(null);
+      mockCacheService.get.mockResolvedValue(null as never);
       mockTimescaleDB.query
-        .mockResolvedValueOnce([{ count: 1000 }]) // total events
-        .mockResolvedValueOnce([{ count: 500 }]) // unique users
-        .mockResolvedValueOnce([{ count: 800 }]) // unique sessions
-        .mockResolvedValueOnce([{ type: "notification_displayed", count: 600 }]) // top events
-        .mockResolvedValueOnce([{ displayed: 1000, conversions: 50 }]); // conversion rate
+        .mockResolvedValueOnce([{ count: 1000 }] as never) // total events
+        .mockResolvedValueOnce([{ count: 500 }] as never) // unique users
+        .mockResolvedValueOnce([{ count: 800 }] as never) // unique sessions
+        .mockResolvedValueOnce([{ type: "notification_displayed", count: 600 }] as never) // top events
+        .mockResolvedValueOnce([{ displayed: 1000, conversions: 50 }] as never); // conversion rate
 
-      mockCacheService.set.mockResolvedValue(true);
+      mockCacheService.set.mockResolvedValue(true as never);
 
       const result = await analyticsService.getDashboardMetrics("site-123", dateRange);
 
@@ -755,24 +755,27 @@ describe("AnalyticsService", () => {
 
     it("should generate report with requested metrics", async () => {
       // Mock the methods that will be called
-      mockCacheService.get.mockResolvedValue(null);
+      mockCacheService.get.mockResolvedValue(null as never);
       mockTimescaleDB.query
-        .mockResolvedValueOnce([]) // event stats
-        .mockResolvedValueOnce([{ count: 1000 }]) // total events
-        .mockResolvedValueOnce([{ count: 500 }]) // unique users
-        .mockResolvedValueOnce([{ count: 800 }]) // unique sessions
-        .mockResolvedValueOnce([]) // top events
-        .mockResolvedValueOnce([{ displayed: 1000, conversions: 50 }]); // conversion rate
+        .mockResolvedValueOnce([] as never) // event stats
+        .mockResolvedValueOnce([{ count: 1000 }] as never) // total events
+        .mockResolvedValueOnce([{ count: 500 }] as never) // unique users
+        .mockResolvedValueOnce([{ count: 800 }] as never) // unique sessions
+        .mockResolvedValueOnce([] as never) // top events
+        .mockResolvedValueOnce([{ displayed: 1000, conversions: 50 }] as never); // conversion rate
 
-      mockCacheService.set.mockResolvedValue(true);
-      mockEventPublisher.publish.mockResolvedValue(true);
+      mockCacheService.set.mockResolvedValue(true as never);
+      mockEventPublisher.publish.mockResolvedValue(true as never);
 
       const result = await analyticsService.generateReport("site-123", "daily", options);
 
       expect(result).toMatchObject({
         siteId: "site-123",
         reportType: "daily",
-        period: options,
+        period: {
+          startDate: options.startDate,
+          endDate: options.endDate,
+        },
         data: {
           events: expect.any(Object),
           dashboard: expect.any(Object),

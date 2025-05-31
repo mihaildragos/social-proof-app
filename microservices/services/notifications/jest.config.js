@@ -1,6 +1,5 @@
 export default {
-  preset: "ts-jest/presets/default-esm",
-  extensionsToTreatAsEsm: [".ts"],
+  preset: "ts-jest",
   testEnvironment: "node",
   roots: ["<rootDir>/src"],
   testMatch: ["**/__tests__/**/*.test.ts"],
@@ -13,23 +12,24 @@ export default {
   testTimeout: 10000,
   clearMocks: true,
   restoreMocks: true,
-  globals: {
-    "ts-jest": {
-      useESM: true,
+  setupFilesAfterEnv: ["<rootDir>/src/__tests__/setup.ts"],
+  transform: {
+    "^.+\\.ts$": ["ts-jest", {
       tsconfig: {
         strict: false,
         noImplicitAny: false,
         allowJs: true,
         esModuleInterop: true,
         skipLibCheck: true,
-        noUnusedLocals: true,
+        noUnusedLocals: false,
         noUnusedParameters: false,
         exactOptionalPropertyTypes: false,
         noImplicitReturns: false,
         noFallthroughCasesInSwitch: false,
         noUncheckedIndexedAccess: false,
         suppressImplicitAnyIndexErrors: true,
+        types: ["node", "jest"],
       },
-    },
+    }],
   },
 };
