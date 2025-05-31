@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
-import { ForbiddenError } from "./errorHandler";
+import { UnauthorizedError, ForbiddenError } from "./errorHandler";
+import { prisma } from "../lib/prisma";
 import { logger } from "../utils/logger";
-import { db } from "../utils/db";
 
 /**
  * Middleware factory that checks if a user has the required permissions
@@ -67,18 +67,19 @@ export const requireOrganizationMember = () => {
       }
 
       // Check if user is a member of the organization
-      const result = await db.query(
-        `SELECT role FROM organization_members 
-         WHERE user_id = $1 AND organization_id = $2`,
-        [req.user.id, organizationId]
-      );
+      const result = await prisma.organizationMember.findFirst({
+        where: {
+          userId: req.user.id,
+          organizationId,
+        },
+      });
 
-      if (result.rows.length === 0) {
+      if (!result) {
         throw ForbiddenError("You are not a member of this organization");
       }
 
       // Add user role to request for later use
-      req.userRole = result.rows[0].role;
+      req.userRole = result.role;
 
       next();
     } catch (error) {
@@ -106,17 +107,18 @@ export const requireRole = (requiredRoles: string[]) => {
       }
 
       // Check if user has the required role
-      const result = await db.query(
-        `SELECT role FROM organization_members 
-         WHERE user_id = $1 AND organization_id = $2`,
-        [req.user.id, organizationId]
-      );
+      const result = await prisma.organizationMember.findFirst({
+        where: {
+          userId: req.user.id,
+          organizationId,
+        },
+      });
 
-      if (result.rows.length === 0) {
+      if (!result) {
         throw ForbiddenError("You are not a member of this organization");
       }
 
-      const userRole = result.rows[0].role;
+      const userRole = result.role;
 
       // Add user role to request for later use
       req.userRole = userRole;
@@ -151,17 +153,18 @@ async function checkUserPermission(
   action: string
 ): Promise<boolean> {
   // First, check if the user is an owner or admin (they have all permissions)
-  const memberResult = await db.query(
-    `SELECT role FROM organization_members 
-     WHERE user_id = $1 AND organization_id = $2`,
-    [userId, organizationId]
-  );
+  const memberResult = await prisma.organizationMember.findFirst({
+    where: {
+      userId,
+      organizationId,
+    },
+  });
 
-  if (memberResult.rows.length === 0) {
+  if (!memberResult) {
     return false;
   }
 
-  const userRole = memberResult.rows[0].role;
+  const userRole = memberResult.role;
 
   // Owners and admins have all permissions
   if (["owner", "admin"].includes(userRole)) {
@@ -169,28 +172,35 @@ async function checkUserPermission(
   }
 
   // Check if the role has the specific permission
-  const permissionResult = await db.query(
-    `SELECT 1 FROM role_permissions rp
-     JOIN permissions p ON rp.permission_id = p.id
-     JOIN roles r ON rp.role_id = r.id
-     WHERE r.name = $1 AND p.resource = $2 AND p.action = $3`,
-    [userRole, resource, action]
-  );
+  const permissionResult = await prisma.rolePermission.findMany({
+    where: {
+      role: {
+        name: userRole,
+      },
+      permission: {
+        resource,
+        action,
+      },
+    },
+  });
 
-  if (permissionResult.rows.length > 0) {
+  if (permissionResult.length > 0) {
     return true;
   }
 
   // Check for explicit user permission grants
-  const userPermissionResult = await db.query(
-    `SELECT 1 FROM user_permissions up
-     JOIN permissions p ON up.permission_id = p.id
-     WHERE up.user_id = $1 AND up.organization_id = $2 
-     AND p.resource = $3 AND p.action = $4`,
-    [userId, organizationId, resource, action]
-  );
+  const userPermissionResult = await prisma.userPermission.findMany({
+    where: {
+      userId,
+      organizationId,
+      permission: {
+        resource,
+        action,
+      },
+    },
+  });
 
-  return userPermissionResult.rows.length > 0;
+  return userPermissionResult.length > 0;
 }
 
 // Extend Express Request interface to include userRole

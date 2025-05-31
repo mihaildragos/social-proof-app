@@ -1,7 +1,7 @@
 import request from "supertest";
 import { createServer } from "../server";
 import ShopifyWebhookMock from "../../../shared/test/mocks/shopify-webhooks";
-import { KafkaProducer } from "../../../shared/kafka/producer";
+import { KafkaProducer } from "../../../shared/src/events/producer";
 
 // Mock Kafka producer
 jest.mock("../../../shared/kafka/producer");

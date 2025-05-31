@@ -1,0 +1,634 @@
+/**
+ * Social Proof Widget Styles
+ * Version: 1.0.0
+ * 
+ * Comprehensive styling system for the social proof notification widget.
+ * Includes themes, animations, responsive design, and customization options.
+ */
+
+/* ===== BASE WIDGET STYLES ===== */
+.sp-widget {
+  position: fixed;
+  z-index: 999999;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell,
+    sans-serif;
+  pointer-events: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ===== POSITIONING ===== */
+.sp-position-top-left {
+  top: 20px;
+  left: 20px;
+}
+
+.sp-position-top-right {
+  top: 20px;
+  right: 20px;
+}
+
+.sp-position-bottom-left {
+  bottom: 20px;
+  left: 20px;
+}
+
+.sp-position-bottom-right {
+  bottom: 20px;
+  right: 20px;
+}
+
+.sp-position-center {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.sp-position-top-center {
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.sp-position-bottom-center {
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* ===== NOTIFICATION CONTAINER ===== */
+.sp-notification {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  margin-bottom: 12px;
+  max-width: 380px;
+  min-width: 280px;
+  opacity: 0;
+  pointer-events: auto;
+  transform: translateX(100%);
+  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Position-specific transforms */
+.sp-position-top-left .sp-notification,
+.sp-position-bottom-left .sp-notification {
+  transform: translateX(-100%);
+}
+
+.sp-position-top-center .sp-notification,
+.sp-position-bottom-center .sp-notification {
+  transform: translateY(-100%);
+}
+
+.sp-position-center .sp-notification {
+  transform: scale(0.8);
+}
+
+/* Show state */
+.sp-notification.sp-show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.sp-position-top-center .sp-notification.sp-show,
+.sp-position-bottom-center .sp-notification.sp-show {
+  transform: translateY(0);
+}
+
+.sp-position-center .sp-notification.sp-show {
+  transform: scale(1);
+}
+
+/* ===== NOTIFICATION CONTENT ===== */
+.sp-notification-content {
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+}
+
+.sp-notification-icon {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  border-radius: 8px;
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.sp-notification-text {
+  flex: 1;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #374151;
+  font-weight: 500;
+}
+
+.sp-notification-meta {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 4px;
+  font-weight: 400;
+}
+
+.sp-notification-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  color: #9ca3af;
+  padding: 4px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 200ms ease;
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}
+
+.sp-notification-close:hover {
+  color: #6b7280;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* ===== NOTIFICATION TYPES ===== */
+.sp-notification-purchase .sp-notification-icon {
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+}
+
+.sp-notification-signup .sp-notification-icon {
+  background: rgba(59, 130, 246, 0.1);
+  color: #2563eb;
+}
+
+.sp-notification-review .sp-notification-icon {
+  background: rgba(245, 158, 11, 0.1);
+  color: #d97706;
+}
+
+.sp-notification-visitor_count .sp-notification-icon {
+  background: rgba(139, 92, 246, 0.1);
+  color: #7c3aed;
+}
+
+.sp-notification-custom .sp-notification-icon {
+  background: rgba(107, 114, 128, 0.1);
+  color: #6b7280;
+}
+
+/* ===== THEMES ===== */
+
+/* Light Theme (Default) */
+.sp-theme-light .sp-notification {
+  background: #ffffff;
+  color: #374151;
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.sp-theme-light .sp-notification-text {
+  color: #374151;
+}
+
+.sp-theme-light .sp-notification-meta {
+  color: #6b7280;
+}
+
+/* Dark Theme */
+.sp-theme-dark .sp-notification {
+  background: #1f2937;
+  color: #f9fafb;
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.sp-theme-dark .sp-notification-text {
+  color: #f9fafb;
+}
+
+.sp-theme-dark .sp-notification-meta {
+  color: #d1d5db;
+}
+
+.sp-theme-dark .sp-notification-close {
+  color: #9ca3af;
+}
+
+.sp-theme-dark .sp-notification-close:hover {
+  color: #d1d5db;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Minimal Theme */
+.sp-theme-minimal .sp-notification {
+  background: rgba(255, 255, 255, 0.95);
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.sp-theme-minimal .sp-notification-content {
+  padding: 12px 16px;
+}
+
+.sp-theme-minimal .sp-notification-icon {
+  width: 24px;
+  height: 24px;
+  font-size: 14px;
+}
+
+/* Glassmorphism Theme */
+.sp-theme-glass .sp-notification {
+  background: rgba(255, 255, 255, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+}
+
+/* Neon Theme */
+.sp-theme-neon .sp-notification {
+  background: #0a0a0a;
+  border: 1px solid #00ff88;
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+  color: #00ff88;
+}
+
+.sp-theme-neon .sp-notification-text {
+  color: #00ff88;
+}
+
+.sp-theme-neon .sp-notification-icon {
+  background: rgba(0, 255, 136, 0.2);
+  color: #00ff88;
+}
+
+/* ===== ANIMATION VARIANTS ===== */
+
+/* Slide Animation (Default) */
+.sp-animation-slide .sp-notification {
+  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Fade Animation */
+.sp-animation-fade .sp-notification {
+  transform: none !important;
+  transition: opacity 300ms ease;
+}
+
+.sp-animation-fade .sp-notification.sp-show {
+  transform: none !important;
+}
+
+/* Bounce Animation */
+.sp-animation-bounce .sp-notification {
+  transition: all 400ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* Scale Animation */
+.sp-animation-scale .sp-notification {
+  transform: scale(0.8) !important;
+  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sp-animation-scale .sp-notification.sp-show {
+  transform: scale(1) !important;
+}
+
+/* Flip Animation */
+.sp-animation-flip .sp-notification {
+  transform: rotateY(90deg) !important;
+  transition: all 400ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sp-animation-flip .sp-notification.sp-show {
+  transform: rotateY(0deg) !important;
+}
+
+/* ===== SIZE VARIANTS ===== */
+
+/* Compact Size */
+.sp-size-compact .sp-notification {
+  max-width: 300px;
+  min-width: 240px;
+}
+
+.sp-size-compact .sp-notification-content {
+  padding: 12px 16px;
+  gap: 8px;
+}
+
+.sp-size-compact .sp-notification-icon {
+  width: 24px;
+  height: 24px;
+  font-size: 14px;
+}
+
+.sp-size-compact .sp-notification-text {
+  font-size: 13px;
+}
+
+.sp-size-compact .sp-notification-meta {
+  font-size: 11px;
+}
+
+/* Large Size */
+.sp-size-large .sp-notification {
+  max-width: 450px;
+  min-width: 350px;
+}
+
+.sp-size-large .sp-notification-content {
+  padding: 20px 24px;
+  gap: 16px;
+}
+
+.sp-size-large .sp-notification-icon {
+  width: 40px;
+  height: 40px;
+  font-size: 20px;
+}
+
+.sp-size-large .sp-notification-text {
+  font-size: 16px;
+}
+
+.sp-size-large .sp-notification-meta {
+  font-size: 14px;
+}
+
+/* ===== SPECIAL EFFECTS ===== */
+
+/* Pulse Effect */
+.sp-effect-pulse .sp-notification {
+  animation: sp-pulse 2s infinite;
+}
+
+@keyframes sp-pulse {
+  0%,
+  100% {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  }
+  50% {
+    box-shadow: 0 8px 32px rgba(59, 130, 246, 0.3);
+  }
+}
+
+/* Glow Effect */
+.sp-effect-glow .sp-notification {
+  box-shadow: 0 8px 32px rgba(59, 130, 246, 0.2);
+}
+
+/* Shake Effect */
+.sp-effect-shake .sp-notification.sp-show {
+  animation: sp-shake 0.5s ease-in-out;
+}
+
+@keyframes sp-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+
+/* Mobile Devices */
+@media (max-width: 480px) {
+  .sp-widget {
+    left: 10px !important;
+    right: 10px !important;
+    width: auto !important;
+  }
+
+  .sp-notification {
+    max-width: none;
+    min-width: auto;
+    margin-bottom: 8px;
+  }
+
+  .sp-notification-content {
+    padding: 14px 16px;
+    gap: 10px;
+  }
+
+  .sp-notification-text {
+    font-size: 13px;
+  }
+
+  .sp-notification-meta {
+    font-size: 11px;
+  }
+
+  .sp-notification-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 16px;
+  }
+}
+
+/* Tablet Devices */
+@media (max-width: 768px) and (min-width: 481px) {
+  .sp-widget {
+    left: 15px !important;
+    right: 15px !important;
+  }
+
+  .sp-notification {
+    max-width: 350px;
+  }
+}
+
+/* High DPI Displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .sp-notification {
+    border-width: 0.5px;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .sp-notification {
+    transition: opacity 200ms ease !important;
+    transform: none !important;
+  }
+
+  .sp-notification.sp-show {
+    transform: none !important;
+  }
+
+  .sp-effect-pulse .sp-notification,
+  .sp-effect-shake .sp-notification.sp-show {
+    animation: none !important;
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .sp-notification {
+    border-width: 2px;
+    border-color: currentColor;
+  }
+
+  .sp-notification-close {
+    border: 1px solid currentColor;
+  }
+}
+
+/* ===== UTILITY CLASSES ===== */
+
+/* Hide on mobile */
+.sp-hide-mobile {
+  display: block;
+}
+
+@media (max-width: 480px) {
+  .sp-hide-mobile {
+    display: none !important;
+  }
+}
+
+/* Hide on desktop */
+.sp-hide-desktop {
+  display: none;
+}
+
+@media (max-width: 480px) {
+  .sp-hide-desktop {
+    display: block !important;
+  }
+}
+
+/* Custom spacing */
+.sp-spacing-tight {
+  margin-bottom: 6px;
+}
+
+.sp-spacing-loose {
+  margin-bottom: 20px;
+}
+
+/* Custom borders */
+.sp-border-none .sp-notification {
+  border: none;
+}
+
+.sp-border-thick .sp-notification {
+  border-width: 2px;
+}
+
+/* Custom shadows */
+.sp-shadow-none .sp-notification {
+  box-shadow: none;
+}
+
+.sp-shadow-heavy .sp-notification {
+  box-shadow: 0 16px 64px rgba(0, 0, 0, 0.2);
+}
+
+/* ===== ACCESSIBILITY ===== */
+
+/* Focus styles for keyboard navigation */
+.sp-notification:focus-within {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.sp-notification-close:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 1px;
+}
+
+/* Screen reader only content */
+.sp-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ===== PRINT STYLES ===== */
+@media print {
+  .sp-widget {
+    display: none !important;
+  }
+}
+
+/* ===== CUSTOM PROPERTIES FOR THEMING ===== */
+.sp-widget {
+  --sp-primary-color: #2563eb;
+  --sp-success-color: #059669;
+  --sp-warning-color: #d97706;
+  --sp-error-color: #dc2626;
+  --sp-text-color: #374151;
+  --sp-text-muted: #6b7280;
+  --sp-background: #ffffff;
+  --sp-border-color: rgba(0, 0, 0, 0.08);
+  --sp-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  --sp-border-radius: 12px;
+  --sp-font-size: 14px;
+  --sp-font-weight: 500;
+  --sp-spacing: 16px;
+  --sp-animation-duration: 300ms;
+  --sp-animation-easing: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Dark theme custom properties */
+.sp-theme-dark {
+  --sp-text-color: #f9fafb;
+  --sp-text-muted: #d1d5db;
+  --sp-background: #1f2937;
+  --sp-border-color: rgba(255, 255, 255, 0.1);
+  --sp-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* Apply custom properties */
+.sp-notification {
+  background: var(--sp-background);
+  color: var(--sp-text-color);
+  border-color: var(--sp-border-color);
+  box-shadow: var(--sp-shadow);
+  border-radius: var(--sp-border-radius);
+  transition: all var(--sp-animation-duration) var(--sp-animation-easing);
+}
+
+.sp-notification-text {
+  color: var(--sp-text-color);
+  font-size: var(--sp-font-size);
+  font-weight: var(--sp-font-weight);
+}
+
+.sp-notification-meta {
+  color: var(--sp-text-muted);
+}
+
+.sp-notification-content {
+  padding: var(--sp-spacing);
+}

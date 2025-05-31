@@ -1,9 +1,10 @@
 import { Request, Response, NextFunction } from "express";
 import { randomUUID } from "crypto";
-import { db } from "../utils/db";
-import { logger } from "../utils/logger";
+import { verify } from "jsonwebtoken";
 import { UnauthorizedError } from "./errorHandler";
-import { verifyToken, generateToken, generateRefreshToken, blacklistToken } from "../utils/jwt";
+import { prisma } from "../lib/prisma";
+import { logger } from "../utils/logger";
+import { generateToken, generateRefreshToken, blacklistToken } from "../utils/jwt";
 
 /**
  * Middleware to manage user sessions
@@ -18,48 +19,59 @@ export const sessionManager = {
       const sessionId = randomUUID();
 
       // Get user info
-      const user = await db.getOne(`SELECT email, role FROM users WHERE id = $1`, [userId]);
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { email: true, role: true },
+      });
 
       if (!user) {
         throw new Error("User not found");
       }
 
       // Get organization info if the user belongs to one
-      const orgMember = await db.getOne(
-        `SELECT organization_id, role FROM organization_members 
-         WHERE user_id = $1 ORDER BY created_at DESC LIMIT 1`,
-        [userId]
-      );
+      const orgMember = await prisma.organizationMember.findFirst({
+        where: {
+          userId: userId,
+        },
+        orderBy: { createdAt: "desc" },
+        take: 1,
+        select: { organizationId: true, role: true },
+      });
 
       // Get user permissions
-      const permissions = await db.getMany(
-        `SELECT p.name FROM user_permissions up
-         JOIN permissions p ON up.permission_id = p.id
-         WHERE up.user_id = $1
-         UNION
-         SELECT p.name FROM role_permissions rp
-         JOIN permissions p ON rp.permission_id = p.id
-         JOIN roles r ON rp.role_id = r.id
-         WHERE r.name = $2`,
-        [userId, orgMember?.role || user.role]
-      );
+      const permissions = await prisma.userPermission.findMany({
+        where: {
+          userId: userId,
+        },
+        select: {
+          permission: {
+            select: { name: true },
+          },
+        },
+      });
 
-      const permissionNames = permissions.map((p) => p.name);
+      const permissionNames = permissions.map(
+        (p: { permission: { name: any } }) => p.permission.name
+      );
 
       // Create a new session record
-      await db.query(
-        `INSERT INTO user_sessions (
-          id, user_id, ip_address, user_agent, is_active,
-          organization_id, last_activity
-        ) VALUES ($1, $2, $3, $4, $5, $6, NOW())`,
-        [sessionId, userId, req.ip, req.headers["user-agent"], true, orgMember?.organization_id]
-      );
+      await prisma.userSession.create({
+        data: {
+          id: sessionId,
+          userId: userId,
+          ipAddress: req.ip,
+          userAgent: req.headers["user-agent"],
+          isActive: true,
+          organizationId: orgMember?.organizationId,
+          lastActivity: new Date(),
+        },
+      });
 
       // Generate access token
       const accessToken = await generateToken({
         userId,
         email: user.email,
-        organizationId: orgMember?.organization_id,
+        organizationId: orgMember?.organizationId,
         role: orgMember?.role || user.role,
         permissions: permissionNames,
         sessionId,
@@ -102,7 +114,7 @@ export const sessionManager = {
   /**
    * Validate a session
    */
-  validateSession: async (req: Request, res: Response, next: NextFunction) => {
+  validateSession: async (req: Request, _res: Response, next: NextFunction) => {
     try {
       // Get token from cookies or Authorization header
       let token = req.cookies?.accessToken;
@@ -119,23 +131,24 @@ export const sessionManager = {
       }
 
       // Verify token
-      const payload = await verifyToken(token);
+      const payload = verify(token, process.env.JWT_SECRET as string) as any;
 
       // Check if session exists and is active
       if (payload.sessionId) {
-        const session = await db.getOne(
-          `SELECT id, is_active FROM user_sessions WHERE id = $1 AND user_id = $2`,
-          [payload.sessionId, payload.userId]
-        );
+        const session = await prisma.userSession.findUnique({
+          where: { id: payload.sessionId },
+          select: { isActive: true },
+        });
 
-        if (!session || !session.is_active) {
+        if (!session || !session.isActive) {
           throw UnauthorizedError("Session expired or invalid");
         }
 
         // Update last activity time
-        await db.query(`UPDATE user_sessions SET last_activity = NOW() WHERE id = $1`, [
-          payload.sessionId,
-        ]);
+        await prisma.userSession.update({
+          where: { id: payload.sessionId },
+          data: { lastActivity: new Date() },
+        });
       }
 
       // Set user info on request
@@ -166,63 +179,74 @@ export const sessionManager = {
       }
 
       // Verify refresh token
-      const { userId, sessionId } = (await verifyToken(refreshToken)) as {
+      const { userId, sessionId } = verify(
+        refreshToken,
+        process.env.JWT_SECRET as string
+      ) as any as {
         userId: string;
         sessionId: string;
       };
 
       // Check if session exists and is active
-      const session = await db.getOne(
-        `SELECT id, is_active, organization_id FROM user_sessions 
-         WHERE id = $1 AND user_id = $2`,
-        [sessionId, userId]
-      );
+      const session = await prisma.userSession.findUnique({
+        where: { id: sessionId },
+        select: { isActive: true, organizationId: true },
+      });
 
-      if (!session || !session.is_active) {
+      if (!session || !session.isActive) {
         throw UnauthorizedError("Session expired or invalid");
       }
 
       // Get user info
-      const user = await db.getOne(`SELECT email, role FROM users WHERE id = $1`, [userId]);
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { email: true, role: true },
+      });
 
       if (!user) {
         throw UnauthorizedError("User not found");
       }
 
       // Get organization role
-      const orgMember = await db.getOne(
-        `SELECT role FROM organization_members 
-         WHERE user_id = $1 AND organization_id = $2`,
-        [userId, session.organization_id]
-      );
+      const orgMember = await prisma.organizationMember.findFirst({
+        where: {
+          userId: userId,
+          organizationId: session.organizationId,
+        },
+        select: { role: true },
+      });
 
       // Get user permissions
-      const permissions = await db.getMany(
-        `SELECT p.name FROM user_permissions up
-         JOIN permissions p ON up.permission_id = p.id
-         WHERE up.user_id = $1
-         UNION
-         SELECT p.name FROM role_permissions rp
-         JOIN permissions p ON rp.permission_id = p.id
-         JOIN roles r ON rp.role_id = r.id
-         WHERE r.name = $2`,
-        [userId, orgMember?.role || user.role]
-      );
+      const permissions = await prisma.userPermission.findMany({
+        where: {
+          userId: userId,
+        },
+        select: {
+          permission: {
+            select: { name: true },
+          },
+        },
+      });
 
-      const permissionNames = permissions.map((p) => p.name);
+      const permissionNames = permissions.map(
+        (p: { permission: { name: any } }) => p.permission.name
+      );
 
       // Generate new access token
       const accessToken = await generateToken({
         userId,
         email: user.email,
-        organizationId: session.organization_id,
+        organizationId: session.organizationId,
         role: orgMember?.role || user.role,
         permissions: permissionNames,
         sessionId,
       });
 
       // Update session last activity
-      await db.query(`UPDATE user_sessions SET last_activity = NOW() WHERE id = $1`, [sessionId]);
+      await prisma.userSession.update({
+        where: { id: sessionId },
+        data: { lastActivity: new Date() },
+      });
 
       // Set new access token in cookie
       res.cookie("accessToken", accessToken, {
@@ -263,7 +287,7 @@ export const sessionManager = {
       if (token) {
         try {
           // Verify token
-          const payload = await verifyToken(token);
+          const payload = verify(token, process.env.JWT_SECRET as string) as any;
 
           // Add token to blacklist
           if (payload.exp) {
@@ -272,11 +296,10 @@ export const sessionManager = {
 
           // Deactivate session
           if (payload.sessionId) {
-            await db.query(
-              `UPDATE user_sessions SET is_active = false, ended_at = NOW() 
-               WHERE id = $1 AND user_id = $2`,
-              [payload.sessionId, payload.userId]
-            );
+            await prisma.userSession.update({
+              where: { id: payload.sessionId },
+              data: { isActive: false, endedAt: new Date() },
+            });
           }
         } catch (error) {
           // Continue even if token verification fails

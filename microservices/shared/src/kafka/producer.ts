@@ -1,5 +1,5 @@
 import { Kafka, Producer, ProducerRecord } from "kafkajs";
-import { getContextLogger } from "../utils/logger";
+import { getContextLogger } from "../../utils/logger";
 
 const logger = getContextLogger({ service: "kafka-producer" });
 
