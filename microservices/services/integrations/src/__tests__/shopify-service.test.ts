@@ -88,7 +88,7 @@ describe("ShopifyService", () => {
       expect(authUrl).toContain(`https://${shop}/admin/oauth/authorize`);
       expect(authUrl).toContain("client_id=test_api_key");
       expect(authUrl).toContain("scope=read_orders%2Cread_products%2Cwrite_script_tags");
-      expect(authUrl).toContain("redirect_uri=https%3A//api.example.com/api/integrations/shopify/callback");
+      expect(authUrl).toContain("redirect_uri=https%3A%2F%2Fapi.example.com%2Fapi%2Fintegrations%2Fshopify%2Fcallback");
       expect(authUrl).toContain("state=");
     });
 
@@ -541,19 +541,10 @@ describe("ShopifyService", () => {
         .update(body, "utf8")
         .digest("base64");
 
-      // Mock crypto.timingSafeEqual to return true for matching signatures
-      const originalTimingSafeEqual = crypto.timingSafeEqual;
-      jest.spyOn(crypto, 'timingSafeEqual').mockReturnValue(true);
-
+      // Test with the actual matching signature
       const isValid = ShopifyService.verifyWebhookSignature(generatedHash, body, secret);
       
       expect(isValid).toBe(true);
-      expect(crypto.timingSafeEqual).toHaveBeenCalledWith(
-        Buffer.from(generatedHash),
-        Buffer.from(generatedHash)
-      );
-
-      jest.restoreAllMocks();
     });
 
     it("should reject invalid webhook signature", () => {

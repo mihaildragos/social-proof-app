@@ -328,7 +328,7 @@ router.post('/:id/duplicate', authMiddleware.verifyToken, validateTemplateId, as
 // POST /api/notifications/templates/create-default - Create default template (legacy endpoint)
 router.post('/create-default', async (req: Request, res: Response) => {
   try {
-    const { site_id, site_name, site_domain, owner_id } = req.body;
+    const { site_id, site_name, site_domain, organization_id } = req.body;
 
     if (!site_id) {
       return res.status(400).json({
@@ -341,7 +341,7 @@ router.post('/create-default', async (req: Request, res: Response) => {
     const template = await notificationService.createDefaultTemplate(site_id, {
       site_name,
       site_domain,
-      owner_id,
+      organization_id,
     });
 
     res.json({

@@ -17,6 +17,8 @@ interface UserProfile {
 
 interface UpdateProfileParams {
   fullName?: string;
+  firstName?: string;
+  lastName?: string;
   preferredLanguage?: string;
   preferredTimezone?: string;
 }
@@ -44,6 +46,9 @@ class UserService {
           id: true,
           email: true,
           fullName: true,
+          firstName: true,
+          lastName: true,
+          organizationId: true,
           preferredLanguage: true,
           preferredTimezone: true,
           createdAt: true,
@@ -56,19 +61,27 @@ class UserService {
         throw NotFoundError("User not found");
       }
 
-      // 2. Get organization membership
-      const orgMembership = await prisma.organizationMember.findFirst({
-        where: { userId },
-        select: {
-          organizationId: true,
-          role: true,
-        },
-      });
+      // 2. Get organization membership if no direct organizationId
+      let organizationId = userData.organizationId;
+      let role = userData.role;
+      
+      if (!organizationId) {
+        const orgMembership = await prisma.organizationMember.findFirst({
+          where: { userId },
+          select: {
+            organizationId: true,
+            role: true,
+          },
+        });
+        organizationId = orgMembership?.organizationId;
+        role = orgMembership?.role;
+      }
 
-      // 3. Simulate decrypting PII (in a real app would call the pgcrypto functions)
-      // This is just a placeholder for the actual implementation
-      const email = `user_${userId.substring(0, 8)}@example.com`;
-      const fullName = `User ${userId.substring(0, 8)}`;
+      // 3. Use actual user data (prefer firstName/lastName over fullName)
+      const email = userData.email || `user_${userId.substring(0, 8)}@example.com`;
+      const fullName = userData.firstName && userData.lastName 
+        ? `${userData.firstName} ${userData.lastName}`
+        : userData.fullName || `User ${userId.substring(0, 8)}`;
 
       return {
         id: userData.id,
@@ -76,8 +89,8 @@ class UserService {
         fullName,
         preferredLanguage: userData.preferredLanguage,
         preferredTimezone: userData.preferredTimezone,
-        organizationId: orgMembership?.organizationId,
-        role: orgMembership?.role,
+        organizationId,
+        role,
         createdAt: userData.createdAt.toISOString(),
         lastLoginAt: userData.lastLoginAt?.toISOString(),
       };
@@ -93,13 +106,19 @@ class UserService {
   async updateUserProfile(userId: string, params: UpdateProfileParams): Promise<UserProfile> {
     try {
       const updateData: Record<string, any> = {};
-      const { fullName, preferredLanguage, preferredTimezone } = params;
+      const { fullName, firstName, lastName, preferredLanguage, preferredTimezone } = params;
 
       // Build update data object with only provided fields
       if (fullName !== undefined) {
-        // In a real app, we would encrypt the full name here
-        // For now we'll just set a flag to update it
         updateData.fullName = fullName;
+      }
+
+      if (firstName !== undefined) {
+        updateData.firstName = firstName;
+      }
+
+      if (lastName !== undefined) {
+        updateData.lastName = lastName;
       }
 
       if (preferredLanguage !== undefined) {

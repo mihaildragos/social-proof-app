@@ -2,6 +2,81 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## We are building PulseSocialProof.com
+
+## What is PulseSocialProof.com?
+
+__PulseSocialProof is a social proof marketing platform__ that helps businesses increase conversions by displaying real-time customer activity notifications on their websites.
+
+## Core Functionality
+
+The platform works by showing __live notifications__ of what other visitors are doing on a website, such as:
+
+* Recent purchases ("John from New York just bought...")
+* Sign-ups and registrations
+* Product views
+* Cart additions
+* Live visitor counts
+* Low stock alerts
+* Customer reviews
+
+## Key Features for Your Clone
+
+1. __Real-time Notifications__: Small popups that appear in corners of the website showing recent customer activities
+
+2. __Integration System__: PulseSocialProof connects seamlessly with 100s of your favorite apps, including:
+   * E-commerce platforms (Shopify, WooCommerce, BigCommerce)
+   * Email services
+   * Payment processors
+   * Analytics tools
+
+3. __Customization Options__:
+   * Notification appearance (colors, fonts, positioning)
+   * Display rules (which pages, timing, frequency)
+   * Custom branding capabilities
+   * Different notification templates
+
+4. __Analytics Dashboard__: Track metrics like:
+   * Impressions
+   * Clicks
+   * Conversions
+   * Engagement rates
+
+5. __Targeting Features__:
+   * Geo-targeting
+   * Page-specific rules
+   * Device-based display
+   * User behavior triggers
+
+## Technical Architecture
+
+For your school project, you'd need to build:
+
+1. __Backend System__:
+   * API to receive events from integrated platforms
+   * Database to store notification data
+   * Real-time event processing
+   * User account management
+
+2. __Frontend Components__:
+   * JavaScript widget that websites can embed
+   * Notification display system
+   * Admin dashboard for configuration
+
+3. __Core Technologies__:
+   * WebSockets or Server-Sent Events for real-time updates
+   * RESTful API for integrations
+   * JavaScript SDK for easy website installation
+
+## Business Model
+
+PulseSocialProof typically offers tiered pricing based on:
+
+* Number of website visitors
+* Number of notifications
+* Advanced features access
+* Branding removal options
+
 ## Architecture Overview
 
 This is a social proof notification SaaS application with:

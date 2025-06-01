@@ -22,7 +22,7 @@ describe("BillingService", () => {
     currency: "USD",
     interval: "month",
     features: ["feature1", "feature2"],
-    isActive: true,
+    is_public: true,
     stripePriceId: "price_stripe_123",
     createdAt: new Date("2024-01-01"),
     updatedAt: new Date("2024-01-01"),
@@ -109,7 +109,7 @@ describe("BillingService", () => {
         throw new Error("Plan not found");
       }
 
-      if (!plan.isActive) {
+      if (!plan.is_public) {
         throw new Error("Plan is not active");
       }
 
@@ -289,7 +289,7 @@ describe("BillingService", () => {
 
     async getPlans(isActive = true) {
       const plans = await this.prisma.plan.findMany({
-        where: isActive ? { isActive: true } : {},
+        where: isActive ? { is_public: true } : {},
         orderBy: { price: "asc" },
       });
 
@@ -556,7 +556,7 @@ describe("BillingService", () => {
     });
 
     it("should throw error for inactive plan", async () => {
-      mockPrisma.plan.findUnique.mockResolvedValue({ ...mockPlan, isActive: false } as never);
+      mockPrisma.plan.findUnique.mockResolvedValue({ ...mockPlan, is_public: false } as never);
 
       await expect(billingService.createSubscription(validSubscriptionData)).rejects.toThrow(
         "Plan is not active"

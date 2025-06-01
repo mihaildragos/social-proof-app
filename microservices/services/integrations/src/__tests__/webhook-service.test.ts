@@ -601,8 +601,8 @@ describe("WebhookService", () => {
 
       expect(success).toBe(true);
       expect(mockDb.query).toHaveBeenCalledWith(
-        expect.stringContaining("UPDATE webhook_events SET retry_count"),
-        expect.arrayContaining(["retrying", 2])
+        "UPDATE webhook_events SET retry_count = $1, status = $2, updated_at = $3 WHERE id = $4",
+        ["retrying", 2, expect.any(Date), "webhook_retry"]
       );
     });
 
