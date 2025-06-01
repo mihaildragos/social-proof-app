@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { authMiddleware, AuthenticatedRequest } from "./auth";
 import { serviceAuthService, AuthenticatedServiceRequest } from "../auth/service-auth";
-import { getContextLogger } from "../utils/logger";
+import { getContextLogger } from "../../utils/logger";
 
 const logger = getContextLogger({ service: "auth-middleware" });
 

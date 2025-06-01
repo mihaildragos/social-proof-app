@@ -950,7 +950,7 @@ export class NotificationService {
   /**
    * Create default template (legacy method)
    */
-  public async createDefaultTemplate(siteId: string, options: { site_name?: string; site_domain?: string; owner_id?: string }): Promise<any> {
+  public async createDefaultTemplate(siteId: string, options: { site_name?: string; site_domain?: string; organization_id?: string }): Promise<any> {
     try {
       // First, ensure the site exists in the notifications database
       const siteCheck = await this.pool.query("SELECT id FROM sites WHERE id = $1", [siteId]);
@@ -960,11 +960,11 @@ export class NotificationService {
         console.log(`Site ${siteId} doesn't exist in notifications DB, creating it...`);
         
         await this.pool.query(
-          `INSERT INTO sites (id, owner_id, name, domain, verified_at, settings, created_at, updated_at)
+          `INSERT INTO sites (id, organization_id, name, domain, verified_at, settings, created_at, updated_at)
            VALUES ($1, $2, $3, $4, NOW(), $5, NOW(), NOW())`,
           [
             siteId,
-            options.owner_id || "00000000-0000-0000-0000-000000000000",
+            options.organization_id || "00000000-0000-0000-0000-000000000000",
             options.site_name || "Test Site",
             options.site_domain || `test-site-${siteId.slice(-8)}.example.com`,
             JSON.stringify({ is_test_site: true, created_by_notifications_service: true })
@@ -996,7 +996,7 @@ export class NotificationService {
         }),
         event_types: JSON.stringify(["purchase"]),
         status: "active",
-        created_by: options.owner_id || "00000000-0000-0000-0000-000000000000",
+        created_by: options.organization_id || "00000000-0000-0000-0000-000000000000",
         created_at: now,
         updated_at: now,
       };

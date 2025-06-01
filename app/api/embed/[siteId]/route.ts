@@ -18,7 +18,15 @@ export async function GET(req: Request, { params }: { params: { siteId: string }
       .eq("id", siteId)
       .single();
 
-    if (error || !site) {
+    // In development, allow test sites that don't exist in database
+    let siteData = site;
+    if ((error || !site) && process.env.NODE_ENV === 'development' && siteId.startsWith('test-')) {
+      console.log("Using test site for development:", siteId);
+      siteData = {
+        status: SiteStatus.VERIFIED,
+        domain: 'localhost:3000'
+      };
+    } else if (error || !site) {
       console.error("Error fetching site for embed:", error);
       return new NextResponse("console.error('Social Proof: Invalid site ID');", {
         status: 404,
@@ -30,7 +38,7 @@ export async function GET(req: Request, { params }: { params: { siteId: string }
     }
 
     // If site is not verified, don't provide the real code
-    if (site.status !== SiteStatus.VERIFIED) {
+    if (siteData.status !== SiteStatus.VERIFIED) {
       return new NextResponse("console.error('Social Proof: Site not verified');", {
         status: 200,
         headers: {
@@ -46,9 +54,11 @@ export async function GET(req: Request, { params }: { params: { siteId: string }
   // Configuration
   var config = {
     siteId: "${siteId}",
+    organizationId: "test-org", // Default organization for development
     apiHost: "${process.env.NEXT_PUBLIC_VERCEL_URL || "localhost:3000"}",
     apiEndpoint: "${process.env.NEXT_PUBLIC_VERCEL_URL || "localhost:3000"}/api",
-    targetOrigin: "https://${site.domain}",
+    notificationStreamHost: "${process.env.NODE_ENV === 'development' ? 'localhost:3002' : process.env.NEXT_PUBLIC_VERCEL_URL || "localhost:3000"}",
+    targetOrigin: "https://${siteData.domain}",
     position: "bottom-left",
     displayTime: 5000,
     animation: "fade",
@@ -69,6 +79,8 @@ export async function GET(req: Request, { params }: { params: { siteId: string }
   // Initialize the client
   window.SocialProof = window.SocialProof || {};
   window.SocialProof.init = function(options) {
+    console.log('Social Proof: init() called with options:', options);
+    
     // Merge options with default config
     if (options) {
       for (var key in options) {
@@ -78,13 +90,19 @@ export async function GET(req: Request, { params }: { params: { siteId: string }
       }
     }
     
-    console.log('Social Proof initialized with options:', config);
+    console.log('Social Proof: Final config:', config);
+    console.log('Social Proof: Container element before setup:', container);
     
     // Create the notification container with position
     setContainerPosition(config.position);
     
+    console.log('Social Proof: Container element after setup:', container);
+    console.log('Social Proof: Container in DOM:', document.body.contains(container));
+    
     // Add necessary styles
     addStyles();
+    
+    console.log('Social Proof: About to connect to SSE...');
     
     // Connect to SSE endpoint for real-time notifications
     connectSSE();
@@ -92,6 +110,33 @@ export async function GET(req: Request, { params }: { params: { siteId: string }
   
   // Expose showNotification for debugging
   window.SocialProof.showNotification = showNotification;
+  
+  // Expose test function for debugging
+  window.SocialProof.test = function() {
+    console.log('Social Proof: Running test...');
+    console.log('Social Proof: Config:', config);
+    console.log('Social Proof: Container:', container);
+    console.log('Social Proof: EventSource:', eventSource);
+    console.log('Social Proof: EventSource readyState:', eventSource ? eventSource.readyState : 'null');
+    
+    // Test notification
+    showNotification({
+      id: 'test-' + Date.now(),
+      type: 'order',
+      content: {
+        title: '🛍️ New Purchase',
+        message: 'John from New York just bought Premium Headphones',
+        image: null
+      },
+      createdAt: new Date().toISOString()
+    });
+  };
+  
+  // Expose reconnect function for debugging
+  window.SocialProof.reconnect = function() {
+    console.log('Social Proof: Manual reconnect triggered');
+    connectSSE();
+  };
   
   // Set the container position based on configuration
   function setContainerPosition(position) {
@@ -109,17 +154,26 @@ export async function GET(req: Request, { params }: { params: { siteId: string }
   
   // Connect to the SSE endpoint
   function connectSSE() {
+    console.log('Social Proof: connectSSE() called');
+    
     if (eventSource) {
+      console.log('Social Proof: Closing existing eventSource');
       eventSource.close();
     }
     
     try {
-      var sseUrl = config.protocol + '://' + config.apiHost + '/api/notifications/sse/' + config.siteId;
+      var sseUrl = config.protocol + '://' + config.notificationStreamHost + '/api/notifications/sse/' + config.siteId + '?organizationId=' + config.organizationId;
+      console.log('Social Proof: Connecting to SSE URL:', sseUrl);
+      console.log('Social Proof: EventSource supported:', !!window.EventSource);
+      
       eventSource = new EventSource(sseUrl);
+      console.log('Social Proof: EventSource created:', eventSource);
+      console.log('Social Proof: EventSource readyState:', eventSource.readyState);
       
       // Set up event listeners
       eventSource.onopen = function() {
         console.log('Social Proof: Connected to notification stream');
+        console.log('Social Proof: EventSource readyState after open:', eventSource.readyState);
         reconnectAttempts = 0; // Reset reconnect attempts on successful connection
       };
       
@@ -136,12 +190,16 @@ export async function GET(req: Request, { params }: { params: { siteId: string }
       
       eventSource.onerror = function(err) {
         console.error('Social Proof: SSE connection error:', err);
+        console.log('Social Proof: EventSource readyState on error:', eventSource.readyState);
         eventSource.close();
         
         // Attempt to reconnect if not max attempts
         if (reconnectAttempts < maxReconnectAttempts) {
           reconnectAttempts++;
+          console.log('Social Proof: Attempting reconnect', reconnectAttempts, 'of', maxReconnectAttempts);
           setTimeout(connectSSE, reconnectInterval);
+        } else {
+          console.error('Social Proof: Max reconnect attempts reached');
         }
       };
       
@@ -150,8 +208,19 @@ export async function GET(req: Request, { params }: { params: { siteId: string }
         console.log('Social Proof: Successfully connected to SSE:', e.data);
       });
       
+      eventSource.addEventListener('notification', function(e) {
+        try {
+          console.log('Social Proof: Notification event received:', e.data);
+          var notification = JSON.parse(e.data);
+          console.log('Social Proof: Parsed notification data:', notification);
+          showNotification(notification);
+        } catch (err) {
+          console.error('Social Proof: Error processing notification event:', err);
+        }
+      });
+      
       eventSource.addEventListener('ping', function() {
-        // Just a keep-alive ping, no need to do anything
+        console.log('Social Proof: Ping received');
       });
       
       eventSource.addEventListener('error', function(e) {
@@ -502,7 +571,7 @@ export async function GET(req: Request, { params }: { params: { siteId: string }
       status: 200,
       headers: {
         "Content-Type": "application/javascript",
-        "Cache-Control": "public, max-age=3600",
+        "Cache-Control": process.env.NODE_ENV === 'development' ? "no-cache, no-store, must-revalidate" : "public, max-age=3600",
         "Cross-Origin-Resource-Policy": "cross-origin",
         "Access-Control-Allow-Origin": "*",
       },

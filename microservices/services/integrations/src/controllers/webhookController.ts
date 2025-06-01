@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { ShopifyService, SHOPIFY_WEBHOOK_TOPICS } from "../services/shopifyService";
+import { ShopifyService, SHOPIFY_WEBHOOK_TOPICS } from "../services/shopify-service";
 import { logger } from "@social-proof/shared";
 
 /**

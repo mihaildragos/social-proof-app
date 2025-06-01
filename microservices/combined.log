@@ -661,3 +661,5 @@
 {"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T19:14:28.571Z","url":"/health","userAgent":"curl/8.12.1"}
 {"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T19:14:58.601Z","url":"/health","userAgent":"curl/8.12.1"}
 {"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T19:15:28.644Z","url":"/health","userAgent":"curl/8.12.1"}
+{"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T19:15:58.682Z","url":"/health","userAgent":"curl/8.12.1"}
+{"level":"info","message":"Received SIGTERM, starting graceful shutdown","service":"billing-service","timestamp":"2025-05-26T19:16:02.612Z"}

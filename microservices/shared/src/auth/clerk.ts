@@ -1,4 +1,4 @@
-import { getContextLogger } from "../utils/logger";
+import { getContextLogger } from "../../utils/logger";
 import { AuthMiddleware, JWTPayload } from "../middleware/auth";
 import { Role, RBACService } from "./rbac";
 
