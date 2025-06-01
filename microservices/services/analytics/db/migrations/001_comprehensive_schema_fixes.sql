@@ -7,9 +7,9 @@
 
 -- Create analytics_events table that the service code expects
 CREATE TABLE IF NOT EXISTS analytics_events (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  organization_id UUID NOT NULL,
-  site_id UUID NOT NULL,
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  organization_id TEXT NOT NULL,
+  site_id TEXT,
   event_type TEXT NOT NULL,
   event_name TEXT,
   user_id TEXT,
@@ -18,27 +18,31 @@ CREATE TABLE IF NOT EXISTS analytics_events (
   source TEXT,
   campaign TEXT,
   medium TEXT,
+  timestamp TIMESTAMPTZ DEFAULT NOW(),
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Create analytics_funnels table expected by the service
 CREATE TABLE IF NOT EXISTS analytics_funnels (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  organization_id UUID NOT NULL,
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  organization_id TEXT NOT NULL,
   name TEXT NOT NULL,
   description TEXT,
   steps JSONB NOT NULL DEFAULT '[]',
+  is_active BOOLEAN DEFAULT true,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Create analytics_reports table expected by the service
 CREATE TABLE IF NOT EXISTS analytics_reports (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  organization_id UUID NOT NULL,
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  organization_id TEXT NOT NULL,
   name TEXT NOT NULL,
   description TEXT,
   config JSONB NOT NULL DEFAULT '{}',
+  type TEXT,
+  is_public BOOLEAN DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );

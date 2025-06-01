@@ -20,7 +20,7 @@ The platform works by showing __live notifications__ of what other visitors are 
 * Low stock alerts
 * Customer reviews
 
-## Key Features for Your Clone
+## Key Features
 
 1. __Real-time Notifications__: Small popups that appear in corners of the website showing recent customer activities
 
@@ -87,6 +87,8 @@ This is a social proof notification SaaS application with:
 * __Widget__: Embeddable JavaScript widget for customer websites
 
 ## Essential Commands
+
+Always use `npm un/install ...` command when managing NPM packages and never add the packages by editing the `package.json` files.
 
 ### Frontend Development
 
