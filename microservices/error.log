@@ -5,3 +5,4 @@
 {"error":{},"level":"error","message":"Failed to get plans","service":"billing-service","timestamp":"2025-05-26T09:16:05.394Z"}
 {"error":{},"level":"error","message":"Failed to get plans","service":"billing-service","timestamp":"2025-05-26T09:16:57.242Z"}
 {"error":{},"level":"error","message":"Failed to get plans","service":"billing-service","timestamp":"2025-05-26T09:17:58.062Z"}
+{"level":"error","message":"Unhandled promise rejection","promise":{},"reason":{"clientVersion":"6.8.2","name":"PrismaClientInitializationError"},"service":"billing-service","timestamp":"2025-06-01T20:04:43.473Z"}

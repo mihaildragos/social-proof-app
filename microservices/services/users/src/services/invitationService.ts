@@ -1,5 +1,5 @@
 import { BadRequestError, NotFoundError, UnauthorizedError } from "../middleware/errorHandler";
-import { db } from "../utils/db";
+import { prisma } from "../lib/prisma";
 import { logger } from "../utils/logger";
 import { randomBytes } from "crypto";
 
@@ -43,32 +43,50 @@ class InvitationService {
       const { email, organizationId, role, invitedBy } = params;
 
       // Check if user has permission to invite
-      const membership = await db.getOne(
-        "SELECT role FROM organization_members WHERE organization_id = $1 AND user_id = $2",
-        [organizationId, invitedBy]
-      );
+      const membership = await prisma.organizationMember.findFirst({
+        where: {
+          organizationId: organizationId,
+          userId: invitedBy,
+        },
+        select: {
+          role: true,
+        },
+      });
 
       if (!membership || !["admin", "owner"].includes(membership.role)) {
         throw UnauthorizedError("Not authorized to send invitations");
       }
 
       // Check if user is already a member
-      const existingUser = await db.getOne(
-        `SELECT u.id FROM users u 
-         JOIN organization_members om ON u.id = om.user_id 
-         WHERE u.email_encrypted = $1 AND om.organization_id = $2`,
-        [email, organizationId] // Note: In real implementation, email would be encrypted
-      );
+      const existingUser = await prisma.user.findFirst({
+        where: {
+          emailEncrypted: email,
+          organizationMembers: {
+            some: {
+              organizationId: organizationId,
+            },
+          },
+        },
+        select: {
+          id: true,
+        },
+      });
 
       if (existingUser) {
         throw BadRequestError("User is already a member of this organization");
       }
 
       // Check if there's already a pending invitation
-      const existingInvitation = await db.getOne(
-        "SELECT id FROM invitations WHERE email = $1 AND organization_id = $2 AND status = 'pending'",
-        [email, organizationId]
-      );
+      const existingInvitation = await prisma.invitation.findFirst({
+        where: {
+          email: email,
+          organizationId: organizationId,
+          status: "pending",
+        },
+        select: {
+          id: true,
+        },
+      });
 
       if (existingInvitation) {
         throw BadRequestError("Invitation already sent to this email");
@@ -79,22 +97,45 @@ class InvitationService {
       const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
       // Create invitation
-      const invitation = await db.getOne(
-        `INSERT INTO invitations (email, organization_id, role, token, status, invited_by, created_at, expires_at)
-         VALUES ($1, $2, $3, $4, 'pending', $5, NOW(), $6)
-         RETURNING id, email, organization_id, role, token, status, invited_by, created_at, expires_at`,
-        [email, organizationId, role, token, invitedBy, expiresAt.toISOString()]
-      );
+      const invitation = await prisma.invitation.create({
+        data: {
+          email: email,
+          organizationId: organizationId,
+          role: role,
+          token: token,
+          status: "pending",
+          invitedBy: invitedBy,
+          createdAt: new Date(),
+          expiresAt: expiresAt.toISOString(),
+        },
+        select: {
+          id: true,
+          email: true,
+          organizationId: true,
+          role: true,
+          token: true,
+          status: true,
+          invitedBy: true,
+          createdAt: true,
+          expiresAt: true,
+        },
+      });
 
       if (!invitation) {
         throw BadRequestError("Failed to create invitation");
       }
 
       // Get organization details
-      const organization = await db.getOne(
-        "SELECT id, name, slug FROM organizations WHERE id = $1",
-        [organizationId]
-      );
+      const organization = await prisma.organization.findFirst({
+        where: {
+          id: organizationId,
+        },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+        },
+      });
 
       // TODO: Send invitation email here
       logger.info("Invitation created", { invitationId: invitation.id, email, organizationId });
@@ -102,13 +143,13 @@ class InvitationService {
       return {
         id: invitation.id,
         email: invitation.email,
-        organizationId: invitation.organization_id,
+        organizationId: invitation.organizationId,
         role: invitation.role,
         token: invitation.token,
         status: invitation.status,
-        invitedBy: invitation.invited_by,
-        createdAt: invitation.created_at,
-        expiresAt: invitation.expires_at,
+        invitedBy: invitation.invitedBy,
+        createdAt: invitation.createdAt,
+        expiresAt: invitation.expiresAt,
         organization: organization ? {
           id: organization.id,
           name: organization.name,
@@ -127,40 +168,61 @@ class InvitationService {
   async listOrganizationInvitations(organizationId: string, userId: string): Promise<Invitation[]> {
     try {
       // Check if user is a member of the organization
-      const membership = await db.getOne(
-        "SELECT role FROM organization_members WHERE organization_id = $1 AND user_id = $2",
-        [organizationId, userId]
-      );
+      const membership = await prisma.organizationMember.findFirst({
+        where: {
+          organizationId: organizationId,
+          userId: userId,
+        },
+        select: {
+          role: true,
+        },
+      });
 
       if (!membership) {
         throw UnauthorizedError("Not authorized to access this organization");
       }
 
-      const invitations = await db.getMany(
-        `SELECT i.id, i.email, i.organization_id, i.role, i.token, i.status, 
-                i.invited_by, i.created_at, i.expires_at,
-                o.id as org_id, o.name as org_name, o.slug as org_slug
-         FROM invitations i
-         JOIN organizations o ON i.organization_id = o.id
-         WHERE i.organization_id = $1
-         ORDER BY i.created_at DESC`,
-        [organizationId]
-      );
+      const invitations = await prisma.invitation.findMany({
+        where: {
+          organizationId: organizationId,
+        },
+        select: {
+          id: true,
+          email: true,
+          organizationId: true,
+          role: true,
+          token: true,
+          status: true,
+          invitedBy: true,
+          createdAt: true,
+          expiresAt: true,
+          organization: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
 
       return invitations.map((invitation: any) => ({
         id: invitation.id,
         email: invitation.email,
-        organizationId: invitation.organization_id,
+        organizationId: invitation.organizationId,
         role: invitation.role,
         token: invitation.token,
         status: invitation.status,
-        invitedBy: invitation.invited_by,
-        createdAt: invitation.created_at,
-        expiresAt: invitation.expires_at,
+        invitedBy: invitation.invitedBy,
+        createdAt: invitation.createdAt,
+        expiresAt: invitation.expiresAt,
         organization: {
-          id: invitation.org_id,
-          name: invitation.org_name,
-          slug: invitation.org_slug,
+          id: invitation.organization.id,
+          name: invitation.organization.name,
+          slug: invitation.organization.slug,
         },
       }));
     } catch (error) {
@@ -174,15 +236,29 @@ class InvitationService {
    */
   async verifyInvitationToken(token: string): Promise<Invitation> {
     try {
-      const invitation = await db.getOne(
-        `SELECT i.id, i.email, i.organization_id, i.role, i.token, i.status, 
-                i.invited_by, i.created_at, i.expires_at,
-                o.id as org_id, o.name as org_name, o.slug as org_slug
-         FROM invitations i
-         JOIN organizations o ON i.organization_id = o.id
-         WHERE i.token = $1`,
-        [token]
-      );
+      const invitation = await prisma.invitation.findFirst({
+        where: {
+          token: token,
+        },
+        select: {
+          id: true,
+          email: true,
+          organizationId: true,
+          role: true,
+          token: true,
+          status: true,
+          invitedBy: true,
+          createdAt: true,
+          expiresAt: true,
+          organization: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            },
+          },
+        },
+      });
 
       if (!invitation) {
         throw NotFoundError("Invalid invitation token");
@@ -192,24 +268,24 @@ class InvitationService {
         throw BadRequestError("Invitation has already been used or cancelled");
       }
 
-      if (new Date(invitation.expires_at) < new Date()) {
+      if (new Date(invitation.expiresAt) < new Date()) {
         throw BadRequestError("Invitation has expired");
       }
 
       return {
         id: invitation.id,
         email: invitation.email,
-        organizationId: invitation.organization_id,
+        organizationId: invitation.organizationId,
         role: invitation.role,
         token: invitation.token,
         status: invitation.status,
-        invitedBy: invitation.invited_by,
-        createdAt: invitation.created_at,
-        expiresAt: invitation.expires_at,
+        invitedBy: invitation.invitedBy,
+        createdAt: invitation.createdAt,
+        expiresAt: invitation.expiresAt,
         organization: {
-          id: invitation.org_id,
-          name: invitation.org_name,
-          slug: invitation.org_slug,
+          id: invitation.organization.id,
+          name: invitation.organization.name,
+          slug: invitation.organization.slug,
         },
       };
     } catch (error) {
@@ -244,26 +320,33 @@ class InvitationService {
         }
 
         // Check if user already exists
-        const existingUser = await db.getOne(
-          "SELECT id FROM users WHERE email_encrypted = $1",
-          [invitation.email] // Note: In real implementation, email would be encrypted
-        );
+        const existingUser = await prisma.user.findFirst({
+          where: {
+            emailEncrypted: invitation.email,
+          },
+          select: {
+            id: true,
+          },
+        });
 
         if (existingUser) {
           throw BadRequestError("User already exists. Please sign in to accept the invitation.");
         }
 
         // Create new user
-        const newUser = await db.getOne(
-          `INSERT INTO users (email_encrypted, full_name_encrypted, hashed_password, auth_provider, created_at, updated_at)
-           VALUES ($1, $2, $3, 'email', NOW(), NOW())
-           RETURNING id`,
-          [
-            invitation.email, // Note: In real implementation, would be encrypted
-            fullName, // Note: In real implementation, would be encrypted
-            this.hashPassword(password), // Simple hash for demo
-          ]
-        );
+        const newUser = await prisma.user.create({
+          data: {
+            emailEncrypted: invitation.email,
+            fullNameEncrypted: fullName,
+            hashedPassword: this.hashPassword(password),
+            authProvider: "email",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+          select: {
+            id: true,
+          },
+        });
 
         if (!newUser) {
           throw BadRequestError("Failed to create user account");
@@ -273,17 +356,25 @@ class InvitationService {
       }
 
       // Add user to organization
-      await db.execute(
-        `INSERT INTO organization_members (user_id, organization_id, role, joined_at)
-         VALUES ($1, $2, $3, NOW())`,
-        [userId, invitation.organizationId, invitation.role]
-      );
+      await prisma.organizationMember.create({
+        data: {
+          userId: userId,
+          organizationId: invitation.organizationId,
+          role: invitation.role,
+          joinedAt: new Date(),
+        },
+      });
 
       // Mark invitation as accepted
-      await db.execute(
-        "UPDATE invitations SET status = 'accepted', accepted_at = NOW() WHERE id = $1",
-        [invitation.id]
-      );
+      await prisma.invitation.update({
+        where: {
+          id: invitation.id,
+        },
+        data: {
+          status: "accepted",
+          acceptedAt: new Date(),
+        },
+      });
 
       return {
         message: "Invitation accepted successfully",
@@ -303,10 +394,15 @@ class InvitationService {
   async cancelInvitation(invitationId: string, userId: string): Promise<void> {
     try {
       // Get invitation details
-      const invitation = await db.getOne(
-        "SELECT organization_id, status FROM invitations WHERE id = $1",
-        [invitationId]
-      );
+      const invitation = await prisma.invitation.findFirst({
+        where: {
+          id: invitationId,
+        },
+        select: {
+          organizationId: true,
+          status: true,
+        },
+      });
 
       if (!invitation) {
         throw NotFoundError("Invitation not found");
@@ -317,20 +413,30 @@ class InvitationService {
       }
 
       // Check if user has permission
-      const membership = await db.getOne(
-        "SELECT role FROM organization_members WHERE organization_id = $1 AND user_id = $2",
-        [invitation.organization_id, userId]
-      );
+      const membership = await prisma.organizationMember.findFirst({
+        where: {
+          organizationId: invitation.organizationId,
+          userId: userId,
+        },
+        select: {
+          role: true,
+        },
+      });
 
       if (!membership || !["admin", "owner"].includes(membership.role)) {
         throw UnauthorizedError("Not authorized to cancel invitations");
       }
 
       // Cancel invitation
-      await db.execute(
-        "UPDATE invitations SET status = 'cancelled', cancelled_at = NOW() WHERE id = $1",
-        [invitationId]
-      );
+      await prisma.invitation.update({
+        where: {
+          id: invitationId,
+        },
+        data: {
+          status: "cancelled",
+          cancelledAt: new Date(),
+        },
+      });
     } catch (error) {
       logger.error("Error in cancelInvitation", { error, invitationId, userId });
       throw error;
@@ -343,10 +449,16 @@ class InvitationService {
   async resendInvitation(invitationId: string, userId: string): Promise<void> {
     try {
       // Get invitation details
-      const invitation = await db.getOne(
-        "SELECT organization_id, status, email FROM invitations WHERE id = $1",
-        [invitationId]
-      );
+      const invitation = await prisma.invitation.findFirst({
+        where: {
+          id: invitationId,
+        },
+        select: {
+          organizationId: true,
+          status: true,
+          email: true,
+        },
+      });
 
       if (!invitation) {
         throw NotFoundError("Invitation not found");
@@ -357,10 +469,15 @@ class InvitationService {
       }
 
       // Check if user has permission
-      const membership = await db.getOne(
-        "SELECT role FROM organization_members WHERE organization_id = $1 AND user_id = $2",
-        [invitation.organization_id, userId]
-      );
+      const membership = await prisma.organizationMember.findFirst({
+        where: {
+          organizationId: invitation.organizationId,
+          userId: userId,
+        },
+        select: {
+          role: true,
+        },
+      });
 
       if (!membership || !["admin", "owner"].includes(membership.role)) {
         throw UnauthorizedError("Not authorized to resend invitations");
@@ -368,10 +485,15 @@ class InvitationService {
 
       // Update invitation with new expiry
       const newExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
-      await db.execute(
-        "UPDATE invitations SET expires_at = $1, updated_at = NOW() WHERE id = $2",
-        [newExpiresAt.toISOString(), invitationId]
-      );
+      await prisma.invitation.update({
+        where: {
+          id: invitationId,
+        },
+        data: {
+          expiresAt: newExpiresAt.toISOString(),
+          
+        },
+      });
 
       // TODO: Send invitation email here
       logger.info("Invitation resent", { invitationId, email: invitation.email });

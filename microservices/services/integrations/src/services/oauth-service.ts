@@ -184,6 +184,9 @@ export class OAuthService extends EventEmitter {
         throw new Error(`Unsupported OAuth provider: ${provider}`);
       }
 
+      // Validate state parameter before making any HTTP requests
+      const userId = this.extractUserIdFromState(state);
+
       const tokenParams = {
         grant_type: "authorization_code",
         client_id: providerConfig.clientId,
@@ -200,7 +203,6 @@ export class OAuthService extends EventEmitter {
       });
 
       const tokenData = response.data;
-      const userId = this.extractUserIdFromState(state);
 
       // Get user info from provider
       const userInfo = await this.getUserInfo(provider, tokenData.access_token);
@@ -293,7 +295,8 @@ export class OAuthService extends EventEmitter {
 
       const providerConfig = this.providers.get(provider);
       if (!providerConfig) {
-        throw new Error(`Unsupported OAuth provider: ${provider}`);
+        console.warn(`Token revocation not implemented for provider: ${provider}`);
+        return;
       }
 
       // Provider-specific revocation
@@ -435,8 +438,26 @@ export class OAuthService extends EventEmitter {
     }
 
     try {
+      // Validate base64 format first
+      if (!/^[A-Za-z0-9+/]*={0,2}$/.test(state)) {
+        throw new Error("Invalid base64 format");
+      }
+      
       const decoded = Buffer.from(state, "base64").toString("utf8");
-      const [userId] = decoded.split(":");
+      const parts = decoded.split(":");
+      
+      // Validate that we have the expected format: userId:timestamp:random
+      if (parts.length !== 3) {
+        throw new Error("Invalid state format");
+      }
+      
+      const [userId, timestamp, random] = parts;
+      
+      // Basic validation of parts
+      if (!userId || !timestamp || !random) {
+        throw new Error("Invalid state components");
+      }
+      
       return userId;
     } catch (error) {
       throw new Error("Invalid state parameter");

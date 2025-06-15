@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { getContextLogger } from "../utils/logger";
+import { getContextLogger } from "../../utils/logger";
 
 const logger = getContextLogger({ service: "api-key" });
 

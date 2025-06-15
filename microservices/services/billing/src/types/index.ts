@@ -1,152 +1,154 @@
 // Billing entity types based on the database schema
 
+import { Decimal } from "@prisma/client/runtime/library";
+
 export interface Plan {
   id: string;
   name: string;
-  display_name: string;
+  displayName: string;
   description: string | null;
-  price_monthly: number;
-  price_yearly: number;
+  priceMonthly: Decimal;
+  priceYearly: Decimal;
   currency: string;
-  is_public: boolean;
-  sort_order: number;
-  stripe_product_id: string | null;
-  stripe_monthly_price_id: string | null;
-  stripe_yearly_price_id: string | null;
-  created_at: Date;
-  updated_at: Date;
+  isPublic: boolean;
+  sortOrder: number;
+  stripeProductId: string | null;
+  stripeMonthlyPriceId: string | null;
+  stripeYearlyPriceId: string | null;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface PlanFeature {
   id: string;
-  plan_id: string;
+  planId: string;
   name: string;
   description: string | null;
-  feature_type: "boolean" | "number" | "text";
+  featureType: string;
   value: any; // JSONB field
-  is_highlighted: boolean;
-  created_at: Date;
-  updated_at: Date;
+  isHighlighted: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface PlanLimit {
   id: string;
-  plan_id: string;
-  resource_type: string;
-  max_value: number; // -1 for unlimited
-  overage_price: number | null;
-  created_at: Date;
-  updated_at: Date;
+  planId: string;
+  resourceType: string;
+  maxValue: number; // -1 for unlimited
+  overagePrice: Decimal | null;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface Subscription {
   id: string;
-  organization_id: string;
-  plan_id: string;
-  billing_cycle: "monthly" | "yearly";
-  status: "active" | "canceled" | "past_due" | "trialing" | "unpaid";
-  trial_ends_at: Date | null;
-  current_period_start: Date;
-  current_period_end: Date;
-  cancels_at_period_end: boolean;
-  canceled_at: Date | null;
-  stripe_subscription_id: string | null;
-  stripe_customer_id: string | null;
-  created_at: Date;
-  updated_at: Date;
+  organizationId: string;
+  planId: string;
+  billingCycle: string;
+  status: string;
+  trialEndsAt: Date | null;
+  currentPeriodStart: Date;
+  currentPeriodEnd: Date;
+  cancelsAtPeriodEnd: boolean;
+  canceledAt: Date | null;
+  stripeSubscriptionId: string | null;
+  stripeCustomerId: string | null;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface Invoice {
   id: string;
-  organization_id: string;
-  subscription_id: string;
-  stripe_invoice_id: string | null;
+  organizationId: string;
+  subscriptionId: string;
+  stripeInvoiceId: string | null;
   number: string | null;
   currency: string;
-  subtotal: number;
-  tax: number;
-  total: number;
-  status: "draft" | "open" | "paid" | "uncollectible" | "void";
-  invoice_pdf_url: string | null;
-  period_start: Date;
-  period_end: Date;
-  due_date: Date | null;
-  paid_at: Date | null;
-  created_at: Date;
-  updated_at: Date;
+  subtotal: Decimal;
+  tax: Decimal;
+  total: Decimal;
+  status: string;
+  invoicePdfUrl: string | null;
+  periodStart: Date;
+  periodEnd: Date;
+  dueDate: Date | null;
+  paidAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface UsageRecord {
   id: string;
-  organization_id: string;
-  subscription_id: string;
-  resource_type: string;
+  organizationId: string;
+  subscriptionId: string;
+  resourceType: string;
   quantity: number;
-  recorded_at: Date;
+  recordedAt: Date;
 }
 
 export interface UsageSummary {
   id: string;
-  organization_id: string;
-  subscription_id: string;
-  resource_type: string;
-  period_start: Date;
-  period_end: Date;
-  included_quantity: number;
-  used_quantity: number;
-  overage_quantity: number;
-  overage_unit_price: number | null;
-  overage_amount: number;
+  organizationId: string;
+  subscriptionId: string;
+  resourceType: string;
+  periodStart: Date;
+  periodEnd: Date;
+  includedQuantity: number;
+  usedQuantity: number;
+  overageQuantity: number;
+  overageUnitPrice: number | null;
+  overageAmount: number;
   status: "pending" | "billed" | "waived";
-  stripe_usage_record_id: string | null;
-  created_at: Date;
-  updated_at: Date;
+  stripeUsageRecordId: string | null;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface PaymentMethod {
   id: string;
-  organization_id: string;
-  stripe_payment_method_id: string;
+  organizationId: string;
+  stripePaymentMethodId: string;
   brand: string;
   last4: string;
-  exp_month: number;
-  exp_year: number;
-  is_default: boolean;
-  created_at: Date;
-  updated_at: Date;
+  expMonth: number;
+  expYear: number;
+  isDefault: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 // API request/response types
 export interface CreateSubscriptionRequest {
-  organization_id: string;
-  plan_id: string;
-  billing_cycle: "monthly" | "yearly";
-  payment_method_id?: string;
+  organizationId: string;
+  planId: string;
+  billingCycle: "monthly" | "yearly";
+  paymentMethodId?: string;
 }
 
 export interface UpdateSubscriptionRequest {
-  plan_id?: string;
-  billing_cycle?: "monthly" | "yearly";
+  planId?: string;
+  billingCycle?: "monthly" | "yearly";
 }
 
 export interface TrackUsageRequest {
-  organization_id: string;
-  resource_type: string;
+  organizationId: string;
+  resourceType: string;
   quantity: number;
 }
 
 export interface UsageValidationRequest {
-  organization_id: string;
-  resource_type: string;
+  organizationId: string;
+  resourceType: string;
   quantity: number;
 }
 
 export interface UsageValidationResponse {
-  is_valid: boolean;
-  current_usage: number;
+  isValid: boolean;
+  currentUsage: number;
   limit: number;
-  overage_allowed: boolean;
-  overage_price?: number;
+  overageAllowed: boolean;
+  overagePrice?: number;
 }
 
 // API response wrapper
@@ -156,4 +158,4 @@ export interface ApiResponse<T = any> {
   message?: string;
   code?: string;
   details?: any;
-} 
+}

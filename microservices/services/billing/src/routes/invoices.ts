@@ -1,3 +1,5 @@
+
+
 import { Router, Request, Response } from "express";
 import { BillingService } from "../services/billing-service";
 import { authMiddleware } from "../middleware/auth";
@@ -118,19 +120,16 @@ router.get("/:invoiceId", authMiddleware, async (req: Request, res: Response): P
         id: invoice.id,
         number: invoice.number,
         status: invoice.status,
-        amountDue: invoice.amountDue,
-        amountPaid: invoice.amountPaid,
-        amountRemaining: invoice.amountRemaining,
+        total: invoice.total,
+        subtotal: invoice.subtotal,
+        tax: invoice.tax,
         currency: invoice.currency,
-        description: invoice.description,
         dueDate: invoice.dueDate,
         paidAt: invoice.paidAt,
-        hostedInvoiceUrl: invoice.hostedInvoiceUrl,
-        invoicePdf: invoice.invoicePdf,
+        invoicePdfUrl: invoice.invoicePdfUrl,
         subscriptionId: invoice.subscriptionId,
-        customerId: invoice.customerId,
-        lines: invoice.lines,
-        metadata: invoice.metadata,
+        organizationId: invoice.organizationId,
+        stripeInvoiceId: invoice.stripeInvoiceId,
         createdAt: invoice.createdAt,
         updatedAt: invoice.updatedAt,
       },
@@ -175,10 +174,9 @@ router.post(
           id: invoice.id,
           number: invoice.number,
           status: invoice.status,
-          amountDue: invoice.amountDue,
+          total: invoice.total,
           currency: invoice.currency,
           dueDate: invoice.dueDate,
-          hostedInvoiceUrl: invoice.hostedInvoiceUrl,
           createdAt: invoice.createdAt,
         },
       });
@@ -225,9 +223,7 @@ router.put(
           id: invoice.id,
           number: invoice.number,
           status: invoice.status,
-          description: invoice.description,
           dueDate: invoice.dueDate,
-          metadata: invoice.metadata,
           updatedAt: invoice.updatedAt,
         },
       });
@@ -265,9 +261,8 @@ router.post("/:invoiceId/finalize", authMiddleware, async (req: Request, res: Re
         id: invoice.id,
         number: invoice.number,
         status: invoice.status,
-        amountDue: invoice.amountDue,
-        hostedInvoiceUrl: invoice.hostedInvoiceUrl,
-        invoicePdf: invoice.invoicePdf,
+        total: invoice.total,
+        invoicePdfUrl: invoice.invoicePdfUrl,
       },
       message: "Invoice has been finalized and sent",
     });

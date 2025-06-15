@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { StripeService } from "../services/StripeService";
+import { StripeService } from "../services/stripe-service";
 import { SubscriptionRepository } from "../repositories/SubscriptionRepository";
 import { logger } from "../utils/logger";
 import { BadRequestError } from "../middleware/errorHandler";
@@ -21,9 +21,10 @@ router.post("/stripe", async (req: Request, res: Response) => {
     }
 
     // Verify webhook signature
-    const event = stripeService.verifyWebhookSignature(
+    const event = await stripeService.constructWebhookEvent(
       JSON.stringify(req.body),
-      signature
+      signature,
+      process.env.STRIPE_WEBHOOK_SECRET!
     );
 
     logger.info("Received Stripe webhook", { 

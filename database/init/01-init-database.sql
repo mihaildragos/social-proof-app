@@ -2,6 +2,7 @@
 CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 -- Create core tables
 CREATE TABLE
@@ -262,3 +263,8 @@ VALUES
         'popup',
         '{"message": "Only {stock_count} left of {product_name}!", "style": {"position": "top-right", "theme": "urgent"}}'
     ) ON CONFLICT DO NOTHING;
+
+-- NOTE: After running this initialization script, run the schema migration fixes:
+-- node scripts/fix-schema-mismatches.js
+-- 
+-- This will apply all necessary schema compatibility fixes for microservices

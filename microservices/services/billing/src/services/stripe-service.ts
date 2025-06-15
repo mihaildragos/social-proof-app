@@ -42,7 +42,7 @@ export class StripeService extends EventEmitter {
       const customer = await this.stripe.customers.retrieve(customerId);
       return customer.deleted ? null : (customer as Stripe.Customer);
     } catch (error) {
-      if ((error as Stripe.StripeError).code === "resource_missing") {
+      if ((error as any).code === "resource_missing") {
         return null;
       }
       throw error;
@@ -131,7 +131,7 @@ export class StripeService extends EventEmitter {
       const subscription = await this.stripe.subscriptions.retrieve(subscriptionId);
       return subscription;
     } catch (error) {
-      if ((error as Stripe.StripeError).code === "resource_missing") {
+      if ((error as any).code === "resource_missing") {
         return null;
       }
       throw error;
@@ -157,7 +157,7 @@ export class StripeService extends EventEmitter {
         const subscription = await this.stripe.subscriptions.retrieve(subscriptionId);
         updateData.items = [
           {
-            id: subscription.items.data[0].id,
+            id: subscription.items.data[0]!.id,
             price: data.priceId,
           },
         ];
@@ -193,12 +193,9 @@ export class StripeService extends EventEmitter {
       if (options.cancelAtPeriodEnd) {
         subscription = await this.stripe.subscriptions.update(subscriptionId, {
           cancel_at_period_end: true,
-          cancellation_details: options.cancellationDetails,
         });
       } else {
-        subscription = await this.stripe.subscriptions.cancel(subscriptionId, {
-          cancellation_details: options.cancellationDetails,
-        });
+        subscription = await this.stripe.subscriptions.cancel(subscriptionId);
       }
 
       this.emit("subscription.canceled", { subscription });
@@ -225,7 +222,7 @@ export class StripeService extends EventEmitter {
 
   async previewSubscriptionChange(
     subscriptionId: string,
-    data: {
+    _data: {
       priceId?: string;
       prorationBehavior?: string;
     }
@@ -236,17 +233,7 @@ export class StripeService extends EventEmitter {
       const invoiceData: Stripe.InvoiceCreateParams = {
         customer: subscription.customer as string,
         subscription: subscriptionId,
-        subscription_proration_behavior: data.prorationBehavior as any,
       };
-
-      if (data.priceId) {
-        invoiceData.subscription_items = [
-          {
-            id: subscription.items.data[0].id,
-            price: data.priceId,
-          },
-        ];
-      }
 
       const invoice = await this.stripe.invoices.create(invoiceData);
       return invoice;
@@ -294,7 +281,7 @@ export class StripeService extends EventEmitter {
       const paymentIntent = await this.stripe.paymentIntents.retrieve(paymentIntentId);
       return paymentIntent;
     } catch (error) {
-      if ((error as Stripe.StripeError).code === "resource_missing") {
+      if ((error as any).code === "resource_missing") {
         return null;
       }
       throw error;
@@ -361,7 +348,7 @@ export class StripeService extends EventEmitter {
   async createPaymentMethod(data: {
     customerId: string;
     type: string;
-    card?: Stripe.PaymentMethodCreateParams.Card;
+    card?: any;
     bankAccount?: any;
     billingDetails?: Stripe.PaymentMethodCreateParams.BillingDetails;
   }): Promise<Stripe.PaymentMethod> {
@@ -492,7 +479,7 @@ export class StripeService extends EventEmitter {
       const invoice = await this.stripe.invoices.retrieve(invoiceId);
       return invoice;
     } catch (error) {
-      if ((error as Stripe.StripeError).code === "resource_missing") {
+      if ((error as any).code === "resource_missing") {
         return null;
       }
       throw error;
@@ -628,10 +615,10 @@ export class StripeService extends EventEmitter {
           this.emit(`stripe.${event.type}`, { data: event.data.object });
           break;
 
-        case "subscription.created":
-        case "subscription.updated":
-        case "subscription.deleted":
-        case "subscription.trial_will_end":
+        case "customer.subscription.created":
+        case "customer.subscription.updated":
+        case "customer.subscription.deleted":
+        case "customer.subscription.trial_will_end":
           this.emit(`stripe.${event.type}`, { data: event.data.object });
           break;
 

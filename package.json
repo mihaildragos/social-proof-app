@@ -55,7 +55,11 @@
     "migrate:analytics": "node scripts/run-all-migrations.js --service=analytics",
     "migrate:notifications": "node scripts/run-all-migrations.js --service=notifications",
     "migrate:users": "node scripts/run-all-migrations.js --service=users",
-    "migrate:supabase": "echo '⚠️  Supabase migrations must be applied manually. Run: npm run migrate:help'"
+    "migrate:supabase": "echo '⚠️  Supabase migrations must be applied manually. Run: npm run migrate:help'",
+
+    "fix-schema-mismatches": "node scripts/fix-schema-mismatches.js",
+    "fix-schema-mismatches:dry-run": "node scripts/fix-schema-mismatches.js dry-run",
+    "rollback-migration": "node scripts/fix-schema-mismatches.js rollback"
   },
   "dependencies": {
     "@clerk/clerk-sdk-node": "^4.13.23",

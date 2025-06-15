@@ -1,4 +1,4 @@
-import { query, queryOne, transaction } from "../utils/database";
+import { prisma } from "../lib/prisma";
 import { Subscription, CreateSubscriptionRequest } from "../types";
 import { v4 as uuidv4 } from "uuid";
 
@@ -7,13 +7,14 @@ export class SubscriptionRepository {
    * Get subscription by organization ID
    */
   async getByOrganizationId(organizationId: string): Promise<Subscription | null> {
-    const result = await queryOne<Subscription>(
-      `SELECT * FROM subscriptions 
-       WHERE organization_id = $1 
-       ORDER BY created_at DESC 
-       LIMIT 1`,
-      [organizationId]
-    );
+    const result = await prisma.subscription.findFirst({
+      where: {
+        organizationId
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
     return result;
   }
 
@@ -21,10 +22,11 @@ export class SubscriptionRepository {
    * Get subscription by ID
    */
   async getById(id: string): Promise<Subscription | null> {
-    const result = await queryOne<Subscription>(
-      "SELECT * FROM subscriptions WHERE id = $1",
-      [id]
-    );
+    const result = await prisma.subscription.findUnique({
+      where: {
+        id
+      }
+    });
     return result;
   }
 
@@ -32,10 +34,11 @@ export class SubscriptionRepository {
    * Get subscription by Stripe subscription ID
    */
   async getByStripeSubscriptionId(stripeSubscriptionId: string): Promise<Subscription | null> {
-    const result = await queryOne<Subscription>(
-      "SELECT * FROM subscriptions WHERE stripe_subscription_id = $1",
-      [stripeSubscriptionId]
-    );
+    const result = await prisma.subscription.findFirst({
+      where: {
+        stripeSubscriptionId
+      }
+    });
     return result;
   }
 
@@ -43,41 +46,25 @@ export class SubscriptionRepository {
    * Create a new subscription
    */
   async create(data: CreateSubscriptionRequest & {
-    stripe_subscription_id?: string;
-    stripe_customer_id?: string;
-    trial_ends_at?: Date;
-    current_period_start: Date;
-    current_period_end: Date;
+    stripeSubscriptionId?: string;
+    stripeCustomerId?: string;
+    trialEndsAt?: Date;
+    currentPeriodStart: Date;
+    currentPeriodEnd: Date;
   }): Promise<Subscription> {
-    const id = uuidv4();
-    const now = new Date();
-
-    const result = await queryOne<Subscription>(
-      `INSERT INTO subscriptions (
-        id, organization_id, plan_id, billing_cycle, status,
-        trial_ends_at, current_period_start, current_period_end,
-        stripe_subscription_id, stripe_customer_id, created_at, updated_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-      RETURNING *`,
-      [
-        id,
-        data.organization_id,
-        data.plan_id,
-        data.billing_cycle,
-        "active", // Default status
-        data.trial_ends_at || null,
-        data.current_period_start,
-        data.current_period_end,
-        data.stripe_subscription_id || null,
-        data.stripe_customer_id || null,
-        now,
-        now,
-      ]
-    );
-
-    if (!result) {
-      throw new Error("Failed to create subscription");
-    }
+    const result = await prisma.subscription.create({
+      data: {
+        organizationId: data.organizationId,
+        planId: data.planId,
+        billingCycle: data.billingCycle,
+        status: "active",
+        trialEndsAt: data.trialEndsAt || null,
+        currentPeriodStart: data.currentPeriodStart,
+        currentPeriodEnd: data.currentPeriodEnd,
+        stripeSubscriptionId: data.stripeSubscriptionId || null,
+        stripeCustomerId: data.stripeCustomerId || null,
+      }
+    });
 
     return result;
   }
@@ -86,23 +73,28 @@ export class SubscriptionRepository {
    * Update subscription
    */
   async update(id: string, updates: Partial<Subscription>): Promise<Subscription | null> {
-    const setClause = Object.keys(updates)
-      .map((key, index) => `${key} = $${index + 2}`)
-      .join(", ");
-
-    if (!setClause) {
+    if (Object.keys(updates).length === 0) {
       return this.getById(id);
     }
 
-    const values = [id, ...Object.values(updates), new Date()];
+    // Build update object from provided fields
+    const prismaUpdates: any = {};
+    if (updates.organizationId) prismaUpdates.organizationId = updates.organizationId;
+    if (updates.planId) prismaUpdates.planId = updates.planId;
+    if (updates.billingCycle) prismaUpdates.billingCycle = updates.billingCycle;
+    if (updates.status) prismaUpdates.status = updates.status;
+    if (updates.trialEndsAt !== undefined) prismaUpdates.trialEndsAt = updates.trialEndsAt;
+    if (updates.currentPeriodStart) prismaUpdates.currentPeriodStart = updates.currentPeriodStart;
+    if (updates.currentPeriodEnd) prismaUpdates.currentPeriodEnd = updates.currentPeriodEnd;
+    if (updates.cancelsAtPeriodEnd !== undefined) prismaUpdates.cancelsAtPeriodEnd = updates.cancelsAtPeriodEnd;
+    if (updates.canceledAt !== undefined) prismaUpdates.canceledAt = updates.canceledAt;
+    if (updates.stripeSubscriptionId !== undefined) prismaUpdates.stripeSubscriptionId = updates.stripeSubscriptionId;
+    if (updates.stripeCustomerId !== undefined) prismaUpdates.stripeCustomerId = updates.stripeCustomerId;
     
-    const result = await queryOne<Subscription>(
-      `UPDATE subscriptions 
-       SET ${setClause}, updated_at = $${values.length}
-       WHERE id = $1 
-       RETURNING *`,
-      values
-    );
+    const result = await prisma.subscription.update({
+      where: { id },
+      data: prismaUpdates
+    });
 
     return result;
   }
@@ -113,13 +105,13 @@ export class SubscriptionRepository {
   async cancel(id: string, canceledAt?: Date): Promise<Subscription | null> {
     const now = canceledAt || new Date();
     
-    const result = await queryOne<Subscription>(
-      `UPDATE subscriptions 
-       SET status = 'canceled', canceled_at = $2, updated_at = $3
-       WHERE id = $1 
-       RETURNING *`,
-      [id, now, new Date()]
-    );
+    const result = await prisma.subscription.update({
+      where: { id },
+      data: {
+        status: 'canceled',
+        canceledAt: now
+      }
+    });
 
     return result;
   }
@@ -130,15 +122,20 @@ export class SubscriptionRepository {
   async getEndingSoon(days: number = 3): Promise<Subscription[]> {
     const futureDate = new Date();
     futureDate.setDate(futureDate.getDate() + days);
+    const now = new Date();
 
-    const results = await query<Subscription>(
-      `SELECT * FROM subscriptions 
-       WHERE status = 'trialing' 
-       AND trial_ends_at <= $1 
-       AND trial_ends_at > NOW()
-       ORDER BY trial_ends_at ASC`,
-      [futureDate]
-    );
+    const results = await prisma.subscription.findMany({
+      where: {
+        status: 'trialing',
+        trialEndsAt: {
+          lte: futureDate,
+          gt: now
+        }
+      },
+      orderBy: {
+        trialEndsAt: 'asc'
+      }
+    });
 
     return results;
   }
@@ -147,10 +144,14 @@ export class SubscriptionRepository {
    * Get subscriptions by status
    */
   async getByStatus(status: string): Promise<Subscription[]> {
-    const results = await query<Subscription>(
-      "SELECT * FROM subscriptions WHERE status = $1 ORDER BY created_at DESC",
-      [status]
-    );
+    const results = await prisma.subscription.findMany({
+      where: {
+        status
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
 
     return results;
   }
@@ -159,43 +160,34 @@ export class SubscriptionRepository {
    * Update subscription from Stripe webhook data
    */
   async updateFromStripe(stripeSubscriptionId: string, stripeData: any): Promise<Subscription | null> {
-    return await transaction(async (client) => {
+    return await prisma.$transaction(async (prisma) => {
       // First, find the subscription
-      const existingResult = await client.query(
-        "SELECT * FROM subscriptions WHERE stripe_subscription_id = $1",
-        [stripeSubscriptionId]
-      );
+      const existingSubscription = await prisma.subscription.findFirst({
+        where: {
+          stripeSubscriptionId
+        }
+      });
 
-      if (existingResult.rows.length === 0) {
+      if (!existingSubscription) {
         return null;
       }
 
       // Update with Stripe data
-      const updateResult = await client.query(
-        `UPDATE subscriptions 
-         SET 
-           status = $2,
-           current_period_start = $3,
-           current_period_end = $4,
-           trial_ends_at = $5,
-           canceled_at = $6,
-           cancels_at_period_end = $7,
-           updated_at = $8
-         WHERE stripe_subscription_id = $1
-         RETURNING *`,
-        [
-          stripeSubscriptionId,
-          stripeData.status,
-          new Date(stripeData.current_period_start * 1000),
-          new Date(stripeData.current_period_end * 1000),
-          stripeData.trial_end ? new Date(stripeData.trial_end * 1000) : null,
-          stripeData.canceled_at ? new Date(stripeData.canceled_at * 1000) : null,
-          stripeData.cancel_at_period_end || false,
-          new Date(),
-        ]
-      );
+      const updatedSubscription = await prisma.subscription.update({
+        where: {
+          id: existingSubscription.id
+        },
+        data: {
+          status: stripeData.status,
+          currentPeriodStart: new Date(stripeData.current_period_start * 1000),
+          currentPeriodEnd: new Date(stripeData.current_period_end * 1000),
+          trialEndsAt: stripeData.trial_end ? new Date(stripeData.trial_end * 1000) : null,
+          canceledAt: stripeData.canceled_at ? new Date(stripeData.canceled_at * 1000) : null,
+          cancelsAtPeriodEnd: stripeData.cancel_at_period_end || false,
+        }
+      });
 
-      return updateResult.rows[0] || null;
+      return updatedSubscription;
     });
   }
 } 

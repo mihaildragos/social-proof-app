@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Redis } from "ioredis";
-import MockRedis from "@/app/lib/mock-redis";
 
 // Create Redis client for publishing notifications
 const getRedisClient = () => {

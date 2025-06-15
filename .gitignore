@@ -55,3 +55,5 @@ next-env.d.ts
 documentation/old_shopify_app/*
 gcp/kubernetes/secrets-local.yaml
 microservices/combined.log
+microservices/logs/error.log
+microservices/logs/combined.log

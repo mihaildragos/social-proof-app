@@ -1,25 +1,20 @@
 import { describe, it, expect, jest, beforeEach } from "@jest/globals";
 import { userService } from "../../services/user-service";
 
-// Mock supabase globally
-const createMockQueryBuilder = (): any => ({
-  eq: jest.fn(() => createMockQueryBuilder()),
-  single: jest.fn(() => Promise.resolve({ data: null, error: null })),
-  limit: jest.fn(() => createMockQueryBuilder()),
-  range: jest.fn(() => createMockQueryBuilder()),
-  data: null,
-  error: null,
-  count: 0,
-});
-
-(global as any).supabase = {
-  from: jest.fn(() => ({
-    select: jest.fn(() => createMockQueryBuilder()),
-    update: jest.fn(() => createMockQueryBuilder()),
-    insert: jest.fn(() => Promise.resolve({ data: null, error: null })),
-    delete: jest.fn(() => createMockQueryBuilder()),
-  })),
-};
+// Mock Prisma client
+jest.mock("../../lib/prisma", () => ({
+  prisma: {
+    user: {
+      findUnique: jest.fn(),
+      update: jest.fn(),
+      findMany: jest.fn(),
+      count: jest.fn(),
+    },
+    organizationMember: {
+      findFirst: jest.fn(),
+    },
+  },
+}));
 
 // Mock the user service
 jest.mock("../../services/user-service");

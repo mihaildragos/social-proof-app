@@ -1,10 +1,12 @@
 import { Router, Request, Response } from "express";
+import { PlanRepository } from "../repositories/PlanRepository";
 import { BillingService } from "../services/billing-service";
 import { authMiddleware } from "../middleware/auth";
 import { validateRequest } from "../middleware/validation";
 import { z } from "zod";
 
 const router = Router();
+const planRepository = new PlanRepository();
 const billingService = new BillingService();
 
 // Validation schemas
@@ -60,28 +62,23 @@ const getPlanSchema = z.object({
 });
 
 // Get all plans (public endpoint for plan selection)
-router.get("/", validateRequest(getPlanSchema, "query"), async (req: Request, res: Response) => {
+router.get("/", validateRequest(getPlanSchema, "query"), async (req: Request, res: Response): Promise<void> => {
   try {
     const { active, limit, offset } = req.query;
 
-    const plans = await billingService.getPlans({
-      active: active as boolean,
-      limit: Number(limit),
-      offset: Number(offset),
-    });
+    const plans = await planRepository.getPublicPlans();
 
     res.json({
-              plans: plans.map((plan: any) => ({
+      plans: plans.map((plan) => ({
         id: plan.id,
         name: plan.name,
+        displayName: plan.displayName,
         description: plan.description,
-        amount: plan.amount,
+        priceMonthly: plan.priceMonthly,
+        priceYearly: plan.priceYearly,
         currency: plan.currency,
-        interval: plan.interval,
-        intervalCount: plan.intervalCount,
-        trialPeriodDays: plan.trialPeriodDays,
-        features: plan.features,
-        active: plan.active,
+        isPublic: plan.isPublic,
+        sortOrder: plan.sortOrder,
         createdAt: plan.createdAt,
       })),
       total: plans.length,
@@ -96,29 +93,36 @@ router.get("/", validateRequest(getPlanSchema, "query"), async (req: Request, re
 });
 
 // Get specific plan
-router.get("/:planId", async (req: Request, res: Response) => {
+router.get("/:planId", async (req: Request, res: Response): Promise<void> => {
   try {
     const { planId } = req.params;
 
-    const plan = await billingService.getPlan(planId);
+    if (!planId) {
+      res.status(400).json({ error: "Plan ID is required" });
+      return;
+    }
+
+    const plan = await planRepository.getById(planId);
 
     if (!plan) {
-      return res.status(404).json({ error: "Plan not found" });
+      res.status(404).json({ error: "Plan not found" });
+      return;
     }
 
     res.json({
       plan: {
         id: plan.id,
         name: plan.name,
+        displayName: plan.displayName,
         description: plan.description,
-        amount: plan.amount,
+        priceMonthly: plan.priceMonthly,
+        priceYearly: plan.priceYearly,
         currency: plan.currency,
-        interval: plan.interval,
-        intervalCount: plan.intervalCount,
-        trialPeriodDays: plan.trialPeriodDays,
-        features: plan.features,
-        metadata: plan.metadata,
-        active: plan.active,
+        isPublic: plan.isPublic,
+        sortOrder: plan.sortOrder,
+        stripeProductId: plan.stripeProductId,
+        stripeMonthlyPriceId: plan.stripeMonthlyPriceId,
+        stripeYearlyPriceId: plan.stripeYearlyPriceId,
         createdAt: plan.createdAt,
         updatedAt: plan.updatedAt,
       },
@@ -137,7 +141,7 @@ router.post(
   "/",
   authMiddleware,
   validateRequest(createPlanSchema),
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response): Promise<void> => {
     try {
       const {
         name,
@@ -155,12 +159,14 @@ router.post(
       const userRole = (req as any).user?.role;
 
       if (!userId) {
-        return res.status(401).json({ error: "User not authenticated" });
+        res.status(401).json({ error: "User not authenticated" });
+        return;
       }
 
       // Check if user has admin role
       if (userRole !== "admin") {
-        return res.status(403).json({ error: "Admin access required" });
+        res.status(403).json({ error: "Admin access required" });
+        return;
       }
 
       const plan = await billingService.createPlan({
@@ -182,14 +188,13 @@ router.post(
         plan: {
           id: plan.id,
           name: plan.name,
+          displayName: plan.displayName,
           description: plan.description,
-          amount: plan.amount,
+          priceMonthly: plan.priceMonthly,
+          priceYearly: plan.priceYearly,
           currency: plan.currency,
-          interval: plan.interval,
-          intervalCount: plan.intervalCount,
-          trialPeriodDays: plan.trialPeriodDays,
-          features: plan.features,
-          active: plan.active,
+          isPublic: plan.isPublic,
+          sortOrder: plan.sortOrder,
           createdAt: plan.createdAt,
         },
       });
@@ -208,20 +213,27 @@ router.put(
   "/:planId",
   authMiddleware,
   validateRequest(updatePlanSchema),
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response): Promise<void> => {
     try {
       const { planId } = req.params;
+
+    if (!planId) {
+      res.status(400).json({ error: "Plan ID is required" });
+      return;
+    }
       const { name, description, trialPeriodDays, features, metadata, active } = req.body;
       const userId = (req as any).user?.id;
       const userRole = (req as any).user?.role;
 
       if (!userId) {
-        return res.status(401).json({ error: "User not authenticated" });
+        res.status(401).json({ error: "User not authenticated" });
+        return;
       }
 
       // Check if user has admin role
       if (userRole !== "admin") {
-        return res.status(403).json({ error: "Admin access required" });
+        res.status(403).json({ error: "Admin access required" });
+        return;
       }
 
       const plan = await billingService.updatePlan(planId, {
@@ -239,11 +251,13 @@ router.put(
         plan: {
           id: plan.id,
           name: plan.name,
+          displayName: plan.displayName,
           description: plan.description,
-          trialPeriodDays: plan.trialPeriodDays,
-          features: plan.features,
-          metadata: plan.metadata,
-          active: plan.active,
+          priceMonthly: plan.priceMonthly,
+          priceYearly: plan.priceYearly,
+          currency: plan.currency,
+          isPublic: plan.isPublic,
+          sortOrder: plan.sortOrder,
           updatedAt: plan.updatedAt,
         },
       });
@@ -258,19 +272,26 @@ router.put(
 );
 
 // Delete plan (admin only)
-router.delete("/:planId", authMiddleware, async (req: Request, res: Response) => {
+router.delete("/:planId", authMiddleware, async (req: Request, res: Response): Promise<void> => {
   try {
     const { planId } = req.params;
+
+    if (!planId) {
+      res.status(400).json({ error: "Plan ID is required" });
+      return;
+    }
     const userId = (req as any).user?.id;
     const userRole = (req as any).user?.role;
 
     if (!userId) {
-      return res.status(401).json({ error: "User not authenticated" });
+      res.status(401).json({ error: "User not authenticated" });
+      return;
     }
 
     // Check if user has admin role
     if (userRole !== "admin") {
-      return res.status(403).json({ error: "Admin access required" });
+      res.status(403).json({ error: "Admin access required" });
+      return;
     }
 
     await billingService.deletePlan(planId, userId);
@@ -289,19 +310,26 @@ router.delete("/:planId", authMiddleware, async (req: Request, res: Response) =>
 });
 
 // Archive plan (admin only)
-router.post("/:planId/archive", authMiddleware, async (req: Request, res: Response) => {
+router.post("/:planId/archive", authMiddleware, async (req: Request, res: Response): Promise<void> => {
   try {
     const { planId } = req.params;
+
+    if (!planId) {
+      res.status(400).json({ error: "Plan ID is required" });
+      return;
+    }
     const userId = (req as any).user?.id;
     const userRole = (req as any).user?.role;
 
     if (!userId) {
-      return res.status(401).json({ error: "User not authenticated" });
+      res.status(401).json({ error: "User not authenticated" });
+      return;
     }
 
     // Check if user has admin role
     if (userRole !== "admin") {
-      return res.status(403).json({ error: "Admin access required" });
+      res.status(403).json({ error: "Admin access required" });
+      return;
     }
 
     const plan = await billingService.archivePlan(planId, userId);
@@ -311,7 +339,7 @@ router.post("/:planId/archive", authMiddleware, async (req: Request, res: Respon
       plan: {
         id: plan.id,
         name: plan.name,
-        active: plan.active,
+        isPublic: plan.isPublic,
       },
       message: "Plan archived successfully",
     });
@@ -325,19 +353,28 @@ router.post("/:planId/archive", authMiddleware, async (req: Request, res: Respon
 });
 
 // Get plan features
-router.get("/:planId/features", async (req: Request, res: Response) => {
+router.get("/:planId/features", async (req: Request, res: Response): Promise<void> => {
   try {
     const { planId } = req.params;
 
-    const features = await billingService.getPlanFeatures(planId);
+    if (!planId) {
+      res.status(400).json({ error: "Plan ID is required" });
+      return;
+    }
+
+    const features = await planRepository.getPlanFeatures(planId);
 
     res.json({
       features: features.map((feature) => ({
+        id: feature.id,
+        planId: feature.planId,
         name: feature.name,
         description: feature.description,
-        type: feature.type,
+        featureType: feature.featureType,
         value: feature.value,
-        metadata: feature.metadata,
+        isHighlighted: feature.isHighlighted,
+        createdAt: feature.createdAt,
+        updatedAt: feature.updatedAt,
       })),
       total: features.length,
     });
@@ -351,12 +388,13 @@ router.get("/:planId/features", async (req: Request, res: Response) => {
 });
 
 // Compare plans
-router.post("/compare", async (req: Request, res: Response) => {
+router.post("/compare", async (req: Request, res: Response): Promise<void> => {
   try {
     const { planIds } = req.body;
 
     if (!Array.isArray(planIds) || planIds.length < 2) {
-      return res.status(400).json({ error: "At least 2 plan IDs are required for comparison" });
+      res.status(400).json({ error: "At least 2 plan IDs are required for comparison" });
+      return;
     }
 
     const comparison = await billingService.comparePlans(planIds);
@@ -372,9 +410,14 @@ router.post("/compare", async (req: Request, res: Response) => {
 });
 
 // Get plan pricing tiers
-router.get("/:planId/pricing", async (req: Request, res: Response) => {
+router.get("/:planId/pricing", async (req: Request, res: Response): Promise<void> => {
   try {
     const { planId } = req.params;
+
+    if (!planId) {
+      res.status(400).json({ error: "Plan ID is required" });
+      return;
+    }
 
     const pricing = await billingService.getPlanPricing(planId);
 
@@ -389,18 +432,26 @@ router.get("/:planId/pricing", async (req: Request, res: Response) => {
 });
 
 // Get plan usage limits
-router.get("/:planId/limits", async (req: Request, res: Response) => {
+router.get("/:planId/limits", async (req: Request, res: Response): Promise<void> => {
   try {
     const { planId } = req.params;
 
-    const limits = await billingService.getPlanLimits(planId);
+    if (!planId) {
+      res.status(400).json({ error: "Plan ID is required" });
+      return;
+    }
+
+    const limits = await planRepository.getPlanLimits(planId);
 
     res.json({
       limits: limits.map((limit) => ({
-        feature: limit.feature,
-        limit: limit.limit,
-        period: limit.period,
-        overage: limit.overage,
+        id: limit.id,
+        planId: limit.planId,
+        resourceType: limit.resourceType,
+        maxValue: limit.maxValue,
+        overagePrice: limit.overagePrice,
+        createdAt: limit.createdAt,
+        updatedAt: limit.updatedAt,
       })),
       total: limits.length,
     });
@@ -414,19 +465,26 @@ router.get("/:planId/limits", async (req: Request, res: Response) => {
 });
 
 // Get plan statistics (admin only)
-router.get("/:planId/stats", authMiddleware, async (req: Request, res: Response) => {
+router.get("/:planId/stats", authMiddleware, async (req: Request, res: Response): Promise<void> => {
   try {
     const { planId } = req.params;
+
+    if (!planId) {
+      res.status(400).json({ error: "Plan ID is required" });
+      return;
+    }
     const userId = (req as any).user?.id;
     const userRole = (req as any).user?.role;
 
     if (!userId) {
-      return res.status(401).json({ error: "User not authenticated" });
+      res.status(401).json({ error: "User not authenticated" });
+      return;
     }
 
     // Check if user has admin role
     if (userRole !== "admin") {
-      return res.status(403).json({ error: "Admin access required" });
+      res.status(403).json({ error: "Admin access required" });
+      return;
     }
 
     const stats = await billingService.getPlanStats(planId);
@@ -442,13 +500,14 @@ router.get("/:planId/stats", authMiddleware, async (req: Request, res: Response)
 });
 
 // Get recommended plan for user
-router.get("/recommend", authMiddleware, async (req: Request, res: Response) => {
+router.get("/recommend", authMiddleware, async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = (req as any).user?.id;
     const { usage, features } = req.query;
 
     if (!userId) {
-      return res.status(401).json({ error: "User not authenticated" });
+      res.status(401).json({ error: "User not authenticated" });
+      return;
     }
 
     const recommendation = await billingService.getRecommendedPlan(userId, {

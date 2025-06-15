@@ -285,7 +285,7 @@ export default function PurchaseEventSimulator({
         <div className="flex items-center space-x-2">
           <Badge variant="secondary">Shop: {testSite.shop_domain}</Badge>
           <Button
-            variant="primary"
+            variant="default"
             size="sm"
             onClick={fillSampleData}
           >
@@ -399,7 +399,7 @@ export default function PurchaseEventSimulator({
               <h3 className="text-lg font-medium">Products</h3>
             </div>
             <Button
-              variant="primary"
+              variant="default"
               size="sm"
               onClick={addProduct}
             >
@@ -450,7 +450,7 @@ export default function PurchaseEventSimulator({
                     />
                     {eventData.products.length > 1 && (
                       <Button
-                        variant="primary"
+                        variant="default"
                         size="sm"
                         onClick={() => removeProduct(index)}
                       >

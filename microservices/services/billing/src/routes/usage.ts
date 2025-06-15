@@ -46,8 +46,9 @@ router.post(
       }
 
       const usageEvent = await usageService.recordUsage({
-        userId,
-        eventType,
+        organizationId: userId,
+        subscriptionId: "default", // This should be determined from user's subscription
+        resourceType: eventType,
         quantity,
         timestamp: timestamp ? new Date(timestamp) : new Date(),
         metadata,

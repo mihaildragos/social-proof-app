@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { SubscriptionRepository } from "../repositories/SubscriptionRepository";
 import { PlanRepository } from "../repositories/PlanRepository";
-import { StripeService } from "../services/StripeService";
+import { StripeService } from "../services/stripe-service";
 import { logger } from "../utils/logger";
 import { BadRequestError, NotFoundError, ConflictError } from "../middleware/errorHandler";
 import {
@@ -9,8 +9,8 @@ import {
   requireBillingAccess,
   getOrganizationId,
   getUserId,
-} from "../middleware/authMiddleware";
-import { CreateSubscriptionRequest, UpdateSubscriptionRequest, ApiResponse } from "../types";
+} from "../middleware/auth";
+import { ApiResponse } from "../types";
 
 const router = Router();
 const subscriptionRepo = new SubscriptionRepository();
@@ -44,7 +44,7 @@ router.get("/:organizationId", async (req, res, next) => {
     logger.info("Subscription retrieved", { organizationId, subscriptionId: subscription.id });
 
     // Get plan details
-    const planDetails = await planRepo.getPlanWithDetails(subscription.plan_id);
+    const planDetails = await planRepo.getPlanWithDetails(subscription.planId);
 
     const response: ApiResponse = {
       status: "success",
@@ -100,7 +100,7 @@ router.post("/", async (req, res, next) => {
 
     // Get the appropriate Stripe price ID
     const priceId =
-      billing_cycle === "monthly" ? plan.stripe_monthly_price_id : plan.stripe_yearly_price_id;
+      billing_cycle === "monthly" ? plan.stripeMonthlyPriceId : plan.stripeYearlyPriceId;
 
     if (!priceId) {
       throw new BadRequestError(`No Stripe price configured for ${billing_cycle} billing`);
@@ -108,25 +108,24 @@ router.post("/", async (req, res, next) => {
 
     // Create Stripe customer and subscription
     const stripeCustomer = await stripeService.createCustomer({
-      organizationId: organization_id,
       email: `billing+${organization_id}@example.com`, // This should come from organization data
     });
 
-    const stripeSubscription = await stripeService.createSubscription(
-      stripeCustomer.id,
+    const stripeSubscription = await stripeService.createSubscription({
+      customerId: stripeCustomer.id,
       priceId,
-      payment_method_id
-    );
+      paymentMethodId: payment_method_id,
+    });
 
     // Create subscription in database
     const subscription = await subscriptionRepo.create({
-      organization_id,
-      plan_id,
-      billing_cycle,
-      current_period_start: new Date(stripeSubscription.current_period_start * 1000),
-      current_period_end: new Date(stripeSubscription.current_period_end * 1000),
-      stripe_subscription_id: stripeSubscription.id,
-      stripe_customer_id: stripeCustomer.id,
+      organizationId: organization_id,
+      planId: plan_id,
+      billingCycle: billing_cycle,
+      currentPeriodStart: new Date(stripeSubscription.current_period_start * 1000),
+      currentPeriodEnd: new Date(stripeSubscription.current_period_end * 1000),
+      stripeSubscriptionId: stripeSubscription.id,
+      stripeCustomerId: stripeCustomer.id,
     });
 
     logger.info("Subscription created", {
@@ -167,7 +166,7 @@ router.put("/:id", async (req, res, next) => {
     }
 
     // Ensure user can only update their organization's subscription
-    if (existingSubscription.organization_id !== authOrgId) {
+    if (existingSubscription.organizationId !== authOrgId) {
       throw new BadRequestError("Access denied to this subscription");
     }
 
@@ -190,9 +189,9 @@ router.put("/:id", async (req, res, next) => {
 
     // Update subscription in database
     const updatedSubscription = await subscriptionRepo.update(id, {
-      plan_id,
-      billing_cycle,
-      updated_at: new Date(),
+      planId: plan_id,
+      billingCycle: billing_cycle,
+      updatedAt: new Date(),
     });
 
     logger.info("Subscription updated", {
@@ -228,25 +227,25 @@ router.delete("/:id", async (req, res, next) => {
     }
 
     // Ensure user can only cancel their organization's subscription
-    if (existingSubscription.organization_id !== authOrgId) {
+    if (existingSubscription.organizationId !== authOrgId) {
       throw new BadRequestError("Access denied to this subscription");
     }
 
     // Cancel Stripe subscription
     const canceledStripeSubscription = await stripeService.cancelSubscription(
-      existingSubscription.stripe_subscription_id!,
-      immediate === "true"
+      existingSubscription.stripeSubscriptionId!,
+      { cancelAtPeriodEnd: immediate === "true" }
     );
 
     // Update subscription in database
     const canceledSubscription = await subscriptionRepo.update(id, {
       status: canceledStripeSubscription.status as any,
-      cancels_at_period_end: canceledStripeSubscription.cancel_at_period_end,
-      canceled_at:
+      cancelsAtPeriodEnd: canceledStripeSubscription.cancel_at_period_end,
+      canceledAt:
         canceledStripeSubscription.canceled_at ?
           new Date(canceledStripeSubscription.canceled_at * 1000)
         : null,
-      updated_at: new Date(),
+      updatedAt: new Date(),
     });
 
     logger.info("Subscription canceled", {
