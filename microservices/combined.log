@@ -663,3 +663,5 @@
 {"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T19:15:28.644Z","url":"/health","userAgent":"curl/8.12.1"}
 {"ip":"::1","level":"info","message":"Incoming request","method":"GET","service":"billing-service","timestamp":"2025-05-26T19:15:58.682Z","url":"/health","userAgent":"curl/8.12.1"}
 {"level":"info","message":"Received SIGTERM, starting graceful shutdown","service":"billing-service","timestamp":"2025-05-26T19:16:02.612Z"}
+{"environment":"development","level":"info","message":"Billing service started","port":"3000","service":"billing-service","timestamp":"2025-06-01T20:04:43.450Z"}
+{"level":"error","message":"Unhandled promise rejection","promise":{},"reason":{"clientVersion":"6.8.2","name":"PrismaClientInitializationError"},"service":"billing-service","timestamp":"2025-06-01T20:04:43.473Z"}

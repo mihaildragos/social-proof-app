@@ -1,26 +1,38 @@
-// @ts-nocheck
 import { describe, it, expect, beforeEach, afterEach, jest } from "@jest/globals";
 import { AnalyticsService } from "../services/analytics-service";
 
 // Mock environment variables
 process.env.USE_PRISMA = "true";
 
+// Create mock functions with proper return types
+const mockCreate = jest.fn() as jest.MockedFunction<any>;
+const mockCount = jest.fn() as jest.MockedFunction<any>;
+const mockFindMany = jest.fn() as jest.MockedFunction<any>;
+const mockFunnelCreate = jest.fn() as jest.MockedFunction<any>;
+const mockFunnelFindMany = jest.fn() as jest.MockedFunction<any>;
+const mockFunnelFindFirst = jest.fn() as jest.MockedFunction<any>;
+const mockReportCreate = jest.fn() as jest.MockedFunction<any>;
+const mockReportFindMany = jest.fn() as jest.MockedFunction<any>;
+const mockTransaction = jest.fn() as jest.MockedFunction<any>;
+const mockQueryRaw = jest.fn() as jest.MockedFunction<any>;
+const mockDisconnect = jest.fn() as jest.MockedFunction<any>;
+
 // Mock dependencies
 jest.mock("../services/clickhouse-service", () => ({
   ClickHouseService: jest.fn().mockImplementation(() => ({
-    close: jest.fn().mockResolvedValue(undefined),
+    close: jest.fn().mockResolvedValue(undefined as never),
     getConversionFunnel: jest.fn().mockResolvedValue({
       steps: [],
       conversion_rate: 0,
       total_users: 0,
-    }),
-    getTopEvents: jest.fn().mockResolvedValue([]),
+    } as never),
+    getTopEvents: jest.fn().mockResolvedValue([] as never),
     getDeviceAnalytics: jest.fn().mockResolvedValue({
       devices: [],
       browsers: [],
       operating_systems: [],
-    }),
-    getGeographicData: jest.fn().mockResolvedValue([]),
+    } as never),
+    getGeographicData: jest.fn().mockResolvedValue([] as never),
     getPerformanceMetrics: jest.fn().mockResolvedValue({
       avg_page_load_time: 0,
       p95_page_load_time: 0,
@@ -30,46 +42,31 @@ jest.mock("../services/clickhouse-service", () => ({
       errors: 0,
       unique_users: 0,
       error_rate: 0,
-    }),
+    } as never),
   })),
 }));
 
 jest.mock("../lib/prisma", () => ({
   prisma: {
     analyticsEvent: {
-      create: jest.fn(),
-      count: jest.fn(),
-      findMany: jest.fn(),
+      create: mockCreate,
+      count: mockCount,
+      findMany: mockFindMany,
     },
     analyticsFunnel: {
-      create: jest.fn(),
-      findMany: jest.fn(),
-      findFirst: jest.fn(),
+      create: mockFunnelCreate,
+      findMany: mockFunnelFindMany,
+      findFirst: mockFunnelFindFirst,
     },
     analyticsReport: {
-      create: jest.fn(),
-      findMany: jest.fn(),
+      create: mockReportCreate,
+      findMany: mockReportFindMany,
     },
-    $transaction: jest.fn(),
-    $queryRaw: jest.fn(),
-    $disconnect: jest.fn(),
+    $transaction: mockTransaction,
+    $queryRaw: mockQueryRaw,
+    $disconnect: mockDisconnect,
   }
 }));
-
-// Get access to the mocked functions
-import { prisma } from "../lib/prisma";
-const mockPrisma = prisma as any;
-const mockCreate = mockPrisma.analyticsEvent.create;
-const mockCount = mockPrisma.analyticsEvent.count;
-const mockFindMany = mockPrisma.analyticsEvent.findMany;
-const mockFunnelCreate = mockPrisma.analyticsFunnel.create;
-const mockFunnelFindMany = mockPrisma.analyticsFunnel.findMany;
-const mockFunnelFindFirst = mockPrisma.analyticsFunnel.findFirst;
-const mockReportCreate = mockPrisma.analyticsReport.create;
-const mockReportFindMany = mockPrisma.analyticsReport.findMany;
-const mockTransaction = mockPrisma.$transaction;
-const mockQueryRaw = mockPrisma.$queryRaw;
-const mockDisconnect = mockPrisma.$disconnect;
 
 describe("AnalyticsService", () => {
   // Mock data
@@ -161,7 +158,7 @@ describe("AnalyticsService", () => {
       mockCreate.mockRejectedValue(new Error("Prisma connection failed"));
 
       await expect(
-        analyticsService.recordEvent(mockOrganizationId, mockEventData)
+        analyticsService.recordEvent(mockOrganizationId, mockEventData as never)
       ).rejects.toThrow("Prisma connection failed");
     });
   });
@@ -182,8 +179,8 @@ describe("AnalyticsService", () => {
       const mockTx = {
         analyticsEvent: {
           create: jest.fn()
-            .mockResolvedValueOnce(mockResults[0])
-            .mockResolvedValueOnce(mockResults[1]),
+            .mockResolvedValueOnce(mockResults[0] as never)
+            .mockResolvedValueOnce(mockResults[1] as never),
         },
       };
       
@@ -351,10 +348,10 @@ describe("AnalyticsService", () => {
   describe("service cleanup", () => {
     it("should close all connections", async () => {
       const mockClickhouseService = {
-        close: jest.fn().mockResolvedValue(undefined),
+        close: jest.fn().mockResolvedValue(undefined as never),
       };
       
-      mockDisconnect.mockResolvedValue(undefined);
+      mockDisconnect.mockResolvedValue(undefined as never);
       (analyticsService as any).clickhouseService = mockClickhouseService;
 
       await analyticsService.close();
