@@ -28,6 +28,9 @@ import { initializeTracing } from "./utils/tracing";
 import { setupGlobalErrorHandlers } from "./utils/errors";
 import { logger } from "./utils/logger";
 
+// Export logger instance
+export { logger };
+
 export const initializeService = (options: {
   serviceName: string;
   enableTracing?: boolean;
