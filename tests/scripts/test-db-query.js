@@ -3,7 +3,7 @@
  * Test File Database JSON Path Query
  */
 
-const { FileDatabase } = require('./lib/storage/file-db.ts');
+const { FileDatabase } = require('../../lib/storage/file-db.ts');
 
 async function testQuery() {
   console.log('🧪 Testing File Database JSON Path Query\n');
