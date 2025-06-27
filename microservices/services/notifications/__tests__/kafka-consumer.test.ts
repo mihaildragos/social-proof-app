@@ -1,3 +1,4 @@
+import type { IHeaders } from "kafkajs";
 import { KafkaConsumer } from "../../../shared/kafka/consumer";
 import { RedisPublisher } from "../../../shared/redis/publisher";
 import { OrderEventHandler } from "../handlers/order-event-handler";
@@ -18,8 +19,8 @@ describe("Kafka Consumer Integration", () => {
     jest.clearAllMocks();
 
     // Create mocked instances
-    redisPublisher = new RedisPublisher() as jest.Mocked<RedisPublisher>;
-    notificationService = new NotificationService() as jest.Mocked<NotificationService>;
+    redisPublisher = new RedisPublisher() as unknown as jest.Mocked<RedisPublisher>;
+    notificationService = new NotificationService() as unknown as jest.Mocked<NotificationService>;
 
     // Create actual handler with mocked dependencies
     orderEventHandler = new OrderEventHandler(redisPublisher, notificationService);
@@ -47,9 +48,11 @@ describe("Kafka Consumer Integration", () => {
   it("should process order.created events correctly", async () => {
     // Create mock message
     const mockMessage = {
-      topic: "order-events",
+      timestamp: "0",
+      attributes: 0,
+      headers: {} as IHeaders,
       partition: 0,
-      offset: 0,
+      offset: "0",
       key: Buffer.from("test-store.myshopify.com"),
       value: Buffer.from(
         JSON.stringify({

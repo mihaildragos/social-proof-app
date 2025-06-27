@@ -1,5 +1,5 @@
 import { Kafka, Consumer, KafkaMessage, EachMessagePayload } from "kafkajs";
-import { getContextLogger } from "../utils/logger";
+import { getContextLogger } from "@social-proof/shared/utils/logger";
 
 const logger = getContextLogger({ service: "kafka-consumer" });
 

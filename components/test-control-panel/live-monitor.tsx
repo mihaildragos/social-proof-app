@@ -198,7 +198,7 @@ export default function LiveMonitor({ testSite }: LiveMonitorProps) {
                 : "🔴 Disconnected"}
               </Badge>
               <Button
-                variant="primary"
+                variant="default"
                 size="sm"
                 onClick={toggleMonitoring}
               >
@@ -214,7 +214,7 @@ export default function LiveMonitor({ testSite }: LiveMonitorProps) {
                 }
               </Button>
               <Button
-                variant="primary"
+                variant="default"
                 size="sm"
                 onClick={clearEvents}
               >

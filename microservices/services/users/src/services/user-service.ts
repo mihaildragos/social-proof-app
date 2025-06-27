@@ -1,6 +1,6 @@
 import { createHash } from "crypto";
 import { UnauthorizedError, NotFoundError, BadRequestError } from "../middleware/errorHandler";
-import { db } from "../utils/db";
+import { prisma } from "../lib/prisma";
 import { logger } from "../utils/logger";
 
 interface UserProfile {
@@ -17,6 +17,8 @@ interface UserProfile {
 
 interface UpdateProfileParams {
   fullName?: string;
+  firstName?: string;
+  lastName?: string;
   preferredLanguage?: string;
   preferredTimezone?: string;
 }
@@ -38,55 +40,59 @@ class UserService {
       // For this example, we're simulating the decryption
 
       // 1. Get user data
-      const { data: userData, error: userError } = await supabase
-        .from("users")
-        .select(
-          `
-          id,
-          email_encrypted,
-          full_name_encrypted,
-          preferred_language,
-          preferred_timezone,
-          created_at,
-          last_login_at
-        `
-        )
-        .eq("id", userId)
-        .single();
+      const userData = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          id: true,
+          email: true,
+          fullName: true,
+          firstName: true,
+          lastName: true,
+          organizationId: true,
+          preferredLanguage: true,
+          preferredTimezone: true,
+          createdAt: true,
+          lastLoginAt: true,
+        },
+      });
 
-      if (userError || !userData) {
-        logger.error("Supabase error getting user profile", { error: userError, userId });
+      if (!userData) {
+        logger.error("User not found in database", { userId });
         throw NotFoundError("User not found");
       }
 
-      // 2. Get organization membership
-      const { data: orgMembership, error: orgError } = await supabase
-        .from("organization_members")
-        .select(
-          `
-          organization_id,
-          role
-        `
-        )
-        .eq("user_id", userId)
-        .limit(1)
-        .single();
+      // 2. Get organization membership if no direct organizationId
+      let organizationId = userData.organizationId;
+      let role = userData.role;
+      
+      if (!organizationId) {
+        const orgMembership = await prisma.organizationMember.findFirst({
+          where: { userId },
+          select: {
+            organizationId: true,
+            role: true,
+          },
+        });
+        organizationId = orgMembership?.organizationId;
+        role = orgMembership?.role;
+      }
 
-      // 3. Simulate decrypting PII (in a real app would call the pgcrypto functions)
-      // This is just a placeholder for the actual implementation
-      const email = `user_${userId.substring(0, 8)}@example.com`;
-      const fullName = `User ${userId.substring(0, 8)}`;
+      // 3. Use actual user data (prefer firstName/lastName over fullName)
+      const email = userData.email || `user_${userId.substring(0, 8)}@example.com`;
+      const fullName = userData.firstName && userData.lastName 
+        ? `${userData.firstName} ${userData.lastName}`
+        : userData.fullName || `User ${userId.substring(0, 8)}`;
 
       return {
         id: userData.id,
         email,
         fullName,
-        preferredLanguage: userData.preferred_language,
-        preferredTimezone: userData.preferred_timezone,
-        organizationId: orgMembership?.organization_id,
-        role: orgMembership?.role,
-        createdAt: userData.created_at,
-        lastLoginAt: userData.last_login_at,
+        preferredLanguage: userData.preferredLanguage,
+        preferredTimezone: userData.preferredTimezone,
+        organizationId,
+        role,
+        createdAt: userData.createdAt.toISOString(),
+        lastLoginAt: userData.lastLoginAt?.toISOString(),
       };
     } catch (error) {
       logger.error("Error getting user profile", { error, userId });
@@ -100,33 +106,37 @@ class UserService {
   async updateUserProfile(userId: string, params: UpdateProfileParams): Promise<UserProfile> {
     try {
       const updateData: Record<string, any> = {};
-      const { fullName, preferredLanguage, preferredTimezone } = params;
+      const { fullName, firstName, lastName, preferredLanguage, preferredTimezone } = params;
 
       // Build update data object with only provided fields
       if (fullName !== undefined) {
-        // In a real app, we would encrypt the full name here
-        // For now we'll just set a flag to update it
-        updateData.full_name = fullName;
+        updateData.fullName = fullName;
+      }
+
+      if (firstName !== undefined) {
+        updateData.firstName = firstName;
+      }
+
+      if (lastName !== undefined) {
+        updateData.lastName = lastName;
       }
 
       if (preferredLanguage !== undefined) {
-        updateData.preferred_language = preferredLanguage;
+        updateData.preferredLanguage = preferredLanguage;
       }
 
       if (preferredTimezone !== undefined) {
-        updateData.preferred_timezone = preferredTimezone;
+        updateData.preferredTimezone = preferredTimezone;
       }
 
       // Only update if there are changes
       if (Object.keys(updateData).length > 0) {
-        updateData.updated_at = new Date().toISOString();
+        updateData.updatedAt = new Date();
 
-        const { error } = await supabase.from("users").update(updateData).eq("id", userId);
-
-        if (error) {
-          logger.error("Supabase error updating user profile", { error, userId });
-          throw BadRequestError("Failed to update profile");
-        }
+        await prisma.user.update({
+          where: { id: userId },
+          data: updateData,
+        });
       }
 
       // Get updated profile
@@ -147,25 +157,24 @@ class UserService {
   ): Promise<void> {
     try {
       // 1. Get user's current password hash
-      const { data: userData, error: userError } = await supabase
-        .from("users")
-        .select("hashed_password, auth_provider")
-        .eq("id", userId)
-        .single();
+      const userData = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { hashedPassword: true, authProvider: true },
+      });
 
-      if (userError || !userData) {
-        logger.error("Supabase error getting user data", { error: userError, userId });
+      if (!userData) {
+        logger.error("User not found for password change", { userId });
         throw NotFoundError("User not found");
       }
 
       // 2. If user uses SSO, don't allow password change
-      if (userData.auth_provider && userData.auth_provider !== "email") {
+      if (userData.authProvider && userData.authProvider !== "email") {
         throw BadRequestError("Password change not allowed for SSO users");
       }
 
       // 3. Verify current password
       const hashedCurrentPassword = this.hashPassword(currentPassword);
-      if (userData.hashed_password !== hashedCurrentPassword) {
+      if (userData.hashedPassword !== hashedCurrentPassword) {
         throw UnauthorizedError("Current password is incorrect");
       }
 
@@ -173,18 +182,13 @@ class UserService {
       const hashedNewPassword = this.hashPassword(newPassword);
 
       // 5. Update password
-      const { error: updateError } = await supabase
-        .from("users")
-        .update({
-          hashed_password: hashedNewPassword,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", userId);
-
-      if (updateError) {
-        logger.error("Supabase error updating password", { error: updateError, userId });
-        throw BadRequestError("Failed to update password");
-      }
+      await prisma.user.update({
+        where: { id: userId },
+        data: {
+          hashedPassword: hashedNewPassword,
+          updatedAt: new Date(),
+        },
+      });
     } catch (error) {
       logger.error("Error changing password", { error, userId });
       throw error;
@@ -199,73 +203,70 @@ class UserService {
       const { page, limit, search, organizationId } = params;
       const offset = (page - 1) * limit;
 
-      // Start building the query
-      let query = supabase.from("users").select(
-        `
-          id,
-          preferred_language,
-          preferred_timezone,
-          created_at,
-          last_login_at,
-          account_status,
-          organization_members!inner(
-            organization_id,
-            role
-          )
-        `,
-        { count: "exact" }
-      );
-
-      // Apply organization filter if provided
+      // Build where clause
+      let whereClause: any = {};
       if (organizationId) {
-        query = query.eq("organization_members.organization_id", organizationId);
+        whereClause.organizationMembers = {
+          some: {
+            organizationId: organizationId,
+          },
+        };
       }
 
-      // Apply search filter if provided
-      if (search) {
-        // In a real app, we would search in decrypted emails and names
-        // For this example, we'll just simulate it by limiting results
-        query = query.limit(search ? 5 : limit);
-      } else {
-        // Apply pagination
-        query = query.range(offset, offset + limit - 1);
-      }
-
-      // Execute query
-      const { data: usersData, error, count } = await query;
-
-      if (error) {
-        logger.error("Supabase error listing users", { error });
-        throw BadRequestError("Failed to list users");
-      }
+      // Execute query with proper pagination
+      const [usersData, total] = await Promise.all([
+        prisma.user.findMany({
+          select: {
+            id: true,
+            preferredLanguage: true,
+            preferredTimezone: true,
+            createdAt: true,
+            lastLoginAt: true,
+            accountStatus: true,
+            organizationMembers: {
+              select: {
+                organizationId: true,
+                role: true,
+              },
+            },
+          },
+          where: whereClause,
+          take: search ? 5 : limit, // Limit search results
+          skip: search ? 0 : offset,
+          orderBy: {
+            createdAt: 'desc',
+          },
+        }),
+        prisma.user.count({ where: whereClause }),
+      ]);
 
       // Transform results
       const users = await Promise.all(
-        (usersData || []).map(async (userData: any) => {
+        usersData.map(async (userData: any) => {
           // Simulate decrypting PII
           const userId = userData.id;
           const email = `user_${userId.substring(0, 8)}@example.com`;
           const fullName = `User ${userId.substring(0, 8)}`;
 
-          const orgMembership = userData.organization_members[0];
+          const orgMembership = userData.organizationMembers[0];
 
           return {
             id: userId,
             email,
             fullName,
-            preferredLanguage: userData.preferred_language,
-            preferredTimezone: userData.preferred_timezone,
-            organizationId: orgMembership?.organization_id,
+            preferredLanguage: userData.preferredLanguage,
+            preferredTimezone: userData.preferredTimezone,
+            organizationId: orgMembership?.organizationId,
             role: orgMembership?.role,
-            createdAt: userData.created_at,
-            lastLoginAt: userData.last_login_at,
+            createdAt: userData.createdAt.toISOString(),
+            lastLoginAt: userData.lastLoginAt?.toISOString(),
           };
         })
       );
 
       return {
         users,
-        total: count || users.length,
+        total,
       };
     } catch (error) {
       logger.error("Error listing users", { error });

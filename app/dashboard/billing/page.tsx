@@ -1,17 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "../../components/ui/card";
-import { Button } from "../../components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs";
-import { Badge } from "../../components/ui/badge";
-import { Separator } from "../../components/ui/separator";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import {
   CreditCard,
   FileText,
@@ -21,12 +14,223 @@ import {
   Plus,
   Download,
   Calendar,
+  CheckCircle,
 } from "lucide-react";
-import { SubscriptionOverview } from "../../components/billing/subscription-overview";
-import { PlanSelection } from "../../components/billing/plan-selection";
-import { useBilling } from "../../hooks/use-billing";
+import { SubscriptionOverview } from "@/components/billing/subscription-overview";
+import { PlanSelection } from "@/components/billing/plan-selection";
+import { useBilling } from "@/hooks/use-billing";
 import { useOrganization } from "@clerk/nextjs";
-import { formatCurrency } from "../../lib/utils";
+import { formatCurrency } from "@/lib/utils";
+import { Progress } from "@/components/ui/progress";
+
+// Mock data - in real app this would come from API
+const mockBilling = {
+  subscription: {
+    plan: "Professional",
+    status: "active",
+    price: 49,
+    currency: "USD",
+    interval: "month",
+    currentPeriodStart: "2024-01-01",
+    currentPeriodEnd: "2024-02-01",
+    nextBillingDate: "2024-02-01",
+    cancelAtPeriodEnd: false,
+  },
+  usage: {
+    notifications: {
+      used: 8547,
+      limit: 10000,
+      percentage: 85.47,
+    },
+    sites: {
+      used: 3,
+      limit: 5,
+      percentage: 60,
+    },
+    teamMembers: {
+      used: 4,
+      limit: 10,
+      percentage: 40,
+    },
+  },
+  invoices: [
+    {
+      id: "inv_001",
+      date: "2024-01-01",
+      amount: 49,
+      status: "paid",
+      description: "Professional Plan - January 2024",
+      downloadUrl: "#",
+    },
+    {
+      id: "inv_002",
+      date: "2023-12-01",
+      amount: 49,
+      status: "paid",
+      description: "Professional Plan - December 2023",
+      downloadUrl: "#",
+    },
+    {
+      id: "inv_003",
+      date: "2023-11-01",
+      amount: 49,
+      status: "paid",
+      description: "Professional Plan - November 2023",
+      downloadUrl: "#",
+    },
+  ],
+  paymentMethod: {
+    type: "card",
+    last4: "4242",
+    brand: "Visa",
+    expiryMonth: 12,
+    expiryYear: 2025,
+  },
+};
+
+const plans = [
+  {
+    name: "Starter",
+    price: 19,
+    interval: "month",
+    features: [
+      "2,500 notifications/month",
+      "2 sites",
+      "3 team members",
+      "Basic analytics",
+      "Email support",
+    ],
+    current: false,
+  },
+  {
+    name: "Professional",
+    price: 49,
+    interval: "month",
+    features: [
+      "10,000 notifications/month",
+      "5 sites",
+      "10 team members",
+      "Advanced analytics",
+      "Priority support",
+      "A/B testing",
+    ],
+    current: true,
+  },
+  {
+    name: "Enterprise",
+    price: 149,
+    interval: "month",
+    features: [
+      "Unlimited notifications",
+      "Unlimited sites",
+      "Unlimited team members",
+      "Custom analytics",
+      "Dedicated support",
+      "Custom integrations",
+    ],
+    current: false,
+  },
+];
+
+function UsageCard({
+  title,
+  used,
+  limit,
+  percentage,
+  icon: Icon,
+}: {
+  title: string;
+  used: number;
+  limit: number | string;
+  percentage: number;
+  icon: any;
+}) {
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium">{title}</CardTitle>
+        <Icon className="h-4 w-4 text-muted-foreground" />
+      </CardHeader>
+      <CardContent>
+        <div className="text-2xl font-bold">{used.toLocaleString()}</div>
+        <p className="mb-3 text-xs text-muted-foreground">
+          of {typeof limit === "number" ? limit.toLocaleString() : limit} used
+        </p>
+        <Progress
+          value={percentage}
+          className="h-2"
+        />
+        <p className="mt-2 text-xs text-muted-foreground">{percentage.toFixed(1)}% used</p>
+      </CardContent>
+    </Card>
+  );
+}
+
+function PlanCard({ plan }: { plan: (typeof plans)[0] }) {
+  return (
+    <Card className={plan.current ? "border-blue-500 bg-blue-50" : ""}>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg">{plan.name}</CardTitle>
+          {plan.current && <Badge>Current Plan</Badge>}
+        </div>
+        <div className="flex items-baseline space-x-1">
+          <span className="text-3xl font-bold">${plan.price}</span>
+          <span className="text-gray-500">/{plan.interval}</span>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <ul className="mb-6 space-y-2">
+          {plan.features.map((feature, index) => (
+            <li
+              key={index}
+              className="flex items-center space-x-2 text-sm"
+            >
+              <CheckCircle className="h-4 w-4 text-green-500" />
+              <span>{feature}</span>
+            </li>
+          ))}
+        </ul>
+        <Button
+          className="w-full"
+          disabled={plan.current}
+        >
+          {plan.current ? "Current Plan" : "Upgrade"}
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
+function InvoiceRow({ invoice }: { invoice: (typeof mockBilling.invoices)[0] }) {
+  return (
+    <div className="flex items-center justify-between border-b py-4 last:border-b-0">
+      <div className="flex items-center space-x-4">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100">
+          <CreditCard className="h-5 w-5 text-gray-600" />
+        </div>
+        <div>
+          <p className="font-medium text-gray-900">{invoice.description}</p>
+          <p className="text-sm text-gray-500">{new Date(invoice.date).toLocaleDateString()}</p>
+        </div>
+      </div>
+      <div className="flex items-center space-x-4">
+        <div className="text-right">
+          <p className="font-medium text-gray-900">${invoice.amount}</p>
+          <Badge variant={invoice.status === "paid" ? "default" : "secondary"}>
+            {invoice.status}
+          </Badge>
+        </div>
+        <Button
+          variant="default"
+          size="sm"
+        >
+          <Download className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 export default function BillingPage() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -50,14 +254,14 @@ export default function BillingPage() {
         </div>
         <div className="flex items-center gap-2">
           <Button
-            variant="outline"
+            variant="default"
             size="sm"
           >
             <Download className="mr-2 h-4 w-4" />
             Export
           </Button>
           <Button
-            variant="outline"
+            variant="default"
             size="sm"
           >
             <Settings className="mr-2 h-4 w-4" />
@@ -206,7 +410,7 @@ function InvoicesSection({ invoices }: { invoices: any[] }) {
           <h2 className="text-2xl font-bold">Invoices</h2>
           <p className="text-muted-foreground">View and download your billing history</p>
         </div>
-        <Button variant="outline">
+        <Button variant="default">
           <Download className="mr-2 h-4 w-4" />
           Download All
         </Button>
@@ -244,12 +448,12 @@ function InvoicesSection({ invoices }: { invoices: any[] }) {
                   <div className="flex items-center space-x-4">
                     <div className="text-right">
                       <p className="font-medium">${invoice.total}</p>
-                      <Badge variant={invoice.status === "paid" ? "default" : "destructive"}>
+                      <Badge variant={invoice.status === "paid" ? "default" : "secondary"}>
                         {invoice.status}
                       </Badge>
                     </div>
                     <Button
-                      variant="outline"
+                      variant="default"
                       size="sm"
                     >
                       <Download className="h-4 w-4" />
@@ -318,15 +522,15 @@ function PaymentMethodsSection({ paymentMethods }: { paymentMethods: any[] }) {
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
-                    {method.is_default && <Badge variant="secondary">Default</Badge>}
+                    {method.is_default && <Badge variant="default">Default</Badge>}
                     <Button
-                      variant="outline"
+                      variant="default"
                       size="sm"
                     >
                       Edit
                     </Button>
                     <Button
-                      variant="outline"
+                      variant="default"
                       size="sm"
                     >
                       Remove

@@ -1,4 +1,4 @@
-import { db } from "../utils/db";
+import { prisma } from "../lib/prisma";
 import { logger } from "../utils/logger";
 
 /**
@@ -31,22 +31,19 @@ class AuditService {
         userAgent,
       } = params;
 
-      await db.query(
-        `INSERT INTO audit_logs (
-          user_id, organization_id, action, resource_type, resource_id,
-          metadata, ip_address, user_agent
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-        [
+      await prisma.auditLog.create({
+        data: {
           userId,
           organizationId,
           action,
           resourceType,
           resourceId,
-          metadata ? JSON.stringify(metadata) : null,
+          metadata: metadata ? JSON.stringify(metadata) : null,
           ipAddress,
           userAgent,
-        ]
-      );
+          createdAt: new Date(),
+        },
+      });
 
       logger.debug("Audit log created", {
         userId,
@@ -88,58 +85,62 @@ class AuditService {
       pageSize = 50,
     } = params;
 
-    // Build WHERE clause for filtering
-    let whereClause = "organization_id = $1";
-    const queryParams: any[] = [organizationId];
-    let paramIndex = 2;
-
-    if (userId) {
-      whereClause += ` AND user_id = $${paramIndex++}`;
-      queryParams.push(userId);
-    }
-
-    if (resourceType) {
-      whereClause += ` AND resource_type = $${paramIndex++}`;
-      queryParams.push(resourceType);
-    }
-
-    if (actionType) {
-      whereClause += ` AND action = $${paramIndex++}`;
-      queryParams.push(actionType);
-    }
-
-    if (startDate) {
-      whereClause += ` AND created_at >= $${paramIndex++}`;
-      queryParams.push(startDate);
-    }
-
-    if (endDate) {
-      whereClause += ` AND created_at <= $${paramIndex++}`;
-      queryParams.push(endDate);
-    }
-
     // Calculate pagination
     const offset = (page - 1) * pageSize;
 
-    // Get total count
-    const countResult = await db.getOne(
-      `SELECT COUNT(*) AS total FROM audit_logs WHERE ${whereClause}`,
-      queryParams
-    );
+    // Build where clause dynamically
+    const whereClause: any = {
+      organizationId,
+    };
 
-    const total = parseInt(countResult.total, 10);
+    if (userId) {
+      whereClause.userId = userId;
+    }
+
+    if (resourceType) {
+      whereClause.resourceType = resourceType;
+    }
+
+    if (actionType) {
+      whereClause.action = actionType;
+    }
+
+    if (startDate || endDate) {
+      whereClause.createdAt = {};
+      if (startDate) {
+        whereClause.createdAt.gte = startDate;
+      }
+      if (endDate) {
+        whereClause.createdAt.lte = endDate;
+      }
+    }
+
+    // Get total count
+    const total = await prisma.auditLog.count({
+      where: whereClause,
+    });
 
     // Get paginated results
-    const logs = await db.getMany(
-      `SELECT 
-        id, user_id, organization_id, action, resource_type, 
-        resource_id, metadata, ip_address, user_agent, created_at
-       FROM audit_logs 
-       WHERE ${whereClause} 
-       ORDER BY created_at DESC 
-       LIMIT $${paramIndex++} OFFSET $${paramIndex++}`,
-      [...queryParams, pageSize, offset]
-    );
+    const logs = await prisma.auditLog.findMany({
+      where: whereClause,
+      orderBy: {
+        createdAt: "desc",
+      },
+      skip: offset,
+      take: pageSize,
+      select: {
+        id: true,
+        userId: true,
+        organizationId: true,
+        action: true,
+        resourceType: true,
+        resourceId: true,
+        metadata: true,
+        ipAddress: true,
+        userAgent: true,
+        createdAt: true,
+      },
+    });
 
     // Return paginated result
     return {

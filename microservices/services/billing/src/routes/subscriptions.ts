@@ -1,11 +1,13 @@
 import { Router, Request, Response } from "express";
 import { BillingService } from "../services/billing-service";
+import { SubscriptionRepository } from "../repositories/SubscriptionRepository";
 import { authMiddleware } from "../middleware/auth";
 import { validateRequest } from "../middleware/validation";
 import { z } from "zod";
 
 const router = Router();
 const billingService = new BillingService();
+const subscriptionRepository = new SubscriptionRepository();
 
 // Validation schemas
 const createSubscriptionSchema = z.object({
@@ -45,8 +47,8 @@ router.post(
       }
 
       // Check if user already has an active subscription
-      const existingSubscription = await billingService.getActiveSubscription(userId);
-      if (existingSubscription) {
+      const existingSubscription = await subscriptionRepository.getByOrganizationId(userId);
+      if (existingSubscription && existingSubscription.status === 'active') {
         res.status(400).json({
           error: "User already has an active subscription",
           subscriptionId: existingSubscription.id,
@@ -71,8 +73,8 @@ router.post(
           planId: subscription.planId,
           currentPeriodStart: subscription.currentPeriodStart,
           currentPeriodEnd: subscription.currentPeriodEnd,
-          trialEnd: subscription.trialEnd,
-          cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
+          trialEndsAt: subscription.trialEndsAt,
+          cancelsAtPeriodEnd: subscription.cancelsAtPeriodEnd,
           createdAt: subscription.createdAt,
         },
       });
@@ -110,8 +112,8 @@ router.get("/", authMiddleware, async (req: Request, res: Response): Promise<voi
         planId: sub.planId,
         currentPeriodStart: sub.currentPeriodStart,
         currentPeriodEnd: sub.currentPeriodEnd,
-        trialEnd: sub.trialEnd,
-        cancelAtPeriodEnd: sub.cancelAtPeriodEnd,
+        trialEndsAt: sub.trialEndsAt,
+        cancelsAtPeriodEnd: sub.cancelsAtPeriodEnd,
         canceledAt: sub.canceledAt,
         createdAt: sub.createdAt,
         updatedAt: sub.updatedAt,
@@ -160,11 +162,9 @@ router.get(
           planId: subscription.planId,
           currentPeriodStart: subscription.currentPeriodStart,
           currentPeriodEnd: subscription.currentPeriodEnd,
-          trialEnd: subscription.trialEnd,
-          cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
+          trialEndsAt: subscription.trialEndsAt,
+          cancelsAtPeriodEnd: subscription.cancelsAtPeriodEnd,
           canceledAt: subscription.canceledAt,
-          cancellationReason: subscription.cancellationReason,
-          metadata: subscription.metadata,
           createdAt: subscription.createdAt,
           updatedAt: subscription.updatedAt,
         },
@@ -260,7 +260,7 @@ router.post(
         subscription: {
           id: subscription.id,
           status: subscription.status,
-          cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
+          cancelsAtPeriodEnd: subscription.cancelsAtPeriodEnd,
           canceledAt: subscription.canceledAt,
           currentPeriodEnd: subscription.currentPeriodEnd,
         },
@@ -305,7 +305,7 @@ router.post(
         subscription: {
           id: subscription.id,
           status: subscription.status,
-          cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
+          cancelsAtPeriodEnd: subscription.cancelsAtPeriodEnd,
           currentPeriodEnd: subscription.currentPeriodEnd,
         },
         message: "Subscription has been reactivated",

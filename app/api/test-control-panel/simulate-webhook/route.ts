@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { getIntegrationsServiceUrl } from "@/lib/service-urls";
+import { getNotificationStreamServiceUrl } from "@/lib/service-urls";
 import { getShopifyWebhookHeaders, validateShopifyOrderPayload } from "@/lib/webhook-security";
 
 interface SimulateWebhookRequest {
@@ -288,9 +288,9 @@ export async function POST(request: NextRequest) {
     // Generate webhook headers with proper HMAC signature
     const webhookHeaders = getShopifyWebhookHeaders(shopifyOrderPayload, shop_domain);
 
-    // Send the webhook to the integrations service
-    const integrationsUrl = getIntegrationsServiceUrl();
-    const webhookUrl = `${integrationsUrl}/api/webhooks/shopify/orders-create`;
+    // Send the webhook to the notification-stream service
+    const notificationStreamUrl = getNotificationStreamServiceUrl();
+    const webhookUrl = `${notificationStreamUrl}/api/webhooks/shopify/orders-create`;
 
     console.log(`Sending simulated webhook to: ${webhookUrl}`);
     console.log(`Shop domain: ${shop_domain}`);
@@ -330,7 +330,7 @@ export async function POST(request: NextRequest) {
       message: "Webhook event simulated successfully",
       order_id: orderId,
       shop_domain: shop_domain,
-      integrations_response: result,
+      notification_stream_response: result,
     });
   } catch (error: any) {
     console.error("Error simulating webhook:", error);

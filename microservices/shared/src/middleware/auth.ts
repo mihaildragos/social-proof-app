@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
-import { getContextLogger } from "../utils/logger";
+import { getContextLogger } from "../../utils/logger";
 
 const logger = getContextLogger({ service: "auth-middleware" });
 

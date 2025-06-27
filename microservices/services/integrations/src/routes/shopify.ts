@@ -16,11 +16,6 @@ const connectShopifySchema = z.object({
   scopes: z.array(z.string()).optional(),
 });
 
-const shopifyWebhookSchema = z.object({
-  topic: z.string(),
-  shop_domain: z.string(),
-  payload: z.any(),
-});
 
 // Connect Shopify store
 router.post(
@@ -54,8 +49,8 @@ router.post(
         provider: "shopify",
         providerAccountId: shopInfo.id.toString(),
         accessToken,
-        refreshToken: null,
-        expiresAt: null,
+        refreshToken: undefined,
+        expiresAt: undefined,
         scope: scopes?.join(","),
         metadata: {
           shop: shopInfo.domain,

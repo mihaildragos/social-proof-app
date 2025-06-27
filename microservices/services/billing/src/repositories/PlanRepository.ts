@@ -1,4 +1,4 @@
-import { query, queryOne } from "../utils/database";
+import { prisma } from "../lib/prisma";
 import { Plan, PlanFeature, PlanLimit } from "../types";
 
 export class PlanRepository {
@@ -6,9 +6,14 @@ export class PlanRepository {
    * Get all public plans
    */
   async getPublicPlans(): Promise<Plan[]> {
-    const results = await query<Plan>(
-      "SELECT * FROM plans WHERE is_public = true ORDER BY sort_order ASC"
-    );
+    const results = await prisma.plan.findMany({
+      where: {
+        isPublic: true
+      },
+      orderBy: {
+        sortOrder: 'asc'
+      }
+    });
     return results;
   }
 
@@ -16,10 +21,11 @@ export class PlanRepository {
    * Get plan by ID
    */
   async getById(id: string): Promise<Plan | null> {
-    const result = await queryOne<Plan>(
-      "SELECT * FROM plans WHERE id = $1",
-      [id]
-    );
+    const result = await prisma.plan.findUnique({
+      where: {
+        id
+      }
+    });
     return result;
   }
 
@@ -27,10 +33,11 @@ export class PlanRepository {
    * Get plan by name
    */
   async getByName(name: string): Promise<Plan | null> {
-    const result = await queryOne<Plan>(
-      "SELECT * FROM plans WHERE name = $1",
-      [name]
-    );
+    const result = await prisma.plan.findUnique({
+      where: {
+        name
+      }
+    });
     return result;
   }
 
@@ -38,10 +45,14 @@ export class PlanRepository {
    * Get plan features
    */
   async getPlanFeatures(planId: string): Promise<PlanFeature[]> {
-    const results = await query<PlanFeature>(
-      "SELECT * FROM plan_features WHERE plan_id = $1 ORDER BY created_at ASC",
-      [planId]
-    );
+    const results = await prisma.planFeature.findMany({
+      where: {
+        planId
+      },
+      orderBy: {
+        createdAt: 'asc'
+      }
+    });
     return results;
   }
 
@@ -49,10 +60,11 @@ export class PlanRepository {
    * Get plan limits
    */
   async getPlanLimits(planId: string): Promise<PlanLimit[]> {
-    const results = await query<PlanLimit>(
-      "SELECT * FROM plan_limits WHERE plan_id = $1",
-      [planId]
-    );
+    const results = await prisma.planLimit.findMany({
+      where: {
+        planId
+      }
+    });
     return results;
   }
 
@@ -60,10 +72,14 @@ export class PlanRepository {
    * Get plan limit for specific resource
    */
   async getPlanLimit(planId: string, resourceType: string): Promise<PlanLimit | null> {
-    const result = await queryOne<PlanLimit>(
-      "SELECT * FROM plan_limits WHERE plan_id = $1 AND resource_type = $2",
-      [planId, resourceType]
-    );
+    const result = await prisma.planLimit.findUnique({
+      where: {
+        unique_plan_resource: {
+          planId,
+          resourceType
+        }
+      }
+    });
     return result;
   }
 

@@ -1,20 +1,36 @@
-module.exports = {
-  preset: 'ts-jest',
-  testEnvironment: 'node',
-  roots: ['<rootDir>/src'],
-  testMatch: ['**/__tests__/**/*.test.ts'],
-  collectCoverageFrom: [
-    'src/**/*.ts',
-    '!src/**/*.d.ts',
-    '!src/__tests__/**',
-    '!src/index.ts'
-  ],
-  coverageDirectory: 'coverage',
-  coverageReporters: ['text', 'lcov', 'html'],
+export default {
+  preset: "ts-jest/presets/default-esm",
+  extensionsToTreatAsEsm: [".ts"],
+  testEnvironment: "node",
+  roots: ["<rootDir>/src"],
+  testMatch: ["**/__tests__/**/*.test.ts"],
+  setupFilesAfterEnv: ["<rootDir>/src/__tests__/setup.ts"],
+  collectCoverageFrom: ["src/**/*.ts", "!src/**/*.d.ts", "!src/__tests__/**", "!src/index.ts"],
+  coverageDirectory: "coverage",
+  coverageReporters: ["text", "lcov", "html"],
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/src/$1'
+    "^@/(.*)$": "<rootDir>/src/$1",
   },
   testTimeout: 10000,
   clearMocks: true,
-  restoreMocks: true
+  restoreMocks: true,
+  globals: {
+    "ts-jest": {
+      isolatedModules: true,
+      useESM: true,
+      tsconfig: {
+        strict: false,
+        noImplicitAny: false,
+        allowJs: true,
+        esModuleInterop: true,
+        skipLibCheck: true,
+        noUnusedLocals: false,
+        noUnusedParameters: false,
+        exactOptionalPropertyTypes: false,
+        noImplicitReturns: false,
+        noFallthroughCasesInSwitch: false,
+        noUncheckedIndexedAccess: false,
+      },
+    },
+  },
 };

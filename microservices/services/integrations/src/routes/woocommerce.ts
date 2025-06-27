@@ -156,7 +156,7 @@ router.get("/store/:integrationId", authMiddleware, async (req: Request, res: Re
     const storeInfo = await wooCommerceService.getStoreInfo(
       integration.metadata.storeUrl,
       integration.accessToken,
-      integration.refreshToken
+      integration.refreshToken || ''
     );
 
     res.json(storeInfo);
@@ -189,7 +189,7 @@ router.post("/sync/:integrationId", authMiddleware, async (req: Request, res: Re
     await wooCommerceService.syncStoreData(
       integration.metadata.storeUrl,
       integration.accessToken,
-      integration.refreshToken,
+      integration.refreshToken || '',
       userId
     );
 
@@ -223,7 +223,7 @@ router.get("/products/:integrationId", authMiddleware, async (req: Request, res:
     const products = await wooCommerceService.getProducts(
       integration.metadata.storeUrl,
       integration.accessToken,
-      integration.refreshToken,
+      integration.refreshToken || '',
       {
         page: Number(page),
         per_page: Number(per_page),
@@ -260,7 +260,7 @@ router.get("/orders/:integrationId", authMiddleware, async (req: Request, res: R
     const orders = await wooCommerceService.getOrders(
       integration.metadata.storeUrl,
       integration.accessToken,
-      integration.refreshToken,
+      integration.refreshToken || '',
       {
         page: Number(page),
         per_page: Number(per_page),

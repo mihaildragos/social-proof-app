@@ -1,7 +1,7 @@
 import { SignJWT, jwtVerify, JWTPayload } from "jose";
 import { randomUUID } from "crypto";
 import { logger } from "./logger";
-import { db } from "./db";
+import { prisma } from "../lib/prisma";
 
 // JWT Claims interface
 export interface JWTClaims extends JWTPayload {
@@ -138,10 +138,13 @@ export async function verifyRefreshToken(
  */
 export async function blacklistToken(jti: string, expiresAt: number): Promise<void> {
   try {
-    await db.query(`INSERT INTO token_blacklist (token_id, expires_at) VALUES ($1, $2)`, [
-      jti,
-      new Date(expiresAt * 1000),
-    ]);
+    await prisma.tokenBlacklist.create({
+      data: {
+        tokenId: jti,
+        expiresAt: new Date(expiresAt * 1000),
+        createdAt: new Date(),
+      },
+    });
   } catch (error) {
     logger.error("Failed to blacklist token", { error: (error as Error).message, jti });
     throw error;
@@ -153,9 +156,12 @@ export async function blacklistToken(jti: string, expiresAt: number): Promise<vo
  */
 async function checkTokenBlacklist(jti: string): Promise<boolean> {
   try {
-    const result = await db.query(`SELECT 1 FROM token_blacklist WHERE token_id = $1`, [jti]);
+    const blacklistedToken = await prisma.tokenBlacklist.findFirst({
+      where: { tokenId: jti },
+      select: { id: true },
+    });
 
-    return result.rows.length > 0;
+    return !!blacklistedToken;
   } catch (error) {
     logger.error("Failed to check token blacklist", { error: (error as Error).message, jti });
     return false;

@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { Request, Response, NextFunction } from "express";
+import { Response, NextFunction } from "express";
 import { AuthMiddleware, JWTPayload, AuthenticatedRequest } from "../../middleware/auth";
 
 // Mock the logger

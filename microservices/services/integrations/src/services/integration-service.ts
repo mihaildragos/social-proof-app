@@ -47,6 +47,61 @@ export class IntegrationService extends EventEmitter {
     });
   }
 
+  private async getOAuthTokens(integrationId: string): Promise<{
+    accessToken: string | null;
+    refreshToken: string | null;
+    expiresAt: Date | null;
+    scope: string | null;
+  }> {
+    try {
+      // Use the database function to get OAuth tokens (supports both storage methods)
+      const result = await this.db.query(
+        "SELECT * FROM get_oauth_tokens($1)",
+        [integrationId]
+      );
+
+      if (result.rows.length === 0) {
+        return {
+          accessToken: null,
+          refreshToken: null,
+          expiresAt: null,
+          scope: null,
+        };
+      }
+
+      const row = result.rows[0];
+      return {
+        accessToken: row.access_token,
+        refreshToken: row.refresh_token,
+        expiresAt: row.expires_at,
+        scope: row.scope,
+      };
+    } catch (error) {
+      // Fallback to direct column access if function fails
+      const result = await this.db.query(
+        "SELECT access_token, refresh_token, expires_at, scope FROM integrations WHERE id = $1",
+        [integrationId]
+      );
+
+      if (result.rows.length === 0) {
+        return {
+          accessToken: null,
+          refreshToken: null,
+          expiresAt: null,
+          scope: null,
+        };
+      }
+
+      const row = result.rows[0];
+      return {
+        accessToken: row.access_token,
+        refreshToken: row.refresh_token,
+        expiresAt: row.expires_at,
+        scope: row.scope,
+      };
+    }
+  }
+
   async createIntegration(data: CreateIntegrationData): Promise<Integration> {
     const client = await this.db.connect();
 
@@ -389,6 +444,53 @@ export class IntegrationService extends EventEmitter {
       createdAt: new Date(row.created_at),
       updatedAt: new Date(row.updated_at),
     };
+  }
+
+  async getIntegrationWithTokens(id: string, userId: string): Promise<Integration | null> {
+    const integration = await this.getIntegration(id, userId);
+    if (!integration) {
+      return null;
+    }
+
+    // Get OAuth tokens using the helper method (supports both storage methods)
+    const tokens = await this.getOAuthTokens(id);
+    
+    return {
+      ...integration,
+      accessToken: tokens.accessToken || integration.accessToken,
+      refreshToken: tokens.refreshToken || integration.refreshToken,
+      expiresAt: tokens.expiresAt || integration.expiresAt,
+      scope: tokens.scope || integration.scope,
+    };
+  }
+
+  async updateOAuthTokens(
+    id: string,
+    tokens: {
+      accessToken?: string;
+      refreshToken?: string;
+      expiresAt?: Date;
+      scope?: string;
+    }
+  ): Promise<boolean> {
+    try {
+      // Use the database function for secure token updates
+      const result = await this.db.query(
+        "SELECT update_oauth_tokens($1, $2, $3, $4, $5)",
+        [
+          id,
+          tokens.accessToken || null,
+          tokens.refreshToken || null,
+          tokens.expiresAt || null,
+          tokens.scope || null,
+        ]
+      );
+
+      return result.rows[0]?.update_oauth_tokens || false;
+    } catch (error) {
+      // Fallback to regular update if function fails
+      return await this.updateIntegration(id, tokens).then(() => true).catch(() => false);
+    }
   }
 
   async close(): Promise<void> {

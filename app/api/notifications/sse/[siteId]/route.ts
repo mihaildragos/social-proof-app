@@ -2,7 +2,6 @@ import { Redis } from "ioredis";
 import { NextRequest, NextResponse } from "next/server";
 import { createClerkSupabaseClientSsr } from "@/utils/supabase/server";
 import { SiteStatus } from "@/types/sites";
-import MockRedis from "@/app/lib/mock-redis";
 
 // Create Redis client instance
 // In a production environment, you might want to use a connection pool

@@ -56,36 +56,41 @@ router.post(
         });
       }
 
+      // Extract account data safely
+      const accountData = stripeAccountData as any;
+      const stripeAccountId = accountData.stripe_user_id || accountData.id || accountId;
+      const stripeAccessToken = accountData.access_token || '';
+      
       // Store the integration
       const integration = await integrationService.createIntegration({
         userId,
         provider: "stripe",
-        providerAccountId: stripeAccountData.stripe_user_id || accountId,
-        accessToken: stripeAccountData.access_token,
-        refreshToken: stripeAccountData.refresh_token || refreshToken,
-        expiresAt: null,
-        scope: stripeAccountData.scope || scope,
+        providerAccountId: stripeAccountId,
+        accessToken: stripeAccessToken,
+        refreshToken: accountData.refresh_token || refreshToken,
+        expiresAt: undefined,
+        scope: accountData.scope || scope,
         metadata: {
-          accountId: stripeAccountData.stripe_user_id || accountId,
-          publishableKey: stripeAccountData.stripe_publishable_key,
-          accountType: stripeAccountData.account_type,
-          country: stripeAccountData.country,
-          currency: stripeAccountData.default_currency,
-          businessName: stripeAccountData.business_name,
-          email: stripeAccountData.email,
+          accountId: stripeAccountId,
+          publishableKey: accountData.stripe_publishable_key || '',
+          accountType: accountData.account_type || 'standard',
+          country: accountData.country || '',
+          currency: accountData.default_currency || '',
+          businessName: accountData.business_name || '',
+          email: accountData.email || '',
         },
       });
 
       // Set up webhooks
-      await stripeService.setupWebhooks(stripeAccountData.stripe_user_id || accountId);
+      await stripeService.setupWebhooks(stripeAccountId);
 
       res.json({
         success: true,
         integration: {
           id: integration.id,
           provider: integration.provider,
-          accountId: stripeAccountData.stripe_user_id || accountId,
-          businessName: stripeAccountData.business_name,
+          accountId: stripeAccountId,
+          businessName: accountData.business_name || '',
           connectedAt: integration.createdAt,
         },
       });

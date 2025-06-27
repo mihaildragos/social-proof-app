@@ -8,8 +8,9 @@ export * from "./redis/publisher";
 export * from "./redis/subscriber";
 
 // Export Kafka classes
-export * from "./kafka/consumer";
-export * from "./kafka/producer";
+export * from "./events/consumer";
+export * from "./events/producer";
+export * from "./events/schemas";
 
 // Export middleware
 export * from "./middleware/health-check";
@@ -26,6 +27,9 @@ export * from "./auth/api-key";
 import { initializeTracing } from "./utils/tracing";
 import { setupGlobalErrorHandlers } from "./utils/errors";
 import { logger } from "./utils/logger";
+
+// Export logger instance
+export { logger };
 
 export const initializeService = (options: {
   serviceName: string;

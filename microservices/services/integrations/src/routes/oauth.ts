@@ -249,6 +249,7 @@ router.post("/validate/:integrationId", authMiddleware, async (req: Request, res
 
     // Validate the token
     const isValid = await oauthService.validateToken({
+      integrationId: integration.id,
       provider: integration.provider,
       accessToken: integration.accessToken,
     });
