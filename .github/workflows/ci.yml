@@ -1,0 +1,394 @@
+name: CI/CD Pipeline
+
+# BRANCH STRATEGY:
+# - main: Uses minimal-deploy.yml for cost-effective deployment (~£22/month)
+# - enterprise: Uses this workflow for full GKE deployment (~£125/month)
+# - develop: Uses this workflow for staging deployment
+
+on:
+  push:
+    branches: [main, develop, enterprise]
+  pull_request:
+    branches: [main, develop, enterprise]
+
+env:
+  GCP_PROJECT_ID: ${{ vars.PROJECT_ID }}
+  GCP_REGION: ${{ vars.GCP_REGION }}
+  GKE_CLUSTER: ${{ vars.GKE_CLUSTER }}
+  CONTAINER_REGISTRY: ${{ vars.CONTAINER_REGISTRY }}
+
+# Required for Workload Identity Federation
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    services:
+      # Start Redis service container
+      redis:
+        
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+
+      # Start PostgreSQL service container
+      postgres:
+        image: postgres:14-alpine
+        env:
+          POSTGRES_USER: ${{ vars.POSTGRES_USER || 'postgres' }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD || 'postgres' }}
+          POSTGRES_DB: ${{ vars.POSTGRES_DB || 'social_proof_mvp' }}
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          npm run build:shared
+        working-directory: ./microservices
+
+      - name: Wait for services to be ready
+        run: |
+          echo "Waiting for PostgreSQL to be ready..."
+          sleep 10
+          echo "Services should be ready now"
+
+      - name: Lint code
+        run: |
+          # Run TypeScript compiler check instead of ESLint for now
+          echo "Running TypeScript compiler checks..."
+          npm run build --workspaces --if-present
+        working-directory: ./microservices
+
+      - name: Run tests
+        run: npm test
+        working-directory: ./microservices
+        env:
+          NODE_ENV: test
+          DATABASE_URL: postgresql://${{ vars.POSTGRES_USER || 'postgres' }}:${{ secrets.POSTGRES_PASSWORD || 'postgres' }}@localhost:5432/${{ vars.POSTGRES_DB || 'social_proof_mvp' }}
+          REDIS_URL: redis://localhost:6379/1
+
+      - name: Upload test coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: ./microservices/coverage
+
+  build:
+    name: Build Docker Images
+    needs: test
+    runs-on: ubuntu-latest
+    # Changed: Only build expensive images for enterprise and develop branches
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/enterprise' || github.ref == 'refs/heads/develop')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud via Workload Identity Federation
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up Google Cloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ vars.PROJECT_ID }}
+
+      - name: Configure Docker to use gcloud as credential helper
+        run: gcloud auth configure-docker
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Generate version tag
+        id: version
+        run: |
+          BRANCH_NAME=${GITHUB_REF#refs/heads/}
+          TIMESTAMP=$(date +%Y%m%d%H%M%S)
+          if [ "$BRANCH_NAME" = "main" ]; then
+            echo "TAG=latest" >> $GITHUB_OUTPUT
+          else
+            echo "TAG=${BRANCH_NAME}-${TIMESTAMP}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build and push Integrations Service
+        uses: docker/build-push-action@v5
+        with:
+          context: ./microservices/services/integrations
+          file: ./microservices/services/integrations/Dockerfile
+          push: true
+          tags: |
+            ${{ env.CONTAINER_REGISTRY }}/${{ vars.PROJECT_ID }}/integrations:${{ steps.version.outputs.TAG }}
+          cache-from: type=registry,ref=${{ env.CONTAINER_REGISTRY }}/${{ vars.PROJECT_ID }}/integrations:buildcache
+          cache-to: type=registry,ref=${{ env.CONTAINER_REGISTRY }}/${{ vars.PROJECT_ID }}/integrations:buildcache,mode=max
+
+      - name: Build and push Notification Stream Service
+        uses: docker/build-push-action@v5
+        with:
+          context: ./microservices/services/notification-stream-service
+          file: ./microservices/services/notification-stream-service/Dockerfile
+          push: true
+          tags: |
+            ${{ env.CONTAINER_REGISTRY }}/${{ vars.PROJECT_ID }}/notification-stream:${{ steps.version.outputs.TAG }}
+          cache-from: type=registry,ref=${{ env.CONTAINER_REGISTRY }}/${{ vars.PROJECT_ID }}/notification-stream:buildcache
+          cache-to: type=registry,ref=${{ env.CONTAINER_REGISTRY }}/${{ vars.PROJECT_ID }}/notification-stream:buildcache,mode=max
+
+      - name: Build and push Notifications Service
+        uses: docker/build-push-action@v5
+        with:
+          context: ./microservices/services/notifications
+          file: ./microservices/services/notifications/Dockerfile
+          push: true
+          tags: |
+            ${{ env.CONTAINER_REGISTRY }}/${{ vars.PROJECT_ID }}/notifications:${{ steps.version.outputs.TAG }}
+          cache-from: type=registry,ref=${{ env.CONTAINER_REGISTRY }}/${{ vars.PROJECT_ID }}/notifications:buildcache
+          cache-to: type=registry,ref=${{ env.CONTAINER_REGISTRY }}/${{ vars.PROJECT_ID }}/notifications:buildcache,mode=max
+
+      - name: Build and push Users Service
+        uses: docker/build-push-action@v5
+        with:
+          context: ./microservices/services/users
+          file: ./microservices/services/users/Dockerfile
+          push: true
+          tags: |
+            ${{ env.CONTAINER_REGISTRY }}/${{ vars.PROJECT_ID }}/users:${{ steps.version.outputs.TAG }}
+          cache-from: type=registry,ref=${{ env.CONTAINER_REGISTRY }}/${{ vars.PROJECT_ID }}/users:buildcache
+          cache-to: type=registry,ref=${{ env.CONTAINER_REGISTRY }}/${{ vars.PROJECT_ID }}/users:buildcache,mode=max
+
+      - name: Build and push Analytics Service
+        uses: docker/build-push-action@v5
+        with:
+          context: ./microservices/services/analytics
+          file: ./microservices/services/analytics/Dockerfile
+          push: true
+          tags: |
+            ${{ env.CONTAINER_REGISTRY }}/${{ vars.PROJECT_ID }}/analytics:${{ steps.version.outputs.TAG }}
+          cache-from: type=registry,ref=${{ env.CONTAINER_REGISTRY }}/${{ vars.PROJECT_ID }}/analytics:buildcache
+          cache-to: type=registry,ref=${{ env.CONTAINER_REGISTRY }}/${{ vars.PROJECT_ID }}/analytics:buildcache,mode=max
+
+      - name: Build and push Billing Service
+        uses: docker/build-push-action@v5
+        with:
+          context: ./microservices/services/billing
+          file: ./microservices/services/billing/Dockerfile
+          push: true
+          tags: |
+            ${{ env.CONTAINER_REGISTRY }}/${{ vars.PROJECT_ID }}/billing:${{ steps.version.outputs.TAG }}
+          cache-from: type=registry,ref=${{ env.CONTAINER_REGISTRY }}/${{ vars.PROJECT_ID }}/billing:buildcache
+          cache-to: type=registry,ref=${{ env.CONTAINER_REGISTRY }}/${{ vars.PROJECT_ID }}/billing:buildcache,mode=max
+
+  deploy-staging:
+    name: Deploy to Staging
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud via Workload Identity Federation
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up Google Cloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ vars.PROJECT_ID }}
+
+      - name: Get GKE credentials
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: ${{ env.GKE_CLUSTER }}
+          location: ${{ env.GCP_REGION }}
+          project_id: ${{ vars.PROJECT_ID }}
+
+      - name: Prepare secrets for base64 encoding
+        id: prepare-secrets
+        run: |
+          # Base64 encode all secrets for Kubernetes
+          echo "CLERK_SECRET_KEY_B64=$(echo -n '${{ secrets.CLERK_SECRET_KEY }}' | base64 -w 0)" >> $GITHUB_OUTPUT
+          echo "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_B64=$(echo -n '${{ vars.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}' | base64 -w 0)" >> $GITHUB_OUTPUT
+          echo "SENDGRID_API_KEY_B64=$(echo -n '${{ secrets.SENDGRID_API_KEY }}' | base64 -w 0)" >> $GITHUB_OUTPUT
+          echo "STRIPE_SECRET_KEY_B64=$(echo -n '${{ secrets.STRIPE_SECRET_KEY }}' | base64 -w 0)" >> $GITHUB_OUTPUT
+          echo "STRIPE_WEBHOOK_SECRET_B64=$(echo -n '${{ secrets.STRIPE_WEBHOOK_SECRET }}' | base64 -w 0)" >> $GITHUB_OUTPUT
+          echo "POSTGRES_PASSWORD_B64=$(echo -n '${{ secrets.POSTGRES_PASSWORD }}' | base64 -w 0)" >> $GITHUB_OUTPUT
+          echo "JWT_SECRET_B64=$(echo -n '${{ secrets.JWT_SECRET }}' | base64 -w 0)" >> $GITHUB_OUTPUT
+          echo "SHOPIFY_API_KEY_B64=$(echo -n '${{ secrets.SHOPIFY_API_KEY }}' | base64 -w 0)" >> $GITHUB_OUTPUT
+          echo "SHOPIFY_API_SECRET_B64=$(echo -n '${{ secrets.SHOPIFY_API_SECRET }}' | base64 -w 0)" >> $GITHUB_OUTPUT
+          echo "WOOCOMMERCE_API_KEY_B64=$(echo -n '${{ secrets.WOOCOMMERCE_API_KEY }}' | base64 -w 0)" >> $GITHUB_OUTPUT
+          echo "WOOCOMMERCE_API_SECRET_B64=$(echo -n '${{ secrets.WOOCOMMERCE_API_SECRET }}' | base64 -w 0)" >> $GITHUB_OUTPUT
+          
+          # Create Docker registry auth using gcloud credentials (automatically configured)
+          DOCKER_CONFIG='{"auths":{"'${{ env.CONTAINER_REGISTRY }}'":{"auth":"'$(echo -n "_dcgcloud_token:$(gcloud auth print-access-token)" | base64 -w 0)'"}}}'
+          echo "DOCKER_REGISTRY_AUTH_B64=$(echo -n "$DOCKER_CONFIG" | base64 -w 0)" >> $GITHUB_OUTPUT
+
+      - name: Deploy to Kubernetes
+        run: |
+          cd ./gcp/kubernetes
+          
+          # Set environment variables for substitution
+          export GCP_PROJECT_ID="${{ vars.PROJECT_ID }}"
+          export ENVIRONMENT="${{ vars.ENVIRONMENT }}"
+          export NODE_ENV="${{ vars.NODE_ENV }}"
+          export POSTGRES_USER="${{ vars.POSTGRES_USER }}"
+          export POSTGRES_PASSWORD="${{ secrets.POSTGRES_PASSWORD }}"
+          export POSTGRES_DB="${{ vars.POSTGRES_DB }}"
+          export LOG_LEVEL="${{ vars.LOG_LEVEL }}"
+          export METRICS_ENABLED="${{ vars.METRICS_ENABLED }}"
+          export TRACING_ENABLED="${{ vars.TRACING_ENABLED }}"
+          export HEALTH_CHECK_TIMEOUT="${{ vars.HEALTH_CHECK_TIMEOUT }}"
+          export HEALTH_CHECK_INTERVAL="${{ vars.HEALTH_CHECK_INTERVAL }}"
+          export CLICKHOUSE_DATABASE="${{ vars.CLICKHOUSE_DATABASE }}"
+          export CONTAINER_REGISTRY="${{ env.CONTAINER_REGISTRY }}"
+          
+          # Base64 encoded secrets
+          export CLERK_SECRET_KEY_B64="${{ steps.prepare-secrets.outputs.CLERK_SECRET_KEY_B64 }}"
+          export NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_B64="${{ steps.prepare-secrets.outputs.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_B64 }}"
+          export SENDGRID_API_KEY_B64="${{ steps.prepare-secrets.outputs.SENDGRID_API_KEY_B64 }}"
+          export STRIPE_SECRET_KEY_B64="${{ steps.prepare-secrets.outputs.STRIPE_SECRET_KEY_B64 }}"
+          export STRIPE_WEBHOOK_SECRET_B64="${{ steps.prepare-secrets.outputs.STRIPE_WEBHOOK_SECRET_B64 }}"
+          export POSTGRES_PASSWORD_B64="${{ steps.prepare-secrets.outputs.POSTGRES_PASSWORD_B64 }}"
+          export JWT_SECRET_B64="${{ steps.prepare-secrets.outputs.JWT_SECRET_B64 }}"
+          export SHOPIFY_API_KEY_B64="${{ steps.prepare-secrets.outputs.SHOPIFY_API_KEY_B64 }}"
+          export SHOPIFY_API_SECRET_B64="${{ steps.prepare-secrets.outputs.SHOPIFY_API_SECRET_B64 }}"
+          export WOOCOMMERCE_API_KEY_B64="${{ steps.prepare-secrets.outputs.WOOCOMMERCE_API_KEY_B64 }}"
+          export WOOCOMMERCE_API_SECRET_B64="${{ steps.prepare-secrets.outputs.WOOCOMMERCE_API_SECRET_B64 }}"
+          export DOCKER_REGISTRY_AUTH_B64="${{ steps.prepare-secrets.outputs.DOCKER_REGISTRY_AUTH_B64 }}"
+          
+          # Update image tags in deployment manifests
+          VERSION=$(echo $GITHUB_SHA | cut -c1-7)
+          find deployments/ -name "*.yaml" -exec sed -i "s|${{ env.CONTAINER_REGISTRY }}/\${GCP_PROJECT_ID}/|${{ env.CONTAINER_REGISTRY }}/${{ vars.PROJECT_ID }}/|g" {} \;
+          find deployments/ -name "*.yaml" -exec sed -i "s|:latest|:develop-$VERSION|g" {} \;
+          
+          # Apply manifests with environment variable substitution
+          envsubst < namespace.yaml | kubectl apply -f -
+          envsubst < configmap.yaml | kubectl apply -f -
+          envsubst < secrets.yaml | kubectl apply -f -
+          kubectl apply -f infrastructure/
+          kubectl apply -f deployments/
+          kubectl apply -f services/
+          
+          # Verify deployment
+          kubectl get pods -n social-proof-system
+          kubectl get services -n social-proof-system
+
+  deploy-production:
+    name: Deploy to Production (Enterprise)
+    needs: build
+    runs-on: ubuntu-latest
+    # Changed: Only deploy to expensive GKE on 'enterprise' branch, not 'main'
+    if: github.ref == 'refs/heads/enterprise'
+    environment: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud via Workload Identity Federation
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up Google Cloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ vars.PROJECT_ID }}
+
+      - name: Get GKE credentials
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: ${{ env.GKE_CLUSTER }}
+          location: ${{ env.GCP_REGION }}
+          project_id: ${{ vars.PROJECT_ID }}
+
+      - name: Prepare secrets for base64 encoding
+        id: prepare-secrets
+        run: |
+          # Base64 encode all secrets for Kubernetes (same as staging)
+          echo "CLERK_SECRET_KEY_B64=$(echo -n '${{ secrets.CLERK_SECRET_KEY }}' | base64 -w 0)" >> $GITHUB_OUTPUT
+          echo "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_B64=$(echo -n '${{ vars.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}' | base64 -w 0)" >> $GITHUB_OUTPUT
+          echo "SENDGRID_API_KEY_B64=$(echo -n '${{ secrets.SENDGRID_API_KEY }}' | base64 -w 0)" >> $GITHUB_OUTPUT
+          echo "STRIPE_SECRET_KEY_B64=$(echo -n '${{ secrets.STRIPE_SECRET_KEY }}' | base64 -w 0)" >> $GITHUB_OUTPUT
+          echo "STRIPE_WEBHOOK_SECRET_B64=$(echo -n '${{ secrets.STRIPE_WEBHOOK_SECRET }}' | base64 -w 0)" >> $GITHUB_OUTPUT
+          echo "POSTGRES_PASSWORD_B64=$(echo -n '${{ secrets.POSTGRES_PASSWORD }}' | base64 -w 0)" >> $GITHUB_OUTPUT
+          echo "JWT_SECRET_B64=$(echo -n '${{ secrets.JWT_SECRET }}' | base64 -w 0)" >> $GITHUB_OUTPUT
+          echo "SHOPIFY_API_KEY_B64=$(echo -n '${{ secrets.SHOPIFY_API_KEY }}' | base64 -w 0)" >> $GITHUB_OUTPUT
+          echo "SHOPIFY_API_SECRET_B64=$(echo -n '${{ secrets.SHOPIFY_API_SECRET }}' | base64 -w 0)" >> $GITHUB_OUTPUT
+          echo "WOOCOMMERCE_API_KEY_B64=$(echo -n '${{ secrets.WOOCOMMERCE_API_KEY }}' | base64 -w 0)" >> $GITHUB_OUTPUT
+          echo "WOOCOMMERCE_API_SECRET_B64=$(echo -n '${{ secrets.WOOCOMMERCE_API_SECRET }}' | base64 -w 0)" >> $GITHUB_OUTPUT
+          
+          # Create Docker registry auth using gcloud credentials (automatically configured)
+          DOCKER_CONFIG='{"auths":{"'${{ env.CONTAINER_REGISTRY }}'":{"auth":"'$(echo -n "_dcgcloud_token:$(gcloud auth print-access-token)" | base64 -w 0)'"}}}'
+          echo "DOCKER_REGISTRY_AUTH_B64=$(echo -n "$DOCKER_CONFIG" | base64 -w 0)" >> $GITHUB_OUTPUT
+
+      - name: Deploy to Kubernetes
+        run: |
+          cd ./gcp/kubernetes
+          
+          # Set environment variables for substitution (production values)
+          export GCP_PROJECT_ID="${{ vars.PROJECT_ID }}"
+          export ENVIRONMENT="production"
+          export NODE_ENV="${{ vars.NODE_ENV }}"
+          export POSTGRES_USER="${{ vars.POSTGRES_USER }}"
+          export POSTGRES_PASSWORD="${{ secrets.POSTGRES_PASSWORD }}"
+          export POSTGRES_DB="${{ vars.POSTGRES_DB }}"
+          export LOG_LEVEL="${{ vars.LOG_LEVEL }}"
+          export METRICS_ENABLED="${{ vars.METRICS_ENABLED }}"
+          export TRACING_ENABLED="${{ vars.TRACING_ENABLED }}"
+          export HEALTH_CHECK_TIMEOUT="${{ vars.HEALTH_CHECK_TIMEOUT }}"
+          export HEALTH_CHECK_INTERVAL="${{ vars.HEALTH_CHECK_INTERVAL }}"
+          export CLICKHOUSE_DATABASE="${{ vars.CLICKHOUSE_DATABASE }}"
+          export CONTAINER_REGISTRY="${{ env.CONTAINER_REGISTRY }}"
+          
+          # Base64 encoded secrets (same as staging step)
+          export CLERK_SECRET_KEY_B64="${{ steps.prepare-secrets.outputs.CLERK_SECRET_KEY_B64 }}"
+          export NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_B64="${{ steps.prepare-secrets.outputs.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_B64 }}"
+          export SENDGRID_API_KEY_B64="${{ steps.prepare-secrets.outputs.SENDGRID_API_KEY_B64 }}"
+          export STRIPE_SECRET_KEY_B64="${{ steps.prepare-secrets.outputs.STRIPE_SECRET_KEY_B64 }}"
+          export STRIPE_WEBHOOK_SECRET_B64="${{ steps.prepare-secrets.outputs.STRIPE_WEBHOOK_SECRET_B64 }}"
+          export POSTGRES_PASSWORD_B64="${{ steps.prepare-secrets.outputs.POSTGRES_PASSWORD_B64 }}"
+          export JWT_SECRET_B64="${{ steps.prepare-secrets.outputs.JWT_SECRET_B64 }}"
+          export SHOPIFY_API_KEY_B64="${{ steps.prepare-secrets.outputs.SHOPIFY_API_KEY_B64 }}"
+          export SHOPIFY_API_SECRET_B64="${{ steps.prepare-secrets.outputs.SHOPIFY_API_SECRET_B64 }}"
+          export WOOCOMMERCE_API_KEY_B64="${{ steps.prepare-secrets.outputs.WOOCOMMERCE_API_KEY_B64 }}"
+          export WOOCOMMERCE_API_SECRET_B64="${{ steps.prepare-secrets.outputs.WOOCOMMERCE_API_SECRET_B64 }}"
+          export DOCKER_REGISTRY_AUTH_B64="${{ steps.prepare-secrets.outputs.DOCKER_REGISTRY_AUTH_B64 }}"
+          
+          # Update image tags for production (latest)
+          find deployments/ -name "*.yaml" -exec sed -i "s|${{ env.CONTAINER_REGISTRY }}/\${GCP_PROJECT_ID}/|${{ env.CONTAINER_REGISTRY }}/${{ vars.PROJECT_ID }}/|g" {} \;
+          
+          # Apply manifests with environment variable substitution
+          envsubst < namespace.yaml | kubectl apply -f -
+          envsubst < configmap.yaml | kubectl apply -f -
+          envsubst < secrets.yaml | kubectl apply -f -
+          kubectl apply -f infrastructure/
+          kubectl apply -f deployments/
+          kubectl apply -f services/
+          
+          # Verify deployment
+          kubectl get pods -n social-proof-system
+          kubectl get services -n social-proof-system

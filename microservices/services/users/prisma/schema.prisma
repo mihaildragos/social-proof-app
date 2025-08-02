@@ -1,0 +1,265 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                           String              @id @default(cuid())
+  email                        String?
+  emailEncrypted               String?
+  emailEncryptionKeyId         String?
+  fullName                     String?
+  fullNameEncrypted            String?
+  fullNameEncryptionKeyId      String?
+  firstName                    String?
+  lastName                     String?
+  organizationId               String?
+  hashedPassword               String?
+  authProvider                 String?
+  authProviderId               String?
+  clerkUserId                  String?
+  accountStatus                String?
+  preferredLanguage            String?
+  preferredTimezone            String?
+  verificationToken            String?
+  verificationTokenExpiresAt   DateTime?
+  resetToken                   String?
+  resetTokenExpiresAt          DateTime?
+  lastLoginAt                  DateTime?
+  lastLogoutAt                 DateTime?
+  deletedAt                    DateTime?
+  createdAt                    DateTime
+  updatedAt                    DateTime
+  role                         String?
+
+  // Relations
+  organizationMembers          OrganizationMember[]
+  userSessions                 UserSession[]
+  scimUsers                    ScimUser[]
+  auditLogs                    AuditLog[]
+  userPermissions              UserPermission[]
+  emailEncryptionKey           EncryptionKey?       @relation("EmailEncryptionKey", fields: [emailEncryptionKeyId], references: [id])
+  fullNameEncryptionKey        EncryptionKey?       @relation("FullNameEncryptionKey", fields: [fullNameEncryptionKeyId], references: [id])
+
+  @@map("users")
+}
+
+model Organization {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  dataRegion  String?
+  settings    Json?
+  createdAt   DateTime
+  updatedAt   DateTime
+
+  // Relations
+  members     OrganizationMember[]
+  invitations Invitation[]
+  scimUsers   ScimUser[]
+  auditLogs   AuditLog[]
+
+  @@map("organizations")
+}
+
+model OrganizationMember {
+  id             String   @id @default(cuid())
+  userId         String
+  organizationId String
+  role           String
+  joinedAt       DateTime?
+  createdAt      DateTime?
+
+  // Relations
+  user         User         @relation(fields: [userId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([organizationId, userId])
+  @@map("organization_members")
+}
+
+model Invitation {
+  id             String   @id @default(cuid())
+  email          String
+  organizationId String
+  role           String
+  token          String   @unique
+  status         String
+  invitedBy      String
+  createdAt      DateTime
+  expiresAt      DateTime
+  acceptedAt     DateTime?
+  cancelledAt    DateTime?
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@map("invitations")
+}
+
+model UserSession {
+  id             String   @id @default(cuid())
+  userId         String
+  ipAddress      String?
+  userAgent      String?
+  isActive       Boolean
+  organizationId String?
+  lastActivity   DateTime
+  endedAt        DateTime?
+
+  // Relations
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("user_sessions")
+}
+
+model ScimUser {
+  id             String   @id @default(cuid())
+  userId         String
+  organizationId String
+  externalId     String?
+  scimUsername   String
+  active         Boolean
+  createdAt      DateTime
+  updatedAt      DateTime
+
+  // Relations
+  user         User         @relation(fields: [userId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@map("scim_users")
+}
+
+model ScimToken {
+  id             String    @id @default(cuid())
+  token          String    @unique
+  organizationId String
+  isActive       Boolean
+  expiresAt      DateTime?
+  lastUsedAt     DateTime?
+
+  @@map("scim_tokens")
+}
+
+model ScimAuditLog {
+  id             String   @id @default(cuid())
+  organizationId String
+  operation      String
+  resourceType   String
+  resourceId     String
+  performedBy    String
+  requestPayload String?
+  createdAt      DateTime
+
+  @@map("scim_audit_logs")
+}
+
+model AuditLog {
+  id             String   @id @default(cuid())
+  userId         String?
+  organizationId String?
+  action         String
+  resourceType   String
+  resourceId     String?
+  metadata       String?
+  ipAddress      String?
+  userAgent      String?
+  createdAt      DateTime
+
+  // Relations
+  user         User?         @relation(fields: [userId], references: [id])
+  organization Organization? @relation(fields: [organizationId], references: [id])
+
+  @@map("audit_logs")
+}
+
+model TokenBlacklist {
+  id        String   @id @default(cuid())
+  tokenId   String   @unique
+  expiresAt DateTime
+  createdAt DateTime
+
+  @@map("token_blacklist")
+}
+
+model UserClerkSync {
+  id                 String   @id @default(cuid())
+  clerkUserId        String   @unique
+  microserviceUserId String
+  status             String
+  lastSyncedAt       DateTime
+  syncAttempts       Int
+  createdAt          DateTime?
+
+  @@map("user_clerk_sync")
+}
+
+model Permission {
+  id   String @id @default(cuid())
+  name String @unique
+
+  // Relations
+  userPermissions UserPermission[]
+  rolePermissions RolePermission[]
+
+  @@map("permissions")
+}
+
+model UserPermission {
+  id           String @id @default(cuid())
+  userId       String
+  organizationId String?
+  permissionId String
+
+  // Relations
+  user       User       @relation(fields: [userId], references: [id])
+  permission Permission @relation(fields: [permissionId], references: [id])
+
+  @@unique([userId, permissionId])
+  @@map("user_permissions")
+}
+
+model Role {
+  id   String @id @default(cuid())
+  name String @unique
+
+  // Relations
+  rolePermissions RolePermission[]
+
+  @@map("roles")
+}
+
+model RolePermission {
+  id           String @id @default(cuid())
+  roleId       String
+  permissionId String
+
+  // Relations
+  role       Role       @relation(fields: [roleId], references: [id])
+  permission Permission @relation(fields: [permissionId], references: [id])
+
+  @@unique([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+model EncryptionKey {
+  id           String   @id @default(cuid())
+  keyData      String
+  algorithm    String   @default("aes-256-gcm")
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  expiresAt    DateTime?
+
+  // Relations
+  emailUsers     User[] @relation("EmailEncryptionKey")
+  fullNameUsers  User[] @relation("FullNameEncryptionKey")
+
+  @@map("encryption_keys")
+} 

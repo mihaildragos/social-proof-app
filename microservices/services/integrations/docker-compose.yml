@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  # Integrations Service
+  integrations:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: social-proof-integrations
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+    networks:
+      - social-proof-network
+
+# Networks for service communication
+networks:
+  social-proof-network:
+    driver: bridge 

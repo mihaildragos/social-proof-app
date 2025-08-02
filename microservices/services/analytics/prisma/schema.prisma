@@ -1,0 +1,80 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model AnalyticsEvent {
+  id             String   @id @default(cuid())
+  organizationId String
+  siteId         String?
+  eventType      String
+  eventName      String?
+  userId         String?
+  sessionId      String?
+  properties     Json     @default("{}")
+  source         String?
+  campaign       String?
+  medium         String?
+  timestamp      DateTime @default(now())
+  createdAt      DateTime @default(now())
+
+  @@index([organizationId, createdAt])
+  @@index([eventType])
+  @@index([userId])
+  @@index([sessionId])
+  @@map("analytics_events")
+}
+
+model AnalyticsFunnel {
+  id             String   @id @default(cuid())
+  organizationId String
+  name           String
+  description    String?
+  steps          Json     @default("[]")
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([organizationId])
+  @@map("analytics_funnels")
+}
+
+model AnalyticsReport {
+  id             String            @id @default(cuid())
+  organizationId String
+  name           String
+  description    String?
+  config         Json              @default("{}")
+  type           String?
+  isPublic       Boolean           @default(false)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  schedules      ReportSchedule[]
+
+  @@index([organizationId])
+  @@map("analytics_reports")
+}
+
+model ReportSchedule {
+  id             String          @id @default(cuid())
+  organizationId String
+  reportId       String
+  frequency      String
+  recipients     Json            @default("[]")
+  format         String          @default("pdf")
+  enabled        Boolean         @default(true)
+  timezone       String          @default("UTC")
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  report         AnalyticsReport @relation(fields: [reportId], references: [id])
+
+  @@map("analytics_report_schedules")
+}

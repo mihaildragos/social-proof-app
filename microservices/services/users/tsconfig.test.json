@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitAny": false,
+    "types": ["jest", "node", "supertest"],
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true
+  },
+  "include": ["src/**/*", "src/__tests__/**/*"],
+  "exclude": ["node_modules", "dist"]
+} 

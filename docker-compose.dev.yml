@@ -1,0 +1,201 @@
+version: '3.8'
+
+services:
+  # Core Infrastructure - Optimized for minimal cost
+  postgres:
+    image: postgres:14-alpine
+    container_name: social-proof-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-social_proof_mvp}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    mem_limit: 512m
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: social-proof-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    mem_limit: 256m
+    restart: unless-stopped
+
+  # Frontend - Next.js Application
+  nextjs:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: social-proof-nextjs
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-social_proof_mvp}
+      REDIS_URL: redis://redis:6379
+      USE_REDIS_PUBSUB: "true"
+      USE_POSTGRES_ANALYTICS: "true"
+      # Frontend URLs
+      NEXT_PUBLIC_APP_URL: ${FRONTEND_URL:-http://localhost:3000}
+      # Auth
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+      CLERK_SECRET_KEY: ${CLERK_SECRET_KEY}
+      # Supabase
+      NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+      # Stripe
+      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      # Service URLs (internal Docker network)
+      BILLING_SERVICE_URL: http://billing:3006
+      USERS_SERVICE_URL: http://users:3004
+      NOTIFICATIONS_SERVICE_URL: http://notifications:3003
+      ANALYTICS_SERVICE_URL: http://analytics:3005
+      INTEGRATIONS_SERVICE_URL: http://integrations:3001
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+      - redis
+      - billing
+      - users
+      - notifications
+      - analytics
+      - integrations
+    mem_limit: 512m
+    restart: unless-stopped
+
+  # Core Microservices - Using basic Dockerfiles for faster builds
+  billing:
+    build:
+      context: ./microservices/services/billing
+      dockerfile: Dockerfile
+    container_name: social-proof-billing
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: 3006
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-social_proof_mvp}
+      REDIS_URL: redis://redis:6379
+      USE_REDIS_PUBSUB: "true"
+      JWT_SECRET: ${JWT_SECRET:-your-jwt-secret}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+    ports:
+      - "3006:3006"
+    depends_on:
+      - postgres
+      - redis
+    mem_limit: 256m
+    restart: unless-stopped
+
+  users:
+    build:
+      context: ./microservices/services/users
+      dockerfile: Dockerfile
+    container_name: social-proof-users
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: 3004
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-social_proof_mvp}
+      REDIS_URL: redis://redis:6379
+      USE_REDIS_PUBSUB: "true"
+      JWT_SECRET: ${JWT_SECRET:-your-jwt-secret}
+      CLERK_SECRET_KEY: ${CLERK_SECRET_KEY}
+      SENDGRID_API_KEY: ${SENDGRID_API_KEY}
+    ports:
+      - "3004:3004"
+    depends_on:
+      - postgres
+      - redis
+    mem_limit: 256m
+    restart: unless-stopped
+
+  notifications:
+    build:
+      context: ./microservices/services/notifications
+      dockerfile: Dockerfile
+    container_name: social-proof-notifications
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: 3003
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-social_proof_mvp}
+      REDIS_URL: redis://redis:6379
+      USE_REDIS_PUBSUB: "true"
+      JWT_SECRET: ${JWT_SECRET:-your-jwt-secret}
+    ports:
+      - "3003:3003"
+    depends_on:
+      - postgres
+      - redis
+    mem_limit: 256m
+    restart: unless-stopped
+
+  analytics:
+    build:
+      context: ./microservices/services/analytics
+      dockerfile: Dockerfile
+    container_name: social-proof-analytics
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: 3005
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-social_proof_mvp}
+      REDIS_URL: redis://redis:6379
+      USE_REDIS_PUBSUB: "true"
+      USE_POSTGRES_ANALYTICS: "true"
+      JWT_SECRET: ${JWT_SECRET:-your-jwt-secret}
+    ports:
+      - "3005:3005"
+    depends_on:
+      - postgres
+      - redis
+    mem_limit: 256m
+    restart: unless-stopped
+
+  integrations:
+    build:
+      context: ./microservices/services/integrations
+      dockerfile: Dockerfile
+    container_name: social-proof-integrations
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: 3001
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-social_proof_mvp}
+      REDIS_URL: redis://redis:6379
+      USE_REDIS_PUBSUB: "true"
+      JWT_SECRET: ${JWT_SECRET:-your-jwt-secret}
+      SHOPIFY_API_KEY: ${SHOPIFY_API_KEY}
+      SHOPIFY_API_SECRET: ${SHOPIFY_API_SECRET}
+      WOOCOMMERCE_API_KEY: ${WOOCOMMERCE_API_KEY}
+      WOOCOMMERCE_API_SECRET: ${WOOCOMMERCE_API_SECRET}
+    ports:
+      - "3001:3001"
+    depends_on:
+      - postgres
+      - redis
+    mem_limit: 256m
+    restart: unless-stopped
+
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  default:
+    name: social-proof-network
